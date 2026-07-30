@@ -3,3 +3,12 @@ node_modules/
 .github_repo
 .env
 .env.*
+output
+dist
+.vercel/output
+.output
+.nitro
+.tanstack
+.deploy-trigger
+*.log
+.DS_Store
