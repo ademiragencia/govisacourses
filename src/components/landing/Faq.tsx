@@ -1,4 +1,10 @@
+import { BRAND } from "@/lib/config";
+
 const faqs = [
+  {
+    q: "Os melhores alunos são contratados de verdade?",
+    a: `Sim. Os alunos que mais se destacam na formação são avaliados para contratação pela ${BRAND.firm}, o maior escritório dos Estados Unidos, e já entram faturando em dólar. Não é vaga para todo mundo: é por desempenho.`,
+  },
   {
     q: "Qual a diferença entre as duas modalidades?",
     a: "A modalidade no seu ritmo é 100% online, sem aulas ao vivo: 84h no portal, início a qualquer momento, R$ 2.000 em 4× R$ 500 sem entrada. A modalidade com aulas ao vivo começa em 30 de agosto de 2026, tem 116h (32h ao vivo + 84h gravadas), R$ 3.000 com entrada de R$ 1.000 + 5× R$ 400.",
@@ -8,16 +14,16 @@ const faqs = [
     a: "Não. Inglês não é requisito para se matricular nem para acompanhar a formação. Se você já fala, é um diferencial, mas zero inglês não te impede de entrar.",
   },
   {
-    q: "As aulas ao vivo são obrigatórias na turma de agosto?",
-    a: "Sim, essa modalidade inclui encontros ao vivo (domingos e terças/quintas). O ideal é estudar o conteúdo do portal antes de cada encontro. Quem chega sem o estudo prévio sente mais dificuldade na prática.",
+    q: "A contratação é garantida para todo mundo?",
+    a: `Não. A ${BRAND.firm} contrata quem mais se destaca. O desempenho durante a formação é o que abre a porta, e quem entra já começa faturando em dólar.`,
   },
   {
-    q: "Na modalidade no ritmo livre, quando começo?",
-    a: "A qualquer momento. O acesso é liberado assim que a matrícula é confirmada. O conteúdo sai em blocos no portal para você estudar no seu horário.",
+    q: "Já saio ganhando em dólar?",
+    a: `Quem é contratado ao se destacar já entra remunerado em dólar na ${BRAND.firm}. A vaga dos destaques já nasce em moeda forte.`,
   },
   {
     q: "O que eu recebo ao concluir?",
-    a: "O certificado Go Visa Courses. Você pode receber mais de um certificado ao longo da formação, conforme módulos e etapas concluídos.",
+    a: "O certificado Go Visa Courses. Você pode receber mais de um certificado ao longo da formação, conforme módulos e etapas concluídos. Os destaques também concorrem à contratação no escritório.",
   },
   {
     q: "Como faço a matrícula?",

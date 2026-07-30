@@ -1,25 +1,26 @@
-import { Briefcase, FileCheck2, Globe2, Laptop } from "lucide-react";
+import { BRAND } from "@/lib/config";
+import { BadgeDollarSign, Briefcase, FileCheck2, Trophy } from "lucide-react";
 
 const points = [
   {
-    icon: Globe2,
-    title: "Mercado real de imigração",
-    body: "Escritórios e operações de imigração precisam de profissionais treinados em documentação, vistos e fluxos do USCIS.",
+    icon: Briefcase,
+    title: `${BRAND.firm}: o maior dos EUA`,
+    body: "A formação é ligada ao maior escritório dos Estados Unidos. Você treina no padrão de quem opera imigração de verdade, não em curso genérico.",
+  },
+  {
+    icon: Trophy,
+    title: "Os melhores alunos são contratados",
+    body: "Não é promessa vazia. Quem mais se destaca na formação é avaliado para entrar no time da Go Visa Law Firm.",
+  },
+  {
+    icon: BadgeDollarSign,
+    title: "Já faturando em dólar",
+    body: "A contratação dos destaques já nasce em moeda forte. Você não espera “anos depois” para pensar em dólar.",
   },
   {
     icon: FileCheck2,
     title: "Do formulário ao petition package",
-    body: "Você aprende triagem, elegibilidade, montagem de processos e acompanhamento de status com método profissional.",
-  },
-  {
-    icon: Briefcase,
-    title: "Atuação ética e profissional",
-    body: "Limites de atuação, ética, sigilo e comunicação com o advogado responsável: o padrão de quem trabalha de verdade na área.",
-  },
-  {
-    icon: Laptop,
-    title: "100% online, duas formas de estudar",
-    body: "No seu ritmo com portal gravado, ou com aulas ao vivo e professor. Você escolhe o formato que encaixa na sua rotina.",
+    body: "Triagem, elegibilidade, montagem de processos e acompanhamento de status com método profissional de escritório.",
   },
 ];
 
@@ -28,15 +29,17 @@ export function Opportunity() {
     <section id="autoridade" className="border-t border-border py-20 md:py-28">
       <div className="container-lp">
         <div className="mx-auto max-w-2xl text-center">
-          <p className="eyebrow">A oportunidade</p>
+          <p className="eyebrow">A grande chance</p>
           <h2 className="display mt-3 text-[clamp(1.85rem,3.5vw,2.85rem)] text-fg">
-            Capacitação completa para
+            Destaque-se na turma.
             <br />
-            <span className="text-fg-muted">atuar em processos imigratórios</span>
+            <span className="text-brand-red">
+              Seja contratado pela {BRAND.firm} em dólar.
+            </span>
           </h2>
           <p className="mt-4 text-base leading-relaxed text-fg-muted">
-            Formação profissional Go Visa Courses: fundamentos jurídicos,
-            documentação, categorias de vistos, ferramentas e prática aplicada.
+            {BRAND.hiringPromise}. A formação prepara você para o padrão do
+            maior escritório dos Estados Unidos.
           </p>
         </div>
 

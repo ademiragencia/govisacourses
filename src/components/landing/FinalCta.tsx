@@ -1,3 +1,4 @@
+import { BRAND } from "@/lib/config";
 import { WhatsAppCta } from "./WhatsAppCta";
 
 export function FinalCta() {
@@ -14,18 +15,20 @@ export function FinalCta() {
             aria-hidden
           />
           <div className="relative mx-auto max-w-2xl">
-            <p className="eyebrow">Go Visa Courses</p>
+            <p className="eyebrow">{BRAND.firm} | Contratação em dólar</p>
             <h2 className="display mt-4 text-[clamp(1.9rem,4vw,3rem)] text-fg">
-              Escolha sua modalidade.
+              Destaque-se na formação.
               <br />
-              <span className="text-brand-red">Comece a formação online.</span>
+              <span className="text-brand-red">
+                Os melhores alunos já faturam em dólar na {BRAND.firm}.
+              </span>
             </h2>
             <p className="mx-auto mt-4 max-w-md text-base leading-relaxed text-fg-muted">
-              Preencha a ficha em poucos minutos e fale com a equipe no WhatsApp
-              com tudo pronto.
+              Escolha a modalidade, preencha a ficha e fale com a equipe. O
+              maior escritório dos EUA observa quem se destaca.
             </p>
             <div className="mx-auto mt-8 flex max-w-sm flex-col items-center gap-3">
-              <WhatsAppCta fullWidth label="Preencher ficha agora" />
+              <WhatsAppCta fullWidth label="Quero disputar essa vaga" />
               <p className="text-xs text-fg-subtle">
                 Online no ritmo livre ou com aulas ao vivo a partir de 30/08/2026
               </p>

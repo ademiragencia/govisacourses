@@ -1,4 +1,5 @@
 import {
+  BRAND,
   COURSE_LIVE,
   COURSE_SELF,
   COURSES,
@@ -47,7 +48,6 @@ export const MODALITY_OPTIONS = [
   },
 ] as const;
 
-/** Inglês NÃO é requisito: só informativo */
 export const ENGLISH_OPTIONS = [
   {
     value: "none",
@@ -78,6 +78,10 @@ export const INVESTMENT_OPTIONS = [
 ] as const;
 
 export const MOTIVATION_OPTIONS = [
+  {
+    value: "hire",
+    label: `Quero ser contratado pela ${BRAND.firm} faturando em dólar`,
+  },
   { value: "career", label: "Quero atuar profissionalmente em imigração" },
   { value: "dollar", label: "Quero carreira com o mercado americano / em dólar" },
   { value: "remote", label: "Quero trabalhar de casa com estabilidade" },
@@ -126,8 +130,11 @@ export function evaluateLead(a: QualifyAnswers): QualifyResult {
     flags.push("Pouca disponibilidade de estudo");
   }
 
-  if (a.motivation === "career" || a.motivation === "dollar") score += 18;
-  else if (a.motivation === "remote") score += 14;
+  if (a.motivation === "hire") {
+    score += 20;
+    flags.push(`Alvo: contratação ${BRAND.firm} em dólar`);
+  } else if (a.motivation === "career" || a.motivation === "dollar") score += 16;
+  else if (a.motivation === "remote") score += 12;
   else if (a.motivation === "explore") {
     score += 5;
     flags.push("Ainda explorando, não decidido");
@@ -194,6 +201,7 @@ export function buildWhatsAppFicha(
   const lines = [
     `${statusEmoji} *NOVA FICHA: Processos Imigratórios*`,
     `Status: *${result.label}* (score ${result.score}/100)`,
+    `Meta: contratação ${BRAND.firm} em dólar`,
     "",
     `*Nome:* ${a.name.trim()}`,
     `*WhatsApp do lead:* ${a.phone.trim()}`,
@@ -224,7 +232,7 @@ export function buildWhatsAppFicha(
 
   lines.push(
     "",
-    "Vim pela landing e quero garantir minha vaga na formação.",
+    `Vim pela landing. Quero a formação e a chance de ser contratado pela ${BRAND.firm} faturando em dólar.`,
   );
 
   return lines.join("\n");
@@ -257,7 +265,3 @@ export function isPhoneValid(phone: string): boolean {
   const d = phone.replace(/\D/g, "");
   return d.length >= 10 && d.length <= 13;
 }
-
-// silence unused if tree-shaken elsewhere
-void COURSE_LIVE;
-void COURSE_SELF;

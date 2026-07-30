@@ -6,7 +6,10 @@ export const WHATSAPP_NUMBER = "13213157510";
 
 export const BRAND = {
   name: "Go Visa Courses",
-  firm: "maior escritório de advocacia americano",
+  firm: "Go Visa Law Firm",
+  firmFull: "Go Visa Law Firm, o maior escritório dos Estados Unidos",
+  hiringPromise:
+    "Os melhores alunos são contratados pela Go Visa Law Firm e já faturam em dólar",
 } as const;
 
 /** Modalidade A: 100% online, no seu ritmo (sem ao vivo) */
@@ -37,6 +40,7 @@ export const COURSE_SELF = {
     "Estudos de casos reais",
     "Exercícios práticos",
     "Certificação ao final da formação",
+    "Destaques avaliados para contratação na Go Visa Law Firm (em dólar)",
   ],
 } as const;
 
@@ -79,6 +83,7 @@ export const COURSE_LIVE = {
     "Estudos de casos reais",
     "Exercícios práticos",
     "Certificação ao final da formação",
+    "Destaques avaliados para contratação na Go Visa Law Firm (em dólar)",
   ],
 } as const;
 
@@ -157,7 +162,7 @@ export const PROGRAM_MODULES = [
 ] as const;
 
 export const WHATSAPP_MESSAGE =
-  "Olá! Vim pela landing da Formação em Processos Imigratórios e quero garantir minha vaga.";
+  "Olá! Vim pela landing da Formação em Processos Imigratórios e quero garantir minha vaga. Tenho interesse na chance de ser contratado pela Go Visa Law Firm faturando em dólar.";
 
 export function getWhatsAppUrl(message = WHATSAPP_MESSAGE): string | null {
   const n = WHATSAPP_NUMBER.replace(/\D/g, "");
@@ -165,8 +170,7 @@ export function getWhatsAppUrl(message = WHATSAPP_MESSAGE): string | null {
   return `https://wa.me/${n}?text=${encodeURIComponent(message)}`;
 }
 
-/** Compat: labels genéricos usados em CTAs */
 export const COURSE = {
   name: "Formação Profissional em Processos Imigratórios",
-  firmLabel: BRAND.firm,
+  firmLabel: BRAND.firmFull,
 } as const;

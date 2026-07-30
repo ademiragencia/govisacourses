@@ -1,3 +1,5 @@
+import { BRAND } from "@/lib/config";
+
 export function Footer() {
   return (
     <footer className="border-t border-border pb-24 pt-12 md:pb-14">
@@ -8,9 +10,10 @@ export function Footer() {
             alt="Go Visa Courses"
             className="h-6 w-auto opacity-90"
           />
-          <p className="max-w-xs text-center text-xs text-fg-subtle sm:text-left">
-            Formação Profissional em Processos Imigratórios. 100% online.
-            Certificado Go Visa Courses.
+          <p className="max-w-sm text-center text-xs text-fg-subtle sm:text-left">
+            Formação Profissional em Processos Imigratórios. 100% online. Os
+            melhores alunos são contratados pela {BRAND.firm} e já faturam em
+            dólar.
           </p>
         </div>
         <div className="flex flex-col items-center gap-2 text-center text-xs text-fg-subtle sm:items-end sm:text-right">

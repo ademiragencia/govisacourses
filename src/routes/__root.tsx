@@ -17,21 +17,22 @@ export const Route = createRootRoute({
       },
       {
         title:
-          "Formação em Processos Imigratórios Online | Go Visa Courses",
+          "Formação em Processos Imigratórios | Go Visa Law Firm | Contratação em dólar",
       },
       {
         name: "description",
         content:
-          "Formação profissional 100% online em processos imigratórios. Modalidade no seu ritmo (84h, R$ 2.000) ou com aulas ao vivo (116h, R$ 3.000). Certificado Go Visa Courses. Inglês não é obrigatório.",
+          "Formação profissional 100% online. Os melhores alunos são contratados pela Go Visa Law Firm, o maior escritório dos EUA, e já faturam em dólar. Duas modalidades: ritmo livre (R$ 2.000) ou ao vivo (R$ 3.000).",
       },
       {
         property: "og:title",
-        content: "Formação em Processos Imigratórios | 100% online",
+        content:
+          "Destaques contratados pela Go Visa Law Firm já faturando em dólar",
       },
       {
         property: "og:description",
         content:
-          "Duas modalidades online: no seu ritmo ou com aulas ao vivo. Certificado Go Visa Courses.",
+          "Formação em Processos Imigratórios 100% online. Os melhores alunos entram no maior escritório dos EUA.",
       },
       { property: "og:type", content: "website" },
     ],

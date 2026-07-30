@@ -1,8 +1,9 @@
-import { COURSE_LIVE, COURSE_SELF } from "@/lib/config";
+import { BRAND, COURSE_LIVE, COURSE_SELF } from "@/lib/config";
 import { WhatsAppCta } from "./WhatsAppCta";
 import {
   Award,
   BadgeDollarSign,
+  Building2,
   MonitorPlay,
   ShieldCheck,
 } from "lucide-react";
@@ -17,28 +18,47 @@ export function Hero() {
               <span className="absolute inline-flex size-full animate-ping rounded-full bg-brand-red opacity-60" />
               <span className="relative size-1.5 rounded-full bg-brand-red" />
             </span>
-            100% online
+            Destaques contratados em dólar
             <span className="text-fg-subtle">|</span>
-            <span>Duas modalidades</span>
+            <span>{BRAND.firm}</span>
           </div>
 
           <p className="eyebrow mb-4">Go Visa Courses | Formação profissional</p>
 
-          <h1 className="display text-[clamp(2.2rem,5.5vw,3.75rem)] text-fg">
-            Formação Profissional em
-            <br />
-            Processos Imigratórios
+          <h1 className="display text-[clamp(2.15rem,5.4vw,3.7rem)] text-fg">
+            Formação em Processos Imigratórios.
             <br />
             <span className="text-brand-red">
-              100% online. Certificado. Carreira com o mercado americano.
+              Os melhores alunos são contratados pela Go Visa Law Firm e já
+              faturam em dólar.
             </span>
           </h1>
 
           <p className="mx-auto mt-5 max-w-2xl text-base leading-relaxed text-fg-muted md:text-[1.1rem]">
-            Capacitação completa para atuar profissionalmente na área de
-            imigração. Escolha estudar no seu ritmo ou com aulas ao vivo e
-            acompanhamento do professor. Inglês não é obrigatório.
+            Capacitação 100% online com o maior escritório dos Estados Unidos, a{" "}
+            <strong className="font-semibold text-fg">{BRAND.firm}</strong>.
+            Estude, destaque-se na turma e dispute uma vaga já remunerada em
+            dólar. Inglês não é obrigatório.
           </p>
+        </div>
+
+        {/* Hiring banner */}
+        <div className="mx-auto mt-8 max-w-3xl overflow-hidden rounded-[var(--radius-xl)] border border-gold-line/35 bg-surface shadow-[var(--shadow-card)]">
+          <div className="flag-strip" />
+          <div className="flex flex-col items-center gap-3 px-5 py-5 text-center sm:flex-row sm:text-left md:px-7">
+            <span className="flex size-12 shrink-0 items-center justify-center rounded-[var(--radius-md)] bg-brand-red-soft text-brand-red">
+              <Building2 className="size-6" strokeWidth={1.75} />
+            </span>
+            <div className="min-w-0 flex-1">
+              <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-gold-line">
+                Oportunidade real de contratação
+              </p>
+              <p className="mt-1 text-sm font-semibold leading-snug text-fg md:text-base">
+                {BRAND.hiringPromise}. Não é estágio sem salário: quem mais se
+                destaca entra no time do maior escritório dos EUA.
+              </p>
+            </div>
+          </div>
         </div>
 
         <div className="mx-auto mt-10 grid max-w-4xl gap-4 md:grid-cols-2">
@@ -100,12 +120,20 @@ export function Hero() {
 
         <div className="mx-auto mt-10 grid max-w-3xl gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {[
-            { icon: MonitorPlay, t: "100% online", d: "Estude de qualquer lugar" },
-            { icon: Award, t: "Certificado", d: "Go Visa Courses" },
+            {
+              icon: Building2,
+              t: BRAND.firm,
+              d: "Maior escritório dos EUA",
+            },
             {
               icon: BadgeDollarSign,
-              t: "Mercado americano",
-              d: "Processos de imigração",
+              t: "Melhores alunos",
+              d: "Contratados em dólar",
+            },
+            {
+              icon: MonitorPlay,
+              t: "100% online",
+              d: "Estude de qualquer lugar",
             },
             {
               icon: ShieldCheck,
