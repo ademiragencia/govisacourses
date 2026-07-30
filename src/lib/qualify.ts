@@ -1,0 +1,263 @@
+import {
+  COURSE_LIVE,
+  COURSE_SELF,
+  COURSES,
+  getWhatsAppUrl,
+  type CourseId,
+} from "./config";
+
+export type QualifyAnswers = {
+  name: string;
+  phone: string;
+  city: string;
+  age: string;
+  modality: CourseId | "";
+  english: string;
+  education: string;
+  availability: string;
+  investment: string;
+  motivation: string;
+};
+
+export type QualifyStatus = "qualified" | "review" | "unqualified";
+
+export type QualifyResult = {
+  status: QualifyStatus;
+  score: number;
+  flags: string[];
+  label: string;
+};
+
+export const AGE_OPTIONS = [
+  { value: "18-24", label: "18 a 24 anos" },
+  { value: "25-34", label: "25 a 34 anos" },
+  { value: "35-44", label: "35 a 44 anos" },
+  { value: "45-54", label: "45 a 54 anos" },
+  { value: "55+", label: "55 anos ou mais" },
+] as const;
+
+export const MODALITY_OPTIONS = [
+  {
+    value: "live",
+    label: `Ao vivo + portal (${COURSE_LIVE.priceLabel}: ${COURSE_LIVE.planLabel})`,
+  },
+  {
+    value: "self",
+    label: `No seu ritmo (${COURSE_SELF.priceLabel}: ${COURSE_SELF.planLabel})`,
+  },
+] as const;
+
+/** Inglês NÃO é requisito: só informativo */
+export const ENGLISH_OPTIONS = [
+  {
+    value: "none",
+    label: "Não falo inglês (sem problema, não é obrigatório)",
+  },
+  { value: "basic", label: "Básico (palavras e frases simples)" },
+  { value: "inter", label: "Intermediário (consigo me comunicar)" },
+  { value: "advanced", label: "Avançado / fluente" },
+] as const;
+
+export const EDUCATION_OPTIONS = [
+  { value: "hs", label: "Ensino médio" },
+  { value: "college", label: "Superior incompleto" },
+  { value: "grad", label: "Superior completo" },
+  { value: "post", label: "Pós-graduação" },
+] as const;
+
+export const AVAILABILITY_OPTIONS = [
+  { value: "low", label: "Menos de 5h por semana" },
+  { value: "mid", label: "5 a 10h por semana" },
+  { value: "high", label: "Mais de 10h por semana" },
+] as const;
+
+export const INVESTMENT_OPTIONS = [
+  { value: "ready", label: "Sim, posso investir agora" },
+  { value: "soon", label: "Consigo nas próximas semanas" },
+  { value: "hard", label: "Ainda não tenho condições" },
+] as const;
+
+export const MOTIVATION_OPTIONS = [
+  { value: "career", label: "Quero atuar profissionalmente em imigração" },
+  { value: "dollar", label: "Quero carreira com o mercado americano / em dólar" },
+  { value: "remote", label: "Quero trabalhar de casa com estabilidade" },
+  { value: "explore", label: "Estou só conhecendo a oportunidade" },
+] as const;
+
+export function emptyAnswers(): QualifyAnswers {
+  return {
+    name: "",
+    phone: "",
+    city: "",
+    age: "",
+    modality: "",
+    english: "",
+    education: "",
+    availability: "",
+    investment: "",
+    motivation: "",
+  };
+}
+
+function labelOf(
+  options: readonly { value: string; label: string }[],
+  value: string,
+): string {
+  return options.find((o) => o.value === value)?.label ?? value;
+}
+
+export function evaluateLead(a: QualifyAnswers): QualifyResult {
+  let score = 0;
+  const flags: string[] = [];
+
+  if (a.investment === "ready") score += 35;
+  else if (a.investment === "soon") {
+    score += 22;
+    flags.push("Investimento nas próximas semanas");
+  } else if (a.investment === "hard") {
+    score += 0;
+    flags.push("Sem condições financeiras no momento");
+  }
+
+  if (a.availability === "high") score += 25;
+  else if (a.availability === "mid") score += 18;
+  else if (a.availability === "low") {
+    score += 6;
+    flags.push("Pouca disponibilidade de estudo");
+  }
+
+  if (a.motivation === "career" || a.motivation === "dollar") score += 18;
+  else if (a.motivation === "remote") score += 14;
+  else if (a.motivation === "explore") {
+    score += 5;
+    flags.push("Ainda explorando, não decidido");
+  }
+
+  if (a.education === "grad" || a.education === "post") score += 6;
+  else if (a.education === "college") score += 5;
+  else score += 3;
+
+  if (a.age === "25-34" || a.age === "35-44") score += 6;
+  else if (a.age === "18-24" || a.age === "45-54") score += 4;
+  else score += 2;
+
+  if (a.modality === "live") {
+    score += 5;
+    flags.push("Interesse na turma com aulas ao vivo (30/08/2026)");
+  } else if (a.modality === "self") {
+    score += 5;
+    flags.push("Interesse na modalidade no próprio ritmo");
+  }
+
+  if (a.english === "advanced") {
+    score += 10;
+    flags.push("Inglês avançado (diferencial, não obrigatório)");
+  } else if (a.english === "inter") {
+    score += 7;
+    flags.push("Inglês intermediário (diferencial, não obrigatório)");
+  } else if (a.english === "basic") {
+    score += 3;
+  } else if (a.english === "none") {
+    flags.push("Sem inglês: ok, não é requisito da formação");
+  }
+
+  let status: QualifyStatus = "review";
+  if (score >= 65 && a.investment !== "hard") status = "qualified";
+  else if (a.investment === "hard" || score < 35) status = "unqualified";
+
+  const label =
+    status === "qualified"
+      ? "QUALIFICADO"
+      : status === "review"
+        ? "EM ANÁLISE"
+        : "PERFIL FORA DO IDEAL";
+
+  return { status, score, flags, label };
+}
+
+export function buildWhatsAppFicha(
+  a: QualifyAnswers,
+  result: QualifyResult,
+): string {
+  const statusEmoji =
+    result.status === "qualified"
+      ? "✅"
+      : result.status === "review"
+        ? "🟡"
+        : "🔴";
+
+  const course =
+    a.modality === "live" || a.modality === "self"
+      ? COURSES[a.modality]
+      : null;
+
+  const lines = [
+    `${statusEmoji} *NOVA FICHA: Processos Imigratórios*`,
+    `Status: *${result.label}* (score ${result.score}/100)`,
+    "",
+    `*Nome:* ${a.name.trim()}`,
+    `*WhatsApp do lead:* ${a.phone.trim()}`,
+    `*Cidade:* ${a.city.trim()}`,
+    `*Idade:* ${labelOf(AGE_OPTIONS, a.age)}`,
+    `*Modalidade:* ${labelOf(MODALITY_OPTIONS, a.modality)}`,
+  ];
+
+  if (course) {
+    lines.push(
+      `*Oferta escolhida:* ${course.priceLabel} (${course.planLabel})`,
+      `*Início:* ${course.startLabel}`,
+    );
+  }
+
+  lines.push(
+    `*Inglês:* ${labelOf(ENGLISH_OPTIONS, a.english)} (não é requisito)`,
+    `*Escolaridade:* ${labelOf(EDUCATION_OPTIONS, a.education)}`,
+    `*Disponibilidade:* ${labelOf(AVAILABILITY_OPTIONS, a.availability)}`,
+    `*Investimento:* ${labelOf(INVESTMENT_OPTIONS, a.investment)}`,
+    `*Motivação:* ${labelOf(MOTIVATION_OPTIONS, a.motivation)}`,
+  );
+
+  if (result.flags.length) {
+    lines.push("", "*Observações:*");
+    for (const f of result.flags) lines.push(`• ${f}`);
+  }
+
+  lines.push(
+    "",
+    "Vim pela landing e quero garantir minha vaga na formação.",
+  );
+
+  return lines.join("\n");
+}
+
+export function openWhatsAppWithFicha(
+  a: QualifyAnswers,
+  result: QualifyResult,
+): { ok: boolean; url: string | null } {
+  const message = buildWhatsAppFicha(a, result);
+  const url = getWhatsAppUrl(message);
+  if (url) {
+    window.open(url, "_blank", "noopener,noreferrer");
+    return { ok: true, url };
+  }
+  return { ok: false, url: null };
+}
+
+export function formatPhoneInput(raw: string): string {
+  const digits = raw.replace(/\D/g, "").slice(0, 13);
+  if (digits.length <= 2) return digits;
+  if (digits.length <= 7) return `(${digits.slice(0, 2)}) ${digits.slice(2)}`;
+  if (digits.length <= 11) {
+    return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
+  }
+  return `+${digits.slice(0, 2)} (${digits.slice(2, 4)}) ${digits.slice(4, 9)}-${digits.slice(9)}`;
+}
+
+export function isPhoneValid(phone: string): boolean {
+  const d = phone.replace(/\D/g, "");
+  return d.length >= 10 && d.length <= 13;
+}
+
+// silence unused if tree-shaken elsewhere
+void COURSE_LIVE;
+void COURSE_SELF;

@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Curso Paralegal Presencial em Salvador | Govisa Courses</title>
+<meta name="description" content="Paralegal é a profissão que mais procura brasileiros nos EUA. Um escritório de advocacia americano vem a Salvador formar a próxima turma, presencialmente. Certificado internacional e contratação em dólar.">
+
+<meta property="og:title" content="Eles precisam de brasileiros. E pagam em dólar.">
+<meta property="og:description" content="Um escritório de advocacia americano vem a Salvador formar paralegais, presencialmente. Certificado internacional. Os destaques da turma são contratados.">
+<meta property="og:type" content="website">
+<meta property="og:image" content="assets/og-image.jpg"><!-- PLACEHOLDER: 1200x630 -->
+<link rel="icon" href="assets/logo.png">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400..900&family=Archivo:wght@600..900&display=swap" rel="stylesheet">
+
+<style>
+:root{
+  /* Paleta extraída de govisacourses.com */
+  --red:#d10000;
+  --navy:#004488;
+  --ink:#1e1e1e;
+  --muted:#5b616f;
+  --wa:#25d366;
+  --wa-dark:#1da851;
+
+  /* O H1 depende do peso 900 para o impacto — só troque a display por uma
+     família que tenha 900, senão o título rebaixa silenciosamente para 800. */
+  --font-body:'Geist',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --font-display:'Archivo','Geist',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --r-btn:10px;
+}
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+body{
+  font-family:var(--font-body);
+  color:#fff;
+  -webkit-font-smoothing:antialiased;
+  /* Mesma linguagem escura do restante da marca: tinta + brilhos vermelho/azul */
+  background:
+    radial-gradient(1100px 620px at 50% -6%, rgba(209,0,0,.34), transparent 62%),
+    radial-gradient(900px 540px at 92% 108%, rgba(0,68,136,.42), transparent 60%),
+    linear-gradient(170deg,#1c1c1c 0%,#121212 100%);
+  background-attachment:fixed;
+  min-height:100vh;
+}
+img{max-width:100%;display:block}
+a{color:inherit;text-decoration:none}
+button{font:inherit;cursor:pointer;border:0;background:none;color:inherit}
+
+/* Textura de grade */
+body::before{
+  content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
+  background-image:linear-gradient(rgba(255,255,255,.03) 1px,transparent 1px),
+                   linear-gradient(90deg,rgba(255,255,255,.03) 1px,transparent 1px);
+  background-size:56px 56px;
+  mask-image:radial-gradient(circle at 50% 40%,#000,transparent 78%);
+}
+
+/* ---------- Layout de uma tela ----------
+   min-height em dvh para o mobile (a barra do navegador some/aparece).
+   Nada de overflow:hidden — em tela muito baixa é melhor rolar do que
+   cortar o botão. Os clamps abaixo encolhem tudo antes disso acontecer. */
+.page{
+  position:relative;z-index:1;
+  min-height:100vh;
+  min-height:100dvh;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:clamp(9px,1.5vh,20px);
+  padding:clamp(12px,2vh,28px) 20px clamp(14px,2vh,28px);
+  text-align:center;
+}
+
+/* logo-dark.png é uma versão feita para fundo escuro: o preenchimento branco
+   interno foi removido, o azul virou branco e o vermelho foi preservado.
+   NÃO usar filter:brightness(0) invert(1) — aquilo funde o contorno com o
+   preenchimento e engrossa as bordas suavizadas, borrando as letras. */
+.brand img{
+  height:clamp(25px,3vh,36px);width:auto;
+}
+
+/* ---------- Copy ---------- */
+/* Fios finos que se dissipam nas laterais, no lugar da pílula com borda:
+   marca a chamada sem criar mais uma caixa competindo com o vídeo. */
+.chama{
+  display:inline-flex;align-items:center;gap:clamp(9px,1.4vw,14px);
+  font-size:clamp(9.5px,1.05vh,11.5px);font-weight:700;
+  letter-spacing:.2em;text-transform:uppercase;color:rgba(255,255,255,.6);
+}
+.chama::before,.chama::after{
+  content:"";height:1px;width:clamp(18px,4.5vw,52px);
+}
+.chama::before{background:linear-gradient(90deg,transparent,rgba(255,255,255,.4))}
+.chama::after{background:linear-gradient(90deg,rgba(255,255,255,.4),transparent)}
+.chama .dot{
+  width:6px;height:6px;border-radius:50%;background:var(--red);flex:none;
+  box-shadow:0 0 0 3px rgba(209,0,0,.25);animation:pulse 2s infinite;
+}
+@keyframes pulse{50%{opacity:.3}}
+
+/* Escala pela ALTURA (3.1vh) tanto quanto pela largura: num notebook largo e
+   baixo, escalar só por vw inflava o H1 e empurrava o botão pra fora da tela. */
+h1{
+  font-family:var(--font-display);font-weight:900;
+  font-size:clamp(25px,3.1vh + 1.05vw,52px);
+  line-height:1.03;letter-spacing:-.035em;
+  max-width:17ch;
+}
+h1 .hl{color:var(--red)}
+
+.sub{
+  font-size:clamp(13px,1.45vh + .2vw,17px);
+  line-height:1.5;color:rgba(255,255,255,.74);
+  max-width:60ch;
+}
+.sub strong{color:#fff;font-weight:600}
+
+/* ---------- Vídeo ---------- */
+/* --resto = altura de tudo que NÃO é o vídeo. O vídeo pega o que sobrar da tela,
+   convertido de altura para largura pelo 16/9. É isso que faz caber em uma tela
+   sem precisar de media query por resolução. */
+.vsl{
+  position:relative;
+  /* O max(340px) é um piso: numa tela muito baixa é melhor a página rolar do
+     que exibir um vídeo minúsculo — numa VSL, o vídeo é o que vende. */
+  width:min(680px, 100%, max(340px, calc((100dvh - var(--resto,572px)) * 16 / 9)));
+  aspect-ratio:16/9;
+  border-radius:14px;overflow:hidden;cursor:pointer;
+  border:1px solid rgba(255,255,255,.16);
+  box-shadow:0 26px 70px rgba(0,0,0,.5);
+  background:#000;
+}
+.vsl video{width:100%;height:100%;object-fit:cover;display:block;background:#000}
+/* Vinheta + botão + legenda somem quando o vídeo começa a tocar */
+.vsl::after{
+  content:"";position:absolute;inset:0;pointer-events:none;transition:opacity .3s ease;
+  background:radial-gradient(circle at 50% 50%, transparent 40%, rgba(0,0,0,.42) 100%);
+}
+.vsl.tocando::after,
+.vsl.tocando .vsl__play,
+.vsl.tocando .vsl__hint{opacity:0;pointer-events:none}
+.vsl.tocando{cursor:default}
+.vsl__play,.vsl__hint{transition:opacity .3s ease}
+.vsl__play{
+  position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:2;
+  width:clamp(62px,8vh,84px);aspect-ratio:1;border-radius:50%;
+  background:var(--red);display:grid;place-items:center;
+  box-shadow:0 14px 40px rgba(209,0,0,.5);
+  transition:transform .2s ease,background .2s ease;
+}
+.vsl__play::before{
+  content:"";position:absolute;inset:0;border-radius:50%;
+  border:2px solid var(--red);animation:ring 2.4s ease-out infinite;
+}
+@keyframes ring{0%{transform:scale(1);opacity:.65}100%{transform:scale(1.75);opacity:0}}
+.vsl__play svg{width:34%;height:34%;fill:#fff;margin-left:8%}
+.vsl:hover .vsl__play{transform:translate(-50%,-50%) scale(1.08);background:#b80000}
+.vsl__hint{
+  position:absolute;left:0;right:0;bottom:0;z-index:2;pointer-events:none;
+  padding:26px 16px 13px;
+  font-size:clamp(11px,1.3vh,12.5px);font-weight:700;
+  letter-spacing:.08em;text-transform:uppercase;color:rgba(255,255,255,.9);
+  background:linear-gradient(to top,rgba(0,0,0,.8),transparent);
+}
+
+/* ---------- CTA ---------- */
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:11px;
+  font-family:var(--font-display);font-weight:800;
+  font-size:clamp(13px,1.5vh,16px);
+  padding:clamp(12px,1.8vh,18px) clamp(24px,3.4vw,42px);
+  letter-spacing:.02em;text-transform:uppercase;
+  border-radius:var(--r-btn);transition:.18s ease;
+  background:var(--wa);color:#fff;
+  box-shadow:0 10px 30px rgba(37,211,102,.34);
+}
+.btn:hover{background:var(--wa-dark);transform:translateY(-2px);box-shadow:0 14px 38px rgba(37,211,102,.45)}
+.btn svg{width:20px;height:20px;flex:none}
+
+/* ---------- Oferta: preço acima do botão ---------- */
+.oferta{
+  display:flex;flex-direction:column;align-items:center;
+  gap:clamp(10px,1.6vh,16px);
+}
+.preco{position:relative;display:flex;flex-direction:column;align-items:center;gap:3px}
+/* Halo atrás do número: dá presença sem custar altura, que aqui sai do vídeo. */
+.preco::before{
+  content:"";position:absolute;left:50%;top:38%;transform:translate(-50%,-50%);
+  width:130%;height:190%;pointer-events:none;z-index:0;
+  background:radial-gradient(ellipse at center, rgba(255,255,255,.16), rgba(209,0,0,.10) 45%, transparent 70%);
+}
+/* O "350" é o número que decide a compra: "10×" e "R$" ficam em ~metade do
+   corpo para ele dominar. Spans inline alinham pela base sozinhos.
+   Branco de propósito — em fundo escuro é o contraste máximo. */
+.preco strong{
+  position:relative;z-index:1;
+  font-family:var(--font-display);font-weight:900;
+  font-size:clamp(46px,6.4vh + .9vw,78px);
+  line-height:.92;letter-spacing:-.04em;color:#fff;
+  text-shadow:0 4px 30px rgba(0,0,0,.5);
+  white-space:nowrap;
+}
+.preco .mult{font-size:.5em;font-weight:800;color:var(--wa);letter-spacing:-.02em}
+.preco .cur{font-size:.45em;font-weight:800;color:rgba(255,255,255,.72);margin-left:.06em}
+/* Filho direto (>) de propósito: sem isso a regra também pegava o <span class="x">
+   do "×" dentro do preço, e ele saía em 11px apagado no meio do número. */
+.preco > span{
+  position:relative;z-index:1;
+  font-size:clamp(11px,1.3vh,13px);font-weight:600;
+  color:rgba(255,255,255,.55);letter-spacing:.02em;
+}
+
+.nota{
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  font-size:clamp(11.5px,1.4vh,13px);font-weight:600;color:rgba(255,255,255,.55);
+}
+.nota .dot{
+  width:7px;height:7px;border-radius:50%;background:var(--wa);
+  box-shadow:0 0 0 3px rgba(37,211,102,.22);animation:pulse 2s infinite;
+}
+
+/* ---------- Provas ---------- */
+.provas{
+  display:flex;align-items:center;justify-content:center;
+  gap:clamp(8px,2vw,26px);flex-wrap:wrap;
+  padding-top:clamp(8px,1.4vh,16px);
+  border-top:1px solid rgba(255,255,255,.12);
+  width:min(680px,100%);
+}
+.prova{
+  display:flex;align-items:center;gap:7px;
+  font-size:clamp(10px,1.2vh,12.5px);font-weight:600;color:rgba(255,255,255,.62);
+}
+.prova svg{width:15px;height:15px;flex:none;stroke:var(--wa)}
+
+/* Faixa da bandeira, fixa no rodapé da tela */
+.flag{position:fixed;inset:auto 0 0 0;height:4px;z-index:5;
+  background:linear-gradient(90deg,var(--red) 0 33.3%,#fff 33.3% 66.6%,var(--navy) 66.6%)}
+
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+/* Telas curtas (iPhone SE e afins): aperta os respiros e o preço. Aqui o vídeo
+   já é limitado pela largura, então mexer no --resto não teria efeito. */
+@media (max-height:700px){
+  .page{gap:clamp(7px,1.1vh,14px)}
+  .preco strong{font-size:clamp(36px,5.6vh + .8vw,58px)}
+}
+
+/* Telas estreitas: a chamada não cabe em uma linha com o entreletras largo
+   e os fios laterais. Sem isso ela quebra em duas e desalinha dos fios. */
+@media (max-width:430px){
+  .chama{letter-spacing:.1em;gap:8px}
+  .chama::before,.chama::after{display:none}
+}
+
+@media (max-width:640px){
+  /* No celular o H1 quebra em mais linhas, as provas empilham e a oferta
+     deixa de ser lado a lado — sobra menos altura para o vídeo. */
+  :root{--resto:604px}
+  h1{max-width:15ch}
+  .oferta{width:100%}
+  .btn{width:100%;max-width:420px}
+  .provas{gap:8px 16px}
+}
+</style>
+</head>
+<body class="no-js">
+<script>
+/* Roda antes de tudo: se qualquer script abaixo falhar, o conteúdo continua visível. */
+document.body.classList.remove('no-js');
+</script>
+
+<div class="page">
+
+  <a href="https://govisacourses.com" class="brand" aria-label="Govisa Courses">
+    <img src="assets/logo-dark.png" alt="Govisa Courses">
+  </a>
+
+  <span class="chama"><span class="dot"></span>Turma de 21 de agosto · Últimas vagas</span>
+
+  <h1>Ganhe <span class="hl">em dólar</span><br>trabalhando de dentro da sua casa.</h1>
+
+  <p class="sub">
+    Paralegal é a profissão que <strong>mais procura brasileiros nos EUA</strong> —
+    e um escritório de advocacia americano vem a Salvador formar a próxima turma,
+    presencialmente. Quem se destaca é contratado.
+  </p>
+
+  <!-- ============ VÍDEO ============
+       H.264 8-bit 720p (13 MB) — não republique em HEVC/H.265: o Firefox não
+       toca, e no Chrome só funciona com decodificação por hardware.
+       preload="metadata" baixa só o índice e pinta o primeiro quadro como capa;
+       o resto só é buscado no play. Não troque para preload="auto". -->
+  <div class="vsl" id="vsl" role="button" tabindex="0" aria-label="Assistir ao vídeo">
+    <video id="video" preload="metadata" playsinline
+           src="assets/vsl-v2.mp4"></video>
+    <button class="vsl__play" aria-label="Assistir ao vídeo" tabindex="-1">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
+    </button>
+    <div class="vsl__hint">▶ Assista antes de fechar esta página</div>
+  </div>
+
+  <div class="oferta">
+    <div class="preco">
+      <strong><span class="mult">10×</span> <span class="cur">R$</span>350</strong>
+      <span>entrada de R$ 1.000,00</span>
+    </div>
+
+    <a href="#" class="btn wa" data-msg="Olá! Vim pelo site e quero começar o Curso Paralegal Presencial em Salvador (10x de R$ 350 + entrada de R$ 1.000).">
+    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 00-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884a9.82 9.82 0 016.988 2.9 9.825 9.825 0 012.892 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
+    Comece agora
+    </a>
+  </div>
+
+  <p class="nota"><span class="dot"></span>Atendimento humano · respondemos em minutos</p>
+
+  <div class="provas">
+    <span class="prova">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg>
+      Escritório de advocacia americano
+    </span>
+    <span class="prova">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg>
+      Certificado internacional
+    </span>
+    <span class="prova">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg>
+      Destaques contratados em dólar
+    </span>
+  </div>
+
+</div>
+
+<div class="flag" aria-hidden="true"></div>
+
+<script>
+try {
+  /* =========================================================
+     ⚠️  NÚMERO DO WHATSAPP — É O ÚNICO LUGAR NO ARQUIVO.
+     Formato: código do país + DDD + número, só dígitos.
+     Atual: +1 (321) 315-1348  ->  "13213151348"
+     ========================================================= */
+  const WHATSAPP = "13213151348";
+
+  document.querySelectorAll('a.wa').forEach(a => {
+    const msg = a.dataset.msg || 'Olá! Vim pelo site e quero saber mais sobre o Curso Paralegal.';
+    a.href = 'https://wa.me/' + WHATSAPP + '?text=' + encodeURIComponent(msg);
+    a.target = '_blank';
+    a.rel = 'noopener';
+  });
+
+  /* O play precisa vir de um clique do visitante: navegador nenhum deixa
+     tocar com som sem gesto do usuário. Por isso não há autoplay aqui. */
+  const vsl = document.getElementById('vsl');
+  const video = document.getElementById('video');
+  const tocar = () => {
+    if (vsl.classList.contains('tocando')) return;
+    vsl.classList.add('tocando');
+    video.controls = true;
+    const p = video.play();
+    if (p && p.catch) p.catch(err => {
+      // Se o navegador barrar o play com som, tenta mudo em vez de não tocar nada.
+      console.warn('[LP] play bloqueado, tentando sem som:', err);
+      video.muted = true;
+      video.play().catch(e => console.error('[LP] o vídeo não pôde tocar:', e));
+    });
+  };
+  vsl.addEventListener('click', e => { if (e.target !== video || video.paused) tocar(); });
+  vsl.addEventListener('keydown', e => {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); tocar(); }
+  });
+} catch (err) {
+  console.error('[LP] erro no script:', err);
+}
+</script>
+</body>
+</html>
