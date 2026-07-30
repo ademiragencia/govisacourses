@@ -4,7 +4,6 @@ import {
   BadgeDollarSign,
   Building2,
   Crown,
-  MonitorPlay,
   ShieldCheck,
 } from "lucide-react";
 
@@ -13,7 +12,6 @@ export function Hero() {
     <section id="topo" className="relative overflow-hidden pb-16 pt-10 md:pb-24 md:pt-16">
       <div className="container-lp relative">
         <div className="mx-auto max-w-3xl text-center">
-          {/* Authority pill: MAIOR ESCRITÓRIO first */}
           <div className="mb-5 inline-flex flex-wrap items-center justify-center gap-2 rounded-full border border-gold-line/40 bg-gold-line/10 px-3.5 py-1.5 text-[11px] font-bold uppercase tracking-[0.14em] text-fg">
             <Crown className="size-3.5 text-gold-line" strokeWidth={2.25} />
             <span className="text-gold-line">Maior escritório dos EUA</span>
@@ -43,7 +41,6 @@ export function Hero() {
           </p>
         </div>
 
-        {/* Big authority strip */}
         <div className="mx-auto mt-8 max-w-3xl overflow-hidden rounded-[var(--radius-xl)] border border-gold-line/40 bg-surface shadow-[var(--shadow-soft)]">
           <div className="flag-strip" />
           <div className="grid gap-px bg-border sm:grid-cols-3">
