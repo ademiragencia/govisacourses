@@ -16,6 +16,9 @@ export function Header() {
           <a href="#autoridade" className="transition-colors hover:text-fg">
             A formação
           </a>
+          <a href="#provas" className="transition-colors hover:text-fg">
+            Provas
+          </a>
           <a href="#programa" className="transition-colors hover:text-fg">
             Conteúdo
           </a>

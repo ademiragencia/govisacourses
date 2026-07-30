@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { Header } from "@/components/landing/Header";
 import { Hero } from "@/components/landing/Hero";
 import { Opportunity } from "@/components/landing/Opportunity";
+import { SocialProof } from "@/components/landing/SocialProof";
 import { Program } from "@/components/landing/Program";
 import { Process } from "@/components/landing/Process";
 import { Offer } from "@/components/landing/Offer";
@@ -22,6 +23,7 @@ function LandingPage() {
       <main>
         <Hero />
         <Opportunity />
+        <SocialProof />
         <Program />
         <Process />
         <Offer />
