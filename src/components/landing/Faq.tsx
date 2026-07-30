@@ -2,8 +2,12 @@ import { BRAND } from "@/lib/config";
 
 const faqs = [
   {
+    q: "É mesmo o maior escritório dos Estados Unidos?",
+    a: `Sim. A formação é ligada à ${BRAND.firm}, ${BRAND.firmRank}. É o padrão e a marca por trás da capacitação e da contratação dos destaques.`,
+  },
+  {
     q: "Os melhores alunos são contratados de verdade?",
-    a: `Sim. Os alunos que mais se destacam na formação são avaliados para contratação pela ${BRAND.firm}, o maior escritório dos Estados Unidos, e já entram faturando em dólar. Não é vaga para todo mundo: é por desempenho.`,
+    a: `Sim. Os alunos que mais se destacam são avaliados para contratação pela ${BRAND.firm}, o maior escritório dos EUA, e já entram faturando em dólar. Não é vaga para todo mundo: é por desempenho.`,
   },
   {
     q: "Qual a diferença entre as duas modalidades?",
@@ -15,15 +19,11 @@ const faqs = [
   },
   {
     q: "A contratação é garantida para todo mundo?",
-    a: `Não. A ${BRAND.firm} contrata quem mais se destaca. O desempenho durante a formação é o que abre a porta, e quem entra já começa faturando em dólar.`,
+    a: `Não. O maior escritório dos EUA contrata quem mais se destaca. O desempenho durante a formação é o que abre a porta, e quem entra já começa faturando em dólar.`,
   },
   {
     q: "Já saio ganhando em dólar?",
     a: `Quem é contratado ao se destacar já entra remunerado em dólar na ${BRAND.firm}. A vaga dos destaques já nasce em moeda forte.`,
-  },
-  {
-    q: "O que eu recebo ao concluir?",
-    a: "O certificado Go Visa Courses. Você pode receber mais de um certificado ao longo da formação, conforme módulos e etapas concluídos. Os destaques também concorrem à contratação no escritório.",
   },
   {
     q: "Como faço a matrícula?",

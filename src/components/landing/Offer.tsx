@@ -1,4 +1,4 @@
-import { COURSE_LIVE, COURSE_SELF } from "@/lib/config";
+import { BRAND, COURSE_LIVE, COURSE_SELF } from "@/lib/config";
 import { WhatsAppCta } from "./WhatsAppCta";
 import { Check, Clock, Monitor, Radio } from "lucide-react";
 
@@ -9,11 +9,12 @@ export function Offer() {
         <div className="mx-auto max-w-2xl text-center">
           <p className="eyebrow">Investimento</p>
           <h2 className="display mt-3 text-[clamp(1.85rem,3.5vw,2.75rem)] text-fg">
-            Duas modalidades. Uma formação completa.
+            Duas modalidades. Uma porta para o{" "}
+            <span className="text-gold-line">maior escritório</span>.
           </h2>
           <p className="mx-auto mt-4 max-w-lg text-base text-fg-muted">
-            Compare e escolha. Depois preencha a ficha: o sistema encaminha sua
-            escolha pro WhatsApp da equipe.
+            Formação com a {BRAND.firm}, {BRAND.firmRank}. Compare, escolha e
+            preencha a ficha: o WhatsApp da equipe recebe tudo pronto.
           </p>
         </div>
 
@@ -21,7 +22,6 @@ export function Offer() {
           id="contato"
           className="mx-auto mt-12 grid max-w-5xl gap-5 lg:grid-cols-2"
         >
-          {/* Self-paced */}
           <div className="overflow-hidden rounded-[var(--radius-2xl)] border border-border bg-surface shadow-[var(--shadow-card)]">
             <div className="border-b border-border bg-bg-elevated px-6 py-5 md:px-8">
               <div className="flex items-center gap-2 text-gold-line">
@@ -62,7 +62,6 @@ export function Offer() {
             </div>
           </div>
 
-          {/* Live */}
           <div className="overflow-hidden rounded-[var(--radius-2xl)] border border-brand-red/40 bg-surface shadow-[var(--shadow-soft)]">
             <div className="flag-strip" />
             <div className="border-b border-border bg-bg-elevated px-6 py-5 md:px-8">

@@ -1,16 +1,16 @@
 import { BRAND } from "@/lib/config";
-import { BadgeDollarSign, Briefcase, FileCheck2, Trophy } from "lucide-react";
+import { BadgeDollarSign, Briefcase, Crown, Trophy } from "lucide-react";
 
 const points = [
   {
-    icon: Briefcase,
-    title: `${BRAND.firm}: o maior dos EUA`,
-    body: "A formação é ligada ao maior escritório dos Estados Unidos. Você treina no padrão de quem opera imigração de verdade, não em curso genérico.",
+    icon: Crown,
+    title: "O maior escritório dos Estados Unidos",
+    body: `A ${BRAND.firm} é o maior escritório dos EUA por trás desta formação. Você treina no padrão de quem opera imigração em escala real.`,
   },
   {
     icon: Trophy,
     title: "Os melhores alunos são contratados",
-    body: "Não é promessa vazia. Quem mais se destaca na formação é avaliado para entrar no time da Go Visa Law Firm.",
+    body: `Quem mais se destaca na formação é avaliado para entrar no time da ${BRAND.firm}, o maior escritório dos EUA.`,
   },
   {
     icon: BadgeDollarSign,
@@ -18,9 +18,9 @@ const points = [
     body: "A contratação dos destaques já nasce em moeda forte. Você não espera “anos depois” para pensar em dólar.",
   },
   {
-    icon: FileCheck2,
-    title: "Do formulário ao petition package",
-    body: "Triagem, elegibilidade, montagem de processos e acompanhamento de status com método profissional de escritório.",
+    icon: Briefcase,
+    title: "Padrão de escritório de verdade",
+    body: "Documentação, petition packages, ética e rotina profissional: o que o maior escritório exige no dia a dia.",
   },
 ];
 
@@ -29,13 +29,12 @@ export function Opportunity() {
     <section id="autoridade" className="border-t border-border py-20 md:py-28">
       <div className="container-lp">
         <div className="mx-auto max-w-2xl text-center">
-          <p className="eyebrow">A grande chance</p>
+          <p className="eyebrow">O maior escritório dos EUA</p>
           <h2 className="display mt-3 text-[clamp(1.85rem,3.5vw,2.85rem)] text-fg">
-            Destaque-se na turma.
+            {BRAND.firm}.
             <br />
-            <span className="text-brand-red">
-              Seja contratado pela {BRAND.firm} em dólar.
-            </span>
+            <span className="text-gold-line">O maior escritório</span>
+            <span className="text-fg"> forma. Contrata. Em dólar.</span>
           </h2>
           <p className="mt-4 text-base leading-relaxed text-fg-muted">
             {BRAND.hiringPromise}. A formação prepara você para o padrão do

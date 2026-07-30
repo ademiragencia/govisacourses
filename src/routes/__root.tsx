@@ -17,22 +17,22 @@ export const Route = createRootRoute({
       },
       {
         title:
-          "Formação em Processos Imigratórios | Go Visa Law Firm | Contratação em dólar",
+          "Maior escritório dos EUA | Go Visa Law Firm | Formação + contratação em dólar",
       },
       {
         name: "description",
         content:
-          "Formação profissional 100% online. Os melhores alunos são contratados pela Go Visa Law Firm, o maior escritório dos EUA, e já faturam em dólar. Duas modalidades: ritmo livre (R$ 2.000) ou ao vivo (R$ 3.000).",
+          "Formação com a Go Visa Law Firm, o maior escritório dos Estados Unidos. Os melhores alunos são contratados e já faturam em dólar. 100% online.",
       },
       {
         property: "og:title",
         content:
-          "Destaques contratados pela Go Visa Law Firm já faturando em dólar",
+          "Go Visa Law Firm: o maior escritório dos EUA forma e contrata em dólar",
       },
       {
         property: "og:description",
         content:
-          "Formação em Processos Imigratórios 100% online. Os melhores alunos entram no maior escritório dos EUA.",
+          "Os melhores alunos da formação em Processos Imigratórios são contratados pelo maior escritório dos EUA, já faturando em dólar.",
       },
       { property: "og:type", content: "website" },
     ],

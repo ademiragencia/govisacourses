@@ -7,9 +7,11 @@ export const WHATSAPP_NUMBER = "13213157510";
 export const BRAND = {
   name: "Go Visa Courses",
   firm: "Go Visa Law Firm",
+  /** Frase curta de autoridade */
+  firmRank: "o maior escritório dos Estados Unidos",
   firmFull: "Go Visa Law Firm, o maior escritório dos Estados Unidos",
   hiringPromise:
-    "Os melhores alunos são contratados pela Go Visa Law Firm e já faturam em dólar",
+    "Os melhores alunos são contratados pela Go Visa Law Firm, o maior escritório dos EUA, e já faturam em dólar",
 } as const;
 
 /** Modalidade A: 100% online, no seu ritmo (sem ao vivo) */
@@ -34,12 +36,11 @@ export const COURSE_SELF = {
   entryLabel: "sem entrada",
   totalLabel: "4× R$ 500",
   includes: [
+    "Formação ligada ao maior escritório dos EUA (Go Visa Law Firm)",
     "Portal exclusivo com conteúdo gravado",
     "Suporte para dúvidas pelo portal",
-    "Materiais de apoio",
-    "Estudos de casos reais",
-    "Exercícios práticos",
-    "Certificação ao final da formação",
+    "Materiais de apoio e estudos de casos reais",
+    "Exercícios práticos + certificação",
     "Destaques avaliados para contratação na Go Visa Law Firm (em dólar)",
   ],
 } as const;
@@ -77,12 +78,11 @@ export const COURSE_LIVE = {
   entryLabel: "entrada de R$ 1.000",
   totalLabel: "5× R$ 400",
   includes: [
+    "Formação ligada ao maior escritório dos EUA (Go Visa Law Firm)",
     "Aulas ao vivo com acompanhamento do professor",
     "Portal exclusivo com conteúdo gravado",
-    "Materiais de apoio",
-    "Estudos de casos reais",
-    "Exercícios práticos",
-    "Certificação ao final da formação",
+    "Materiais de apoio e estudos de casos reais",
+    "Exercícios práticos + certificação",
     "Destaques avaliados para contratação na Go Visa Law Firm (em dólar)",
   ],
 } as const;
@@ -162,7 +162,7 @@ export const PROGRAM_MODULES = [
 ] as const;
 
 export const WHATSAPP_MESSAGE =
-  "Olá! Vim pela landing da Formação em Processos Imigratórios e quero garantir minha vaga. Tenho interesse na chance de ser contratado pela Go Visa Law Firm faturando em dólar.";
+  "Olá! Vim pela landing da Formação em Processos Imigratórios com o maior escritório dos EUA (Go Visa Law Firm). Quero garantir minha vaga e a chance de ser contratado faturando em dólar.";
 
 export function getWhatsAppUrl(message = WHATSAPP_MESSAGE): string | null {
   const n = WHATSAPP_NUMBER.replace(/\D/g, "");

@@ -1,9 +1,9 @@
 import { BRAND, COURSE_LIVE, COURSE_SELF } from "@/lib/config";
 import { WhatsAppCta } from "./WhatsAppCta";
 import {
-  Award,
   BadgeDollarSign,
   Building2,
+  Crown,
   MonitorPlay,
   ShieldCheck,
 } from "lucide-react";
@@ -13,49 +13,71 @@ export function Hero() {
     <section id="topo" className="relative overflow-hidden pb-16 pt-10 md:pb-24 md:pt-16">
       <div className="container-lp relative">
         <div className="mx-auto max-w-3xl text-center">
-          <div className="mb-5 inline-flex flex-wrap items-center justify-center gap-2 rounded-full border border-brand-red/30 bg-brand-red-soft px-3.5 py-1.5 text-[11px] font-bold uppercase tracking-[0.14em] text-fg">
-            <span className="relative flex size-1.5">
-              <span className="absolute inline-flex size-full animate-ping rounded-full bg-brand-red opacity-60" />
-              <span className="relative size-1.5 rounded-full bg-brand-red" />
-            </span>
-            Destaques contratados em dólar
+          {/* Authority pill: MAIOR ESCRITÓRIO first */}
+          <div className="mb-5 inline-flex flex-wrap items-center justify-center gap-2 rounded-full border border-gold-line/40 bg-gold-line/10 px-3.5 py-1.5 text-[11px] font-bold uppercase tracking-[0.14em] text-fg">
+            <Crown className="size-3.5 text-gold-line" strokeWidth={2.25} />
+            <span className="text-gold-line">Maior escritório dos EUA</span>
             <span className="text-fg-subtle">|</span>
             <span>{BRAND.firm}</span>
           </div>
 
-          <p className="eyebrow mb-4">Go Visa Courses | Formação profissional</p>
+          <p className="eyebrow mb-4">
+            Go Visa Courses | Formação com o maior escritório
+          </p>
 
-          <h1 className="display text-[clamp(2.15rem,5.4vw,3.7rem)] text-fg">
-            Formação em Processos Imigratórios.
+          <h1 className="display text-[clamp(2.1rem,5.3vw,3.65rem)] text-fg">
+            Formação com o{" "}
+            <span className="text-gold-line">maior escritório</span> dos
+            Estados Unidos.
             <br />
             <span className="text-brand-red">
-              Os melhores alunos são contratados pela Go Visa Law Firm e já
-              faturam em dólar.
+              {BRAND.firm} contrata os melhores alunos, já faturando em dólar.
             </span>
           </h1>
 
           <p className="mx-auto mt-5 max-w-2xl text-base leading-relaxed text-fg-muted md:text-[1.1rem]">
-            Capacitação 100% online com o maior escritório dos Estados Unidos, a{" "}
-            <strong className="font-semibold text-fg">{BRAND.firm}</strong>.
-            Estude, destaque-se na turma e dispute uma vaga já remunerada em
-            dólar. Inglês não é obrigatório.
+            Capacitação 100% online em Processos Imigratórios ligada à{" "}
+            <strong className="font-semibold text-fg">{BRAND.firm}</strong>,{" "}
+            {BRAND.firmRank}. Estude, destaque-se e dispute uma vaga remunerada
+            em dólar. Inglês não é obrigatório.
           </p>
         </div>
 
-        {/* Hiring banner */}
-        <div className="mx-auto mt-8 max-w-3xl overflow-hidden rounded-[var(--radius-xl)] border border-gold-line/35 bg-surface shadow-[var(--shadow-card)]">
+        {/* Big authority strip */}
+        <div className="mx-auto mt-8 max-w-3xl overflow-hidden rounded-[var(--radius-xl)] border border-gold-line/40 bg-surface shadow-[var(--shadow-soft)]">
           <div className="flag-strip" />
-          <div className="flex flex-col items-center gap-3 px-5 py-5 text-center sm:flex-row sm:text-left md:px-7">
-            <span className="flex size-12 shrink-0 items-center justify-center rounded-[var(--radius-md)] bg-brand-red-soft text-brand-red">
-              <Building2 className="size-6" strokeWidth={1.75} />
-            </span>
-            <div className="min-w-0 flex-1">
-              <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-gold-line">
-                Oportunidade real de contratação
+          <div className="grid gap-px bg-border sm:grid-cols-3">
+            <div className="bg-bg-elevated px-5 py-5 text-center">
+              <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-gold-line">
+                Quem forma
               </p>
-              <p className="mt-1 text-sm font-semibold leading-snug text-fg md:text-base">
-                {BRAND.hiringPromise}. Não é estágio sem salário: quem mais se
-                destaca entra no time do maior escritório dos EUA.
+              <p className="mt-1.5 text-sm font-extrabold text-fg">
+                {BRAND.firm}
+              </p>
+              <p className="mt-0.5 text-xs text-fg-muted">
+                O maior escritório dos EUA
+              </p>
+            </div>
+            <div className="bg-bg-elevated px-5 py-5 text-center">
+              <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-gold-line">
+                Quem se destaca
+              </p>
+              <p className="mt-1.5 text-sm font-extrabold text-fg">
+                É contratado
+              </p>
+              <p className="mt-0.5 text-xs text-fg-muted">
+                Entra no time do escritório
+              </p>
+            </div>
+            <div className="bg-bg-elevated px-5 py-5 text-center">
+              <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-gold-line">
+                Remuneração
+              </p>
+              <p className="mt-1.5 text-sm font-extrabold text-fg">
+                Já em dólar
+              </p>
+              <p className="mt-0.5 text-xs text-fg-muted">
+                Moeda forte desde o início
               </p>
             </div>
           </div>
@@ -121,19 +143,19 @@ export function Hero() {
         <div className="mx-auto mt-10 grid max-w-3xl gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {[
             {
+              icon: Crown,
+              t: "Maior escritório",
+              d: "dos Estados Unidos",
+            },
+            {
               icon: Building2,
               t: BRAND.firm,
-              d: "Maior escritório dos EUA",
+              d: "Quem forma e contrata",
             },
             {
               icon: BadgeDollarSign,
               t: "Melhores alunos",
-              d: "Contratados em dólar",
-            },
-            {
-              icon: MonitorPlay,
-              t: "100% online",
-              d: "Estude de qualquer lugar",
+              d: "Já faturam em dólar",
             },
             {
               icon: ShieldCheck,
