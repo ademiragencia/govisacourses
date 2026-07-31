@@ -18,12 +18,10 @@ export function Footer() {
         </div>
         <div className="flex flex-col items-center gap-2 text-center text-xs text-fg-subtle sm:items-end sm:text-right">
           <a
-            href="https://govisacourses.com"
-            target="_blank"
-            rel="noopener noreferrer"
+            href="https://www.govisacourses.com.br"
             className="transition-colors hover:text-fg"
           >
-            govisacourses.com
+            www.govisacourses.com.br
           </a>
           <p>
             © {new Date().getFullYear()} Go Visa Courses. Todos os direitos

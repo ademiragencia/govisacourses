@@ -1,7 +1,7 @@
 import { BRAND, COURSE_LIVE, COURSE_SELF } from "./config";
 
-/** Domínio canônico de produção (Vercel) */
-export const SITE_URL = "https://govisacoursesonline.vercel.app";
+/** Domínio canônico de produção */
+export const SITE_URL = "https://www.govisacourses.com.br";
 
 export const SEO = {
   siteName: "Go Visa Courses",
@@ -10,7 +10,7 @@ export const SEO = {
   url: SITE_URL,
   logo: `${SITE_URL}/assets/logo.png`,
   image: `${SITE_URL}/assets/logo-dark.png`,
-  twitterHandle: "", // preencher se tiver @oficial
+  twitterHandle: "",
   themeColor: "#07111f",
   keywords: [
     "formação processos imigratórios",
@@ -18,6 +18,7 @@ export const SEO = {
     "curso imigração EUA",
     "Go Visa Law Firm",
     "Go Visa Courses",
+    "govisacourses",
     "trabalhar com imigração",
     "contratação em dólar",
     "maior escritório dos EUA",
@@ -59,7 +60,11 @@ export function buildJsonLd() {
     },
     description: SEO.description,
     areaServed: "BR",
-    sameAs: ["https://govisacourses.com"],
+    sameAs: [
+      "https://govisacourses.com",
+      "https://www.govisacourses.com.br",
+      "https://govisacoursesonline.vercel.app",
+    ],
   };
 
   const website = {

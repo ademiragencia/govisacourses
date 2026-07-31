@@ -4,7 +4,6 @@ Allow: /
 Disallow: /api/
 Disallow: /auth/
 
-# Principais bots
 User-agent: Googlebot
 Allow: /
 
@@ -17,5 +16,5 @@ Allow: /
 User-agent: Slurp
 Allow: /
 
-Sitemap: https://govisacoursesonline.vercel.app/sitemap.xml
-Host: https://govisacoursesonline.vercel.app
+Sitemap: https://www.govisacourses.com.br/sitemap.xml
+Host: https://www.govisacourses.com.br
