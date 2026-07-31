@@ -23,8 +23,20 @@ export const Route = createRootRoute({
       { name: "author", content: SEO.siteName },
       { name: "creator", content: SEO.siteName },
       { name: "publisher", content: "Go Visa Law Firm / Go Visa Courses" },
-      { name: "robots", content: "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" },
-      { name: "googlebot", content: "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" },
+      {
+        name: "google-site-verification",
+        content: "zbEuGmVExax0pDMDR8pg24KJuHIwuOD3b2Loq-phFzg",
+      },
+      {
+        name: "robots",
+        content:
+          "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+      },
+      {
+        name: "googlebot",
+        content:
+          "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+      },
       { name: "bingbot", content: "index, follow" },
       { name: "language", content: SEO.language },
       { name: "revisit-after", content: "3 days" },
@@ -45,7 +57,10 @@ export const Route = createRootRoute({
       { property: "og:image", content: SEO.image },
       { property: "og:image:secure_url", content: SEO.image },
       { property: "og:image:type", content: "image/png" },
-      { property: "og:image:alt", content: "Go Visa Courses — Formação em Processos Imigratórios" },
+      {
+        property: "og:image:alt",
+        content: "Go Visa Courses — Formação em Processos Imigratórios",
+      },
 
       // Twitter / X
       { name: "twitter:card", content: "summary_large_image" },
