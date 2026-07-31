@@ -2,46 +2,22 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
         xmlns:xhtml="http://www.w3.org/1999/xhtml"
         xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
+  <!-- Página principal da LP (URL canônica) -->
   <url>
     <loc>https://www.govisacourses.com.br/</loc>
     <lastmod>2026-07-31</lastmod>
-    <changefreq>weekly</changefreq>
+    <changefreq>daily</changefreq>
     <priority>1.0</priority>
     <xhtml:link rel="alternate" hreflang="pt-BR" href="https://www.govisacourses.com.br/" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://www.govisacourses.com.br/" />
     <image:image>
       <image:loc>https://www.govisacourses.com.br/assets/logo-dark.png</image:loc>
       <image:title>Go Visa Courses — Formação em Processos Imigratórios</image:title>
+      <image:caption>Formação com a Go Visa Law Firm, o maior escritório dos EUA</image:caption>
     </image:image>
-  </url>
-  <url>
-    <loc>https://www.govisacourses.com.br/#autoridade</loc>
-    <lastmod>2026-07-31</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://www.govisacourses.com.br/#programa</loc>
-    <lastmod>2026-07-31</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://www.govisacourses.com.br/#investimento</loc>
-    <lastmod>2026-07-31</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.9</priority>
-  </url>
-  <url>
-    <loc>https://www.govisacourses.com.br/#faq</loc>
-    <lastmod>2026-07-31</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://www.govisacourses.com.br/#provas</loc>
-    <lastmod>2026-07-31</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
+    <image:image>
+      <image:loc>https://www.govisacourses.com.br/assets/logo.png</image:loc>
+      <image:title>Logo Go Visa Courses</image:title>
+    </image:image>
   </url>
 </urlset>
