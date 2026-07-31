@@ -11,8 +11,17 @@ import { FinalCta } from "@/components/landing/FinalCta";
 import { Footer } from "@/components/landing/Footer";
 import { StickyCta } from "@/components/landing/StickyCta";
 import { QualifyForm } from "@/components/landing/QualifyForm";
+import { SEO, SITE_URL } from "@/lib/seo";
 
 export const Route = createFileRoute("/")({
+  head: () => ({
+    meta: [
+      { title: SEO.title },
+      { name: "description", content: SEO.description },
+      { property: "og:url", content: SITE_URL },
+    ],
+    links: [{ rel: "canonical", href: SITE_URL }],
+  }),
   component: LandingPage,
 });
 
@@ -20,7 +29,7 @@ function LandingPage() {
   return (
     <div className="relative min-h-dvh">
       <Header />
-      <main>
+      <main id="conteudo">
         <Hero />
         <Opportunity />
         <SocialProof />

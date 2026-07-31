@@ -6,6 +6,8 @@ import {
   Scripts,
 } from "@tanstack/react-router";
 import appCss from "../styles.css?url";
+import { SEO, SITE_URL } from "@/lib/seo";
+import { SeoJsonLd } from "@/components/SeoJsonLd";
 
 export const Route = createRootRoute({
   head: () => ({
@@ -15,30 +17,58 @@ export const Route = createRootRoute({
         name: "viewport",
         content: "width=device-width, initial-scale=1, viewport-fit=cover",
       },
-      {
-        title:
-          "Maior escritório dos EUA | Go Visa Law Firm | Formação + contratação em dólar",
-      },
-      {
-        name: "description",
-        content:
-          "Formação com a Go Visa Law Firm, o maior escritório dos Estados Unidos. Os melhores alunos são contratados e já faturam em dólar. 100% online.",
-      },
-      {
-        property: "og:title",
-        content:
-          "Go Visa Law Firm: o maior escritório dos EUA forma e contrata em dólar",
-      },
-      {
-        property: "og:description",
-        content:
-          "Os melhores alunos da formação em Processos Imigratórios são contratados pelo maior escritório dos EUA, já faturando em dólar.",
-      },
+      { title: SEO.title },
+      { name: "description", content: SEO.description },
+      { name: "keywords", content: SEO.keywords },
+      { name: "author", content: SEO.siteName },
+      { name: "creator", content: SEO.siteName },
+      { name: "publisher", content: "Go Visa Law Firm / Go Visa Courses" },
+      { name: "robots", content: "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" },
+      { name: "googlebot", content: "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" },
+      { name: "bingbot", content: "index, follow" },
+      { name: "language", content: SEO.language },
+      { name: "revisit-after", content: "3 days" },
+      { name: "rating", content: "general" },
+      { name: "theme-color", content: SEO.themeColor },
+      { name: "format-detection", content: "telephone=no" },
+      { name: "geo.region", content: "BR" },
+      { name: "geo.placename", content: "Brasil" },
+
+      // Open Graph
       { property: "og:type", content: "website" },
+      { property: "og:locale", content: SEO.locale },
+      { property: "og:locale:alternate", content: "en_US" },
+      { property: "og:site_name", content: SEO.siteName },
+      { property: "og:title", content: SEO.ogTitle },
+      { property: "og:description", content: SEO.ogDescription },
+      { property: "og:url", content: SITE_URL },
+      { property: "og:image", content: SEO.image },
+      { property: "og:image:secure_url", content: SEO.image },
+      { property: "og:image:type", content: "image/png" },
+      { property: "og:image:alt", content: "Go Visa Courses — Formação em Processos Imigratórios" },
+
+      // Twitter / X
+      { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:title", content: SEO.ogTitle },
+      { name: "twitter:description", content: SEO.ogDescription },
+      { name: "twitter:image", content: SEO.image },
+      { name: "twitter:image:alt", content: "Go Visa Courses" },
+
+      // App / mobile
+      { name: "application-name", content: SEO.siteName },
+      { name: "apple-mobile-web-app-title", content: SEO.siteName },
+      { name: "apple-mobile-web-app-capable", content: "yes" },
+      { name: "mobile-web-app-capable", content: "yes" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
-      { rel: "icon", href: "/assets/logo.png" },
+      { rel: "canonical", href: SITE_URL },
+      { rel: "alternate", hrefLang: "pt-BR", href: SITE_URL },
+      { rel: "alternate", hrefLang: "x-default", href: SITE_URL },
+      { rel: "icon", href: "/assets/logo.png", type: "image/png" },
+      { rel: "apple-touch-icon", href: "/assets/logo.png" },
+      { rel: "manifest", href: "/site.webmanifest" },
+      { rel: "sitemap", href: "/sitemap.xml", type: "application/xml" },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       {
         rel: "preconnect",
@@ -67,6 +97,7 @@ function RootDocument({ children }: Readonly<{ children: ReactNode }>) {
     <html lang="pt-BR">
       <head>
         <HeadContent />
+        <SeoJsonLd />
       </head>
       <body className="page-wash antialiased">
         {children}

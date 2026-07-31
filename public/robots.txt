@@ -1,0 +1,21 @@
+# Go Visa Courses — SEO
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /auth/
+
+# Principais bots
+User-agent: Googlebot
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+User-agent: DuckDuckBot
+Allow: /
+
+User-agent: Slurp
+Allow: /
+
+Sitemap: https://govisacoursesonline.vercel.app/sitemap.xml
+Host: https://govisacoursesonline.vercel.app
