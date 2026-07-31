@@ -1,17 +1,83 @@
-import { Quote } from "lucide-react";
+import { useState } from "react";
+import { Play, Quote } from "lucide-react";
 
-/** Provas em vídeo (YouTube). Adicione novos itens aqui. */
+/** Provas em vídeo (YouTube). Carrega só após o clique — evita bloqueio do navegador. */
 const PROOFS = [
   {
     id: "NJEyGpDxTCQ",
     title: "Depoimento de aluno",
     subtitle: "Formação Go Visa Courses",
-    platform: "youtube" as const,
   },
 ];
 
+function youtubeThumb(id: string) {
+  return `https://i.ytimg.com/vi/${id}/hqdefault.jpg`;
+}
+
 function youtubeEmbed(id: string) {
-  return `https://www.youtube-nocookie.com/embed/${id}?rel=0&modestbranding=1&playsinline=1`;
+  return `https://www.youtube.com/embed/${id}?rel=0&modestbranding=1&playsinline=1&autoplay=1`;
+}
+
+function ProofVideo({
+  id,
+  title,
+  subtitle,
+}: {
+  id: string;
+  title: string;
+  subtitle: string;
+}) {
+  const [playing, setPlaying] = useState(false);
+
+  return (
+    <article className="surface-card w-full max-w-[360px] overflow-hidden rounded-[var(--radius-2xl)]">
+      <div className="relative aspect-[9/16] w-full bg-black">
+        {playing ? (
+          <iframe
+            src={youtubeEmbed(id)}
+            title={title}
+            className="absolute inset-0 h-full w-full border-0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            allowFullScreen
+            referrerPolicy="strict-origin-when-cross-origin"
+          />
+        ) : (
+          <button
+            type="button"
+            onClick={() => setPlaying(true)}
+            className="group absolute inset-0 flex items-center justify-center"
+            aria-label={`Assistir: ${title}`}
+          >
+            <img
+              src={youtubeThumb(id)}
+              alt=""
+              className="absolute inset-0 h-full w-full object-cover opacity-90 transition group-hover:opacity-100"
+              loading="lazy"
+              decoding="async"
+            />
+            <span className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-black/30" />
+            <span className="relative z-10 flex size-16 items-center justify-center rounded-full bg-brand-red text-white shadow-[0_12px_40px_rgba(225,29,46,0.45)] transition group-hover:scale-105">
+              <Play className="ml-0.5 size-7 fill-white" />
+            </span>
+            <span className="absolute bottom-4 left-4 right-4 z-10 text-left text-xs font-semibold text-white/90">
+              Toque para assistir o depoimento
+            </span>
+          </button>
+        )}
+      </div>
+      <div className="border-t border-border p-5">
+        <div className="flex items-start gap-3">
+          <span className="mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-full bg-brand-red-soft text-brand-red">
+            <Quote className="size-4" />
+          </span>
+          <div>
+            <p className="text-sm font-bold text-fg">{title}</p>
+            <p className="mt-0.5 text-xs text-fg-subtle">{subtitle}</p>
+          </div>
+        </div>
+      </div>
+    </article>
+  );
 }
 
 export function SocialProof() {
@@ -31,38 +97,9 @@ export function SocialProof() {
 
         <div className="mx-auto mt-12 flex max-w-4xl flex-col items-center gap-8 lg:flex-row lg:items-stretch lg:justify-center">
           {PROOFS.map((proof) => (
-            <article
-              key={proof.id}
-              className="surface-card w-full max-w-[360px] overflow-hidden rounded-[var(--radius-2xl)]"
-            >
-              <div className="relative aspect-[9/16] w-full bg-black">
-                <iframe
-                  src={youtubeEmbed(proof.id)}
-                  title={proof.title}
-                  className="absolute inset-0 h-full w-full"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                  allowFullScreen
-                  loading="lazy"
-                  referrerPolicy="strict-origin-when-cross-origin"
-                />
-              </div>
-              <div className="border-t border-border p-5">
-                <div className="flex items-start gap-3">
-                  <span className="mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-full bg-brand-red-soft text-brand-red">
-                    <Quote className="size-4" />
-                  </span>
-                  <div>
-                    <p className="text-sm font-bold text-fg">{proof.title}</p>
-                    <p className="mt-0.5 text-xs text-fg-subtle">
-                      {proof.subtitle}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </article>
+            <ProofVideo key={proof.id} {...proof} />
           ))}
 
-          {/* Slot visual para próximos depoimentos */}
           <div className="hidden w-full max-w-[360px] flex-col justify-center rounded-[var(--radius-2xl)] border border-dashed border-border bg-surface/30 p-8 text-center lg:flex">
             <p className="text-sm font-bold text-fg">Próximos depoimentos</p>
             <p className="mt-2 text-xs leading-relaxed text-fg-muted">
