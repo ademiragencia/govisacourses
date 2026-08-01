@@ -8,11 +8,6 @@ const PROOFS = [
     title: "Depoimento de aluno",
     subtitle: "Formação Go Visa Courses",
   },
-  {
-    id: "kcImVB2QElE",
-    title: "Depoimento de aluno",
-    subtitle: "Formação Go Visa Courses",
-  },
 ];
 
 function youtubeThumb(id: string) {
