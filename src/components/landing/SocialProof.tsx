@@ -8,6 +8,11 @@ const PROOFS = [
     title: "Depoimento de aluno",
     subtitle: "Formação Go Visa Courses",
   },
+  {
+    id: "kcImVB2QElE",
+    title: "Depoimento de aluno",
+    subtitle: "Formação Go Visa Courses",
+  },
 ];
 
 function youtubeThumb(id: string) {
@@ -95,18 +100,10 @@ export function SocialProof() {
           </p>
         </div>
 
-        <div className="mx-auto mt-12 flex max-w-4xl flex-col items-center gap-8 lg:flex-row lg:items-stretch lg:justify-center">
+        <div className="mx-auto mt-12 flex max-w-4xl flex-col items-center gap-8 sm:flex-row sm:flex-wrap sm:justify-center lg:items-stretch">
           {PROOFS.map((proof) => (
             <ProofVideo key={proof.id} {...proof} />
           ))}
-
-          <div className="hidden w-full max-w-[360px] flex-col justify-center rounded-[var(--radius-2xl)] border border-dashed border-border bg-surface/30 p-8 text-center lg:flex">
-            <p className="text-sm font-bold text-fg">Próximos depoimentos</p>
-            <p className="mt-2 text-xs leading-relaxed text-fg-muted">
-              Conforme novos vídeos chegarem, esta área cresce com mais provas
-              reais da turma.
-            </p>
-          </div>
         </div>
       </div>
     </section>
