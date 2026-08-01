@@ -19,8 +19,10 @@ import {
   emptyAnswers,
   evaluateLead,
   formatPhoneInput,
+  isEmailValid,
   isPhoneValid,
   openWhatsAppWithFicha,
+  submitLeadEmail,
   type QualifyAnswers,
   type QualifyMeta,
   type QualifyResult,
@@ -127,9 +129,7 @@ const inputClass =
   "w-full rounded-[var(--radius-md)] border border-border bg-bg-elevated px-4 py-3 text-sm text-fg outline-none transition-colors placeholder:text-fg-subtle focus:border-brand-red/50 focus:ring-2 focus:ring-brand-red/20";
 
 export type QualifyWizardProps = {
-  /** Meta da ficha (origem + UTMs do anúncio) */
   meta?: QualifyMeta;
-  /** Atalho se só quiser origem */
   source?: string;
   onSent?: () => void;
   idPrefix?: string;
@@ -153,6 +153,8 @@ export function QualifyWizard({
   const [result, setResult] = useState<QualifyResult | null>(null);
   const [sending, setSending] = useState(false);
   const [sentFallback, setSentFallback] = useState(false);
+  const [emailSent, setEmailSent] = useState(false);
+  const [emailError, setEmailError] = useState<string | null>(null);
 
   const progress = useMemo(() => ((step + 1) / STEPS.length) * 100, [step]);
 
@@ -168,6 +170,7 @@ export function QualifyWizard({
 
     if (i === 0) {
       if (answers.name.trim().length < 2) e.name = "Informe seu nome completo";
+      if (!isEmailValid(answers.email)) e.email = "Informe um e-mail válido";
       if (!isPhoneValid(answers.phone))
         e.phone = "WhatsApp válido com DDD (mín. 10 dígitos)";
       if (answers.city.trim().length < 2) e.city = "Informe sua cidade";
@@ -192,12 +195,22 @@ export function QualifyWizard({
     return Object.keys(e).length === 0;
   }
 
-  function goNext() {
+  async function goNext() {
     if (!validateStep(step)) return;
     if (step === 2) {
       const r = evaluateLead(answers);
       setResult(r);
       setStep(3);
+      // Envia o lead por e-mail assim que a ficha é concluída
+      setSending(true);
+      setEmailError(null);
+      try {
+        const mail = await submitLeadEmail(answers, r, fichaMeta);
+        if (mail.ok) setEmailSent(true);
+        else setEmailError(mail.error || "Não foi possível enviar o e-mail");
+      } finally {
+        setSending(false);
+      }
       return;
     }
     setStep((s) => Math.min(s + 1, STEPS.length - 1));
@@ -210,7 +223,14 @@ export function QualifyWizard({
   async function sendToWhatsApp() {
     if (!result) return;
     setSending(true);
+    setEmailError(null);
     try {
+      // Garante o e-mail se ainda não foi
+      if (!emailSent) {
+        const mail = await submitLeadEmail(answers, result, fichaMeta);
+        if (mail.ok) setEmailSent(true);
+        else setEmailError(mail.error || "Falha ao enviar e-mail");
+      }
       const { ok } = openWhatsAppWithFicha(answers, result, fichaMeta);
       if (!ok) {
         setSentFallback(true);
@@ -281,6 +301,22 @@ export function QualifyWizard({
                 placeholder="Como devemos te chamar"
                 autoComplete="name"
                 autoFocus
+              />
+            </Field>
+            <Field
+              label="E-mail"
+              error={errors.email}
+              htmlFor={`${idPrefix}-email`}
+            >
+              <input
+                id={`${idPrefix}-email`}
+                type="email"
+                className={inputClass}
+                value={answers.email}
+                onChange={(e) => set("email")(e.target.value)}
+                placeholder="seu@email.com"
+                autoComplete="email"
+                inputMode="email"
               />
             </Field>
             <Field
@@ -393,8 +429,8 @@ export function QualifyWizard({
             </Field>
             <div className="flex items-start gap-3 rounded-[var(--radius-md)] border border-border bg-bg/60 px-4 py-3 text-xs leading-relaxed text-fg-muted">
               <ShieldCheck className="mt-0.5 size-4 shrink-0 text-wa" />
-              Suas respostas montam a ficha com a modalidade escolhida. Em
-              seguida você é encaminhado ao WhatsApp da equipe.
+              Suas respostas montam a ficha e chegam por e-mail à equipe. Em
+              seguida você pode abrir o WhatsApp com tudo pronto.
             </div>
           </div>
         )}
@@ -442,6 +478,7 @@ export function QualifyWizard({
               <dl className="mt-3 space-y-2 text-sm">
                 {[
                   ["Nome", answers.name],
+                  ["E-mail", answers.email],
                   ["WhatsApp", answers.phone],
                   ["Cidade", answers.city],
                   [
@@ -460,6 +497,19 @@ export function QualifyWizard({
                 ))}
               </dl>
             </div>
+
+            {emailSent && (
+              <div className="rounded-[var(--radius-md)] border border-wa/30 bg-wa/10 px-4 py-3 text-sm text-fg">
+                Lead enviado por e-mail para a equipe. Agora abra o WhatsApp
+                para falar com o time.
+              </div>
+            )}
+            {emailError && (
+              <div className="rounded-[var(--radius-md)] border border-gold-line/40 bg-gold-line/10 px-4 py-3 text-sm text-fg">
+                Não foi possível confirmar o e-mail agora. Você ainda pode
+                seguir no WhatsApp.
+              </div>
+            )}
 
             {sentFallback && (
               <div className="rounded-[var(--radius-md)] border border-gold-line/40 bg-gold-line/10 px-4 py-3 text-sm text-fg">
@@ -493,16 +543,23 @@ export function QualifyWizard({
           {step < 3 ? (
             <button
               type="button"
-              onClick={goNext}
-              className="inline-flex h-12 flex-1 items-center justify-center gap-2 rounded-[var(--radius-md)] bg-brand-red px-5 text-sm font-bold uppercase tracking-[0.04em] text-white shadow-[0_10px_28px_rgba(225,29,46,0.3)] transition-all hover:brightness-110 active:scale-[0.98]"
+              onClick={() => void goNext()}
+              disabled={sending}
+              className="inline-flex h-12 flex-1 items-center justify-center gap-2 rounded-[var(--radius-md)] bg-brand-red px-5 text-sm font-bold uppercase tracking-[0.04em] text-white shadow-[0_10px_28px_rgba(225,29,46,0.3)] transition-all hover:brightness-110 active:scale-[0.98] disabled:opacity-70"
             >
-              Continuar
-              <ArrowRight className="size-4" />
+              {sending ? (
+                <Loader2 className="size-4 animate-spin" />
+              ) : (
+                <>
+                  Continuar
+                  <ArrowRight className="size-4" />
+                </>
+              )}
             </button>
           ) : (
             <button
               type="button"
-              onClick={sendToWhatsApp}
+              onClick={() => void sendToWhatsApp()}
               disabled={sending}
               className="inline-flex h-12 flex-1 items-center justify-center gap-2 rounded-[var(--radius-md)] bg-wa px-5 text-sm font-bold uppercase tracking-[0.04em] text-white shadow-[0_12px_32px_rgba(34,163,90,0.35)] transition-all hover:bg-wa-hover active:scale-[0.98] disabled:opacity-70"
             >

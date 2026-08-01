@@ -4,6 +4,13 @@
  */
 export const WHATSAPP_NUMBER = "13213157510";
 
+/**
+ * Web3Forms — leads por e-mail
+ * https://web3forms.com (access_key do formulário)
+ */
+export const WEB3FORMS_ACCESS_KEY = "e3706ec1-f2ac-4cee-9f78-4267e9b60cbc";
+export const WEB3FORMS_ENDPOINT = "https://api.web3forms.com/submit";
+
 export const BRAND = {
   name: "Go Visa Courses",
   firm: "Go Visa Law Firm",

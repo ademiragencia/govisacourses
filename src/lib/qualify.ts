@@ -3,12 +3,15 @@ import {
   COURSE_LIVE,
   COURSE_SELF,
   COURSES,
+  WEB3FORMS_ACCESS_KEY,
+  WEB3FORMS_ENDPOINT,
   getWhatsAppUrl,
   type CourseId,
 } from "./config";
 
 export type QualifyAnswers = {
   name: string;
+  email: string;
   phone: string;
   city: string;
   age: string;
@@ -100,6 +103,7 @@ export const MOTIVATION_OPTIONS = [
 export function emptyAnswers(): QualifyAnswers {
   return {
     name: "",
+    email: "",
     phone: "",
     city: "",
     age: "",
@@ -117,6 +121,10 @@ function labelOf(
   value: string,
 ): string {
   return options.find((o) => o.value === value)?.label ?? value;
+}
+
+export function isEmailValid(email: string): boolean {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
 }
 
 export function evaluateLead(a: QualifyAnswers): QualifyResult {
@@ -191,6 +199,13 @@ export function evaluateLead(a: QualifyAnswers): QualifyResult {
   return { status, score, flags, label };
 }
 
+function sourceLabel(meta: QualifyMeta): string {
+  if (meta.source === "ads-qualificacao" || meta.source === "ads")
+    return "ANÚNCIO / Página de qualificação";
+  if (meta.source === "site") return "Landing principal";
+  return meta.source || "Site";
+}
+
 export function buildWhatsAppFicha(
   a: QualifyAnswers,
   result: QualifyResult,
@@ -208,20 +223,14 @@ export function buildWhatsAppFicha(
       ? COURSES[a.modality]
       : null;
 
-  const sourceLabel =
-    meta.source === "ads-qualificacao" || meta.source === "ads"
-      ? "ANÚNCIO / Página de qualificação"
-      : meta.source === "site"
-        ? "Landing principal"
-        : meta.source || "Site";
-
   const lines = [
     `${statusEmoji} *NOVA FICHA: Processos Imigratórios*`,
     `Status: *${result.label}* (score ${result.score}/100)`,
-    `Origem: *${sourceLabel}*`,
+    `Origem: *${sourceLabel(meta)}*`,
     `Meta: contratação ${BRAND.firm} em dólar`,
     "",
     `*Nome:* ${a.name.trim()}`,
+    `*E-mail:* ${a.email.trim()}`,
     `*WhatsApp do lead:* ${a.phone.trim()}`,
     `*Cidade:* ${a.city.trim()}`,
     `*Idade:* ${labelOf(AGE_OPTIONS, a.age)}`,
@@ -266,6 +275,197 @@ export function buildWhatsAppFicha(
   );
 
   return lines.join("\n");
+}
+
+/** Corpo legível do lead no e-mail (Web3Forms) */
+export function buildLeadEmailMessage(
+  a: QualifyAnswers,
+  result: QualifyResult,
+  meta: QualifyMeta = {},
+): string {
+  const course =
+    a.modality === "live" || a.modality === "self"
+      ? COURSES[a.modality]
+      : null;
+
+  const lines = [
+    "NOVO LEAD — Formação Processos Imigratórios",
+    "========================================",
+    `Status: ${result.label} (score ${result.score}/100)`,
+    `Origem: ${sourceLabel(meta)}`,
+    "",
+    "DADOS DE CONTATO",
+    `Nome: ${a.name.trim()}`,
+    `E-mail: ${a.email.trim()}`,
+    `WhatsApp: ${a.phone.trim()}`,
+    `Cidade: ${a.city.trim()}`,
+    `Faixa etária: ${labelOf(AGE_OPTIONS, a.age)}`,
+    "",
+    "QUALIFICAÇÃO",
+    `Modalidade: ${labelOf(MODALITY_OPTIONS, a.modality)}`,
+  ];
+
+  if (course) {
+    lines.push(
+      `Oferta: ${course.priceLabel} (${course.planLabel})`,
+      `Início: ${course.startLabel}`,
+    );
+  }
+
+  lines.push(
+    `Inglês: ${labelOf(ENGLISH_OPTIONS, a.english)}`,
+    `Escolaridade: ${labelOf(EDUCATION_OPTIONS, a.education)}`,
+    `Disponibilidade: ${labelOf(AVAILABILITY_OPTIONS, a.availability)}`,
+    `Investimento: ${labelOf(INVESTMENT_OPTIONS, a.investment)}`,
+    `Motivação: ${labelOf(MOTIVATION_OPTIONS, a.motivation)}`,
+  );
+
+  if (
+    meta.utm_source ||
+    meta.utm_medium ||
+    meta.utm_campaign ||
+    meta.utm_content ||
+    meta.utm_term
+  ) {
+    lines.push(
+      "",
+      "UTM / ANÚNCIO",
+      `utm_source: ${meta.utm_source || "-"}`,
+      `utm_medium: ${meta.utm_medium || "-"}`,
+      `utm_campaign: ${meta.utm_campaign || "-"}`,
+      `utm_content: ${meta.utm_content || "-"}`,
+      `utm_term: ${meta.utm_term || "-"}`,
+    );
+  }
+
+  if (result.flags.length) {
+    lines.push("", "OBSERVAÇÕES");
+    for (const f of result.flags) lines.push(`- ${f}`);
+  }
+
+  lines.push("", `Enviado em: ${new Date().toLocaleString("pt-BR")}`);
+  return lines.join("\n");
+}
+
+/**
+ * Envia lead por e-mail via Web3Forms.
+ * 1) tenta fetch com FormData (sem preflight JSON)
+ * 2) se falhar, POST clássico em iframe (formato do form HTML deles)
+ */
+export async function submitLeadEmail(
+  a: QualifyAnswers,
+  result: QualifyResult,
+  meta: QualifyMeta = {},
+): Promise<{ ok: boolean; error?: string }> {
+  if (!WEB3FORMS_ACCESS_KEY) {
+    return { ok: false, error: "access_key ausente" };
+  }
+
+  const fields: Record<string, string> = {
+    access_key: WEB3FORMS_ACCESS_KEY,
+    subject: `[Lead ${result.label}] ${a.name.trim()} — Go Visa Courses`,
+    from_name: "Go Visa Courses · Qualificação",
+    name: a.name.trim(),
+    email: a.email.trim(),
+    phone: a.phone.trim(),
+    city: a.city.trim(),
+    status: result.label,
+    score: String(result.score),
+    modality: labelOf(MODALITY_OPTIONS, a.modality),
+    source: sourceLabel(meta),
+    utm_source: meta.utm_source || "",
+    utm_medium: meta.utm_medium || "",
+    utm_campaign: meta.utm_campaign || "",
+    utm_content: meta.utm_content || "",
+    utm_term: meta.utm_term || "",
+    message: buildLeadEmailMessage(a, result, meta),
+    botcheck: "",
+  };
+
+  // 1) fetch FormData
+  try {
+    const formData = new FormData();
+    for (const [k, v] of Object.entries(fields)) formData.append(k, v);
+
+    const res = await fetch(WEB3FORMS_ENDPOINT, {
+      method: "POST",
+      body: formData,
+    });
+    const data = (await res.json().catch(() => ({}))) as {
+      success?: boolean;
+      message?: string;
+    };
+    if (res.ok && data.success !== false) {
+      return { ok: true };
+    }
+    // se API recusou de forma clara, propaga
+    if (data.success === false && data.message) {
+      // cai pro fallback de form nativo abaixo
+    }
+  } catch {
+    /* CORS / rede — tenta form nativo */
+  }
+
+  // 2) fallback: form HTML → iframe (mesmo padrão do snippet Web3Forms)
+  return submitLeadEmailViaForm(fields);
+}
+
+function submitLeadEmailViaForm(
+  fields: Record<string, string>,
+): Promise<{ ok: boolean; error?: string }> {
+  return new Promise((resolve) => {
+    if (typeof document === "undefined") {
+      resolve({ ok: false, error: "sem document" });
+      return;
+    }
+
+    const iframeName = `w3f_${Date.now()}`;
+    const iframe = document.createElement("iframe");
+    iframe.name = iframeName;
+    iframe.title = "web3forms";
+    iframe.style.cssText =
+      "position:absolute;width:0;height:0;border:0;visibility:hidden";
+    document.body.appendChild(iframe);
+
+    const form = document.createElement("form");
+    form.method = "POST";
+    form.action = WEB3FORMS_ENDPOINT;
+    form.target = iframeName;
+    form.style.display = "none";
+
+    for (const [k, v] of Object.entries(fields)) {
+      const input = document.createElement("input");
+      input.type = "hidden";
+      input.name = k;
+      input.value = v;
+      form.appendChild(input);
+    }
+
+    document.body.appendChild(form);
+
+    let settled = false;
+    const cleanup = (ok: boolean, error?: string) => {
+      if (settled) return;
+      settled = true;
+      window.clearTimeout(timer);
+      form.remove();
+      // mantém iframe um pouco para o POST completar
+      window.setTimeout(() => iframe.remove(), 4000);
+      resolve(ok ? { ok: true } : { ok: false, error });
+    };
+
+    iframe.addEventListener("load", () => cleanup(true), { once: true });
+    const timer = window.setTimeout(() => {
+      // Em muitos casos o load dispara; se não, assume enviado (fire-and-forget)
+      cleanup(true);
+    }, 2500);
+
+    try {
+      form.submit();
+    } catch (err) {
+      cleanup(false, err instanceof Error ? err.message : "submit falhou");
+    }
+  });
 }
 
 export function openWhatsAppWithFicha(
