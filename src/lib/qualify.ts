@@ -29,6 +29,15 @@ export type QualifyResult = {
   label: string;
 };
 
+export type QualifyMeta = {
+  source?: string;
+  utm_source?: string;
+  utm_medium?: string;
+  utm_campaign?: string;
+  utm_content?: string;
+  utm_term?: string;
+};
+
 export const AGE_OPTIONS = [
   { value: "18-24", label: "18 a 24 anos" },
   { value: "25-34", label: "25 a 34 anos" },
@@ -185,6 +194,7 @@ export function evaluateLead(a: QualifyAnswers): QualifyResult {
 export function buildWhatsAppFicha(
   a: QualifyAnswers,
   result: QualifyResult,
+  meta: QualifyMeta = {},
 ): string {
   const statusEmoji =
     result.status === "qualified"
@@ -198,9 +208,17 @@ export function buildWhatsAppFicha(
       ? COURSES[a.modality]
       : null;
 
+  const sourceLabel =
+    meta.source === "ads-qualificacao" || meta.source === "ads"
+      ? "ANÚNCIO / Página de qualificação"
+      : meta.source === "site"
+        ? "Landing principal"
+        : meta.source || "Site";
+
   const lines = [
     `${statusEmoji} *NOVA FICHA: Processos Imigratórios*`,
     `Status: *${result.label}* (score ${result.score}/100)`,
+    `Origem: *${sourceLabel}*`,
     `Meta: contratação ${BRAND.firm} em dólar`,
     "",
     `*Nome:* ${a.name.trim()}`,
@@ -225,6 +243,18 @@ export function buildWhatsAppFicha(
     `*Motivação:* ${labelOf(MOTIVATION_OPTIONS, a.motivation)}`,
   );
 
+  const utmBits = [
+    meta.utm_source && `utm_source=${meta.utm_source}`,
+    meta.utm_medium && `utm_medium=${meta.utm_medium}`,
+    meta.utm_campaign && `utm_campaign=${meta.utm_campaign}`,
+    meta.utm_content && `utm_content=${meta.utm_content}`,
+    meta.utm_term && `utm_term=${meta.utm_term}`,
+  ].filter(Boolean);
+
+  if (utmBits.length) {
+    lines.push("", `*UTM / Anúncio:* ${utmBits.join(" | ")}`);
+  }
+
   if (result.flags.length) {
     lines.push("", "*Observações:*");
     for (const f of result.flags) lines.push(`• ${f}`);
@@ -232,7 +262,7 @@ export function buildWhatsAppFicha(
 
   lines.push(
     "",
-    `Vim pela landing. Quero a formação e a chance de ser contratado pela ${BRAND.firm} faturando em dólar.`,
+    `Vim pela página de qualificação. Quero a formação e a chance de ser contratado pela ${BRAND.firm} faturando em dólar.`,
   );
 
   return lines.join("\n");
@@ -241,8 +271,9 @@ export function buildWhatsAppFicha(
 export function openWhatsAppWithFicha(
   a: QualifyAnswers,
   result: QualifyResult,
+  meta: QualifyMeta = {},
 ): { ok: boolean; url: string | null } {
-  const message = buildWhatsAppFicha(a, result);
+  const message = buildWhatsAppFicha(a, result, meta);
   const url = getWhatsAppUrl(message);
   if (url) {
     window.open(url, "_blank", "noopener,noreferrer");
@@ -264,4 +295,18 @@ export function formatPhoneInput(raw: string): string {
 export function isPhoneValid(phone: string): boolean {
   const d = phone.replace(/\D/g, "");
   return d.length >= 10 && d.length <= 13;
+}
+
+/** Lê UTMs da URL (para anúncios Meta/Google) */
+export function readUtmFromSearch(search: string): QualifyMeta {
+  const params = new URLSearchParams(
+    search.startsWith("?") ? search.slice(1) : search,
+  );
+  return {
+    utm_source: params.get("utm_source") || undefined,
+    utm_medium: params.get("utm_medium") || undefined,
+    utm_campaign: params.get("utm_campaign") || undefined,
+    utm_content: params.get("utm_content") || undefined,
+    utm_term: params.get("utm_term") || undefined,
+  };
 }
