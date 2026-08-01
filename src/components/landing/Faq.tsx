@@ -11,7 +11,7 @@ const faqs = [
   },
   {
     q: "Qual a diferença entre as duas modalidades?",
-    a: "A modalidade no seu ritmo é 100% online, sem aulas ao vivo: 84h no portal, início a qualquer momento, R$ 2.000 em 4× R$ 500 sem entrada. A modalidade com aulas ao vivo começa em 30 de agosto de 2026, tem 116h (32h ao vivo + 84h gravadas), R$ 3.000 com entrada de R$ 1.000 + 5× R$ 400.",
+    a: "A modalidade no seu ritmo é 100% online, sem aulas ao vivo: 84h no portal, início a qualquer momento, 5× R$ 500 ou R$ 2.000 à vista. A modalidade com aulas ao vivo começa em 30 de agosto de 2026, tem 116h (32h ao vivo + 84h gravadas), R$ 3.000 com entrada de R$ 1.000 + 5× R$ 400.",
   },
   {
     q: "Preciso falar inglês?",

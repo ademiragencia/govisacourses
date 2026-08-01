@@ -36,12 +36,14 @@ export const COURSE_SELF = {
   hoursDetail: "Aulas gravadas, materiais e atividades",
   price: 2000,
   priceLabel: "R$ 2.000,00",
-  planLabel: "4× R$ 500, sem entrada",
-  installments: 4,
+  /** Preço à vista */
+  cashLabel: "R$ 2.000,00 à vista",
+  planLabel: "5× R$ 500 ou R$ 2.000 à vista",
+  installments: 5,
   installmentValue: 500,
   entryFee: 0,
   entryLabel: "sem entrada",
-  totalLabel: "4× R$ 500",
+  totalLabel: "5× R$ 500",
   includes: [
     "Formação ligada ao maior escritório dos EUA (Go Visa Law Firm)",
     "Portal exclusivo com conteúdo gravado",

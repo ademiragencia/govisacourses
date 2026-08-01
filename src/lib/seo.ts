@@ -33,7 +33,7 @@ export const SEO = {
     "Formação em Processos Imigratórios Online | Go Visa Law Firm | Contratação em Dólar",
   titleTemplate: "%s | Go Visa Courses",
   description:
-    "Formação profissional 100% online em Processos Imigratórios com a Go Visa Law Firm, o maior escritório dos EUA. Os melhores alunos são contratados e já faturam em dólar. Duas modalidades: no seu ritmo (R$ 2.000) ou com aulas ao vivo (R$ 3.000).",
+    "Formação profissional 100% online em Processos Imigratórios com a Go Visa Law Firm, o maior escritório dos EUA. Os melhores alunos são contratados e já faturam em dólar. Duas modalidades: no seu ritmo (5× R$ 500 ou R$ 2.000 à vista) ou com aulas ao vivo (R$ 3.000).",
   ogTitle:
     "Go Visa Law Firm: o maior escritório dos EUA forma e contrata em dólar",
   ogDescription:
@@ -108,6 +108,7 @@ export function buildJsonLd() {
       priceCurrency: "BRL",
       availability: "https://schema.org/InStock",
       category: "Online",
+      description: COURSE_SELF.planLabel,
     },
     hasCourseInstance: {
       "@type": "CourseInstance",
@@ -175,7 +176,7 @@ export function buildJsonLd() {
         name: "Qual a diferença entre as duas modalidades?",
         acceptedAnswer: {
           "@type": "Answer",
-          text: "No seu ritmo: 84h, R$ 2.000 em 4× R$ 500. Ao vivo: 116h a partir de 30/08/2026, R$ 3.000 com entrada de R$ 1.000 + 5× R$ 400.",
+          text: "No seu ritmo: 84h, 5× R$ 500 ou R$ 2.000 à vista. Ao vivo: 116h a partir de 30/08/2026, R$ 3.000 com entrada de R$ 1.000 + 5× R$ 400.",
         },
       },
       {

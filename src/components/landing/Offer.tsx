@@ -34,9 +34,15 @@ export function Offer() {
                 {COURSE_SELF.shortName}
               </h3>
               <p className="mt-3 font-display text-4xl font-extrabold text-fg">
-                {COURSE_SELF.priceLabel}
+                <span className="text-wa">{COURSE_SELF.installments}×</span> R$
+                {COURSE_SELF.installmentValue}
               </p>
-              <p className="mt-1 text-sm text-fg-muted">{COURSE_SELF.planLabel}</p>
+              <p className="mt-1 text-sm text-fg-muted">
+                ou {COURSE_SELF.cashLabel}
+              </p>
+              <p className="mt-2 text-xs font-semibold text-fg-subtle">
+                {COURSE_SELF.planLabel}
+              </p>
             </div>
             <div className="space-y-4 px-6 py-6 md:px-8">
               <div className="flex items-start gap-2 text-sm text-fg-muted">

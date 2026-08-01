@@ -99,7 +99,7 @@ export function Hero() {
               {COURSE_SELF.installmentValue}
             </p>
             <p className="mt-1 text-sm text-fg-muted">
-              {COURSE_SELF.priceLabel}, {COURSE_SELF.entryLabel}
+              ou {COURSE_SELF.cashLabel}
             </p>
             <p className="mt-3 text-xs font-semibold text-fg-subtle">
               {COURSE_SELF.hoursLabel}, {COURSE_SELF.hoursDetail}
