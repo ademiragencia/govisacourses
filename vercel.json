@@ -1,0 +1,19 @@
+{
+  "redirects": [
+    {
+      "source": "/selecao",
+      "destination": "https://govisaselecao.vercel.app/",
+      "permanent": false
+    },
+    {
+      "source": "/selecao/",
+      "destination": "https://govisaselecao.vercel.app/",
+      "permanent": false
+    },
+    {
+      "source": "/selecao/:path*",
+      "destination": "https://govisaselecao.vercel.app/:path*",
+      "permanent": false
+    }
+  ]
+}
