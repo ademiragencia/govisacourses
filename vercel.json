@@ -2,17 +2,17 @@
   "redirects": [
     {
       "source": "/selecao",
-      "destination": "https://govisaselecao.vercel.app/",
+      "destination": "https://selecao.govisacourses.com.br/",
       "permanent": false
     },
     {
       "source": "/selecao/",
-      "destination": "https://govisaselecao.vercel.app/",
+      "destination": "https://selecao.govisacourses.com.br/",
       "permanent": false
     },
     {
       "source": "/selecao/:path*",
-      "destination": "https://govisaselecao.vercel.app/:path*",
+      "destination": "https://selecao.govisacourses.com.br/:path*",
       "permanent": false
     }
   ]
