@@ -1,14 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { MP_ACCESS_TOKEN } from "@/lib/mp-credentials";
 
 export const Route = createFileRoute("/api/mp/webhook")({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        const token = (
-          process.env.MERCADOPAGO_ACCESS_TOKEN ||
-          process.env.MP_ACCESS_TOKEN ||
-          ""
-        ).trim();
+        const token = MP_ACCESS_TOKEN.trim();
         const body = (await request.json().catch(() => ({}))) as {
           type?: string;
           action?: string;

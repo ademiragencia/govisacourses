@@ -1,12 +1,9 @@
 import { createServerFn } from "@tanstack/react-start";
 import { SITE_URL } from "./seo";
+import { MP_ACCESS_TOKEN } from "./mp-credentials";
 
 function mpToken() {
-  return (
-    process.env.MERCADOPAGO_ACCESS_TOKEN ||
-    process.env.MP_ACCESS_TOKEN ||
-    ""
-  ).trim();
+  return MP_ACCESS_TOKEN.trim();
 }
 
 function originFrom(raw?: string) {
