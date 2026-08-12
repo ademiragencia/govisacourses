@@ -10,11 +10,17 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as MatriculaRouteImport } from './routes/matricula'
 import { Route as QualificacaoRouteImport } from './routes/qualificacao'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MatriculaRoute = MatriculaRouteImport.update({
+  id: '/matricula',
+  path: '/matricula',
   getParentRoute: () => rootRouteImport,
 } as any)
 const QualificacaoRoute = QualificacaoRouteImport.update({
@@ -25,27 +31,31 @@ const QualificacaoRoute = QualificacaoRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/matricula': typeof MatriculaRoute
   '/qualificacao': typeof QualificacaoRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/matricula': typeof MatriculaRoute
   '/qualificacao': typeof QualificacaoRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/matricula': typeof MatriculaRoute
   '/qualificacao': typeof QualificacaoRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/qualificacao'
+  fullPaths: '/' | '/matricula' | '/qualificacao'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/qualificacao'
-  id: '__root__' | '/' | '/qualificacao'
+  to: '/' | '/matricula' | '/qualificacao'
+  id: '__root__' | '/' | '/matricula' | '/qualificacao'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  MatriculaRoute: typeof MatriculaRoute
   QualificacaoRoute: typeof QualificacaoRoute
 }
 
@@ -56,6 +66,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/matricula': {
+      id: '/matricula'
+      path: '/matricula'
+      fullPath: '/matricula'
+      preLoaderRoute: typeof MatriculaRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/qualificacao': {
@@ -70,6 +87,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  MatriculaRoute: MatriculaRoute,
   QualificacaoRoute: QualificacaoRoute,
 }
 export const routeTree = rootRouteImport

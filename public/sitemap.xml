@@ -4,7 +4,7 @@
         xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
   <url>
     <loc>https://www.govisacourses.com.br/</loc>
-    <lastmod>2026-08-01</lastmod>
+    <lastmod>2026-08-12</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
     <xhtml:link rel="alternate" hreflang="pt-BR" href="https://www.govisacourses.com.br/" />
@@ -12,14 +12,18 @@
     <image:image>
       <image:loc>https://www.govisacourses.com.br/assets/logo-dark.png</image:loc>
       <image:title>Go Visa Courses — Formação em Processos Imigratórios</image:title>
-      <image:caption>Formação com a Go Visa Law Firm, o maior escritório dos EUA</image:caption>
     </image:image>
   </url>
   <url>
-    <loc>https://www.govisacourses.com.br/qualificacao</loc>
-    <lastmod>2026-08-01</lastmod>
+    <loc>https://www.govisacourses.com.br/matricula</loc>
+    <lastmod>2026-08-12</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.95</priority>
-    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://www.govisacourses.com.br/qualificacao" />
+  </url>
+  <url>
+    <loc>https://www.govisacourses.com.br/qualificacao</loc>
+    <lastmod>2026-08-12</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
   </url>
 </urlset>
