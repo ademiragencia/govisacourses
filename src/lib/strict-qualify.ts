@@ -159,7 +159,23 @@ function sourceLabel(meta: StrictMeta): string {
 }
 
 export function buildPaidWhatsApp(
-  a: StrictAnswers,
+  a: {
+    name: string;
+    email: string;
+    phone: string;
+    city: string;
+    modality: string;
+    cpf?: string;
+    rg?: string;
+    birthDate?: string;
+    street?: string;
+    number?: string;
+    complement?: string;
+    neighborhood?: string;
+    state?: string;
+    cep?: string;
+    planLabel?: string;
+  },
   payment: { paymentId: string; amount: number; status: string },
   meta: StrictMeta = {},
 ): string {
@@ -167,29 +183,52 @@ export function buildPaidWhatsApp(
     a.modality === "live" || a.modality === "self"
       ? COURSES[a.modality]
       : null;
+  const address = [a.street, a.number, a.complement, a.neighborhood, a.city, a.state, a.cep]
+    .filter(Boolean)
+    .join(", ");
 
   return [
-    `✅ *PAGAMENTO APROVADO — Mercado Pago*`,
+    `✅ *PAGAMENTO APROVADO — Contrato / Matrícula*`,
     `Status MP: *${payment.status}*`,
     `ID do pagamento: ${payment.paymentId}`,
     `Valor: R$ ${payment.amount.toFixed(2).replace(".", ",")}`,
+    `Plano: ${a.planLabel || "-"}`,
     `Origem: *${sourceLabel(meta)}*`,
     "",
     `*Nome:* ${a.name.trim()}`,
+    `*CPF:* ${a.cpf || "-"}`,
+    `*RG:* ${a.rg || "-"}`,
+    `*Nascimento:* ${a.birthDate || "-"}`,
     `*E-mail:* ${a.email.trim()}`,
-    `*WhatsApp do aluno:* ${a.phone.trim()}`,
-    `*Cidade:* ${a.city.trim()}`,
+    `*WhatsApp:* ${a.phone.trim()}`,
+    `*Endereço:* ${address || a.city}`,
     `*Modalidade:* ${labelOf(STRICT_MODALITY_OPTIONS, a.modality)}`,
     course ? `*Oferta:* ${course.priceLabel} (${course.planLabel})` : "",
     "",
-    `Paguei a matrícula no Mercado Pago. Quero liberar o acesso da Formação em Processos Imigratórios.`,
+    `Paguei a matrícula no Mercado Pago. Seguem os dados para o contrato. Quero liberar o acesso.`,
   ]
     .filter(Boolean)
     .join("\n");
 }
 
 export function buildPaidEmail(
-  a: StrictAnswers,
+  a: {
+    name: string;
+    email: string;
+    phone: string;
+    city: string;
+    modality: string;
+    cpf?: string;
+    rg?: string;
+    birthDate?: string;
+    street?: string;
+    number?: string;
+    complement?: string;
+    neighborhood?: string;
+    state?: string;
+    cep?: string;
+    planLabel?: string;
+  },
   payment: { paymentId: string; amount: number; status: string },
   meta: StrictMeta = {},
 ): string {
@@ -197,19 +236,26 @@ export function buildPaidEmail(
     a.modality === "live" || a.modality === "self"
       ? COURSES[a.modality]
       : null;
+  const address = [a.street, a.number, a.complement, a.neighborhood, a.city, a.state, a.cep]
+    .filter(Boolean)
+    .join(", ");
   return [
-    "PAGAMENTO APROVADO — Mercado Pago",
+    "PAGAMENTO APROVADO — Contrato / Matrícula",
     "========================================",
     `Status MP: ${payment.status}`,
     `Payment ID: ${payment.paymentId}`,
     `Valor: R$ ${payment.amount.toFixed(2)}`,
+    `Plano: ${a.planLabel || "-"}`,
     `Origem: ${sourceLabel(meta)}`,
     "",
-    "ALUNO",
+    "DADOS DO CONTRATO",
     `Nome: ${a.name.trim()}`,
+    `CPF: ${a.cpf || "-"}`,
+    `RG: ${a.rg || "-"}`,
+    `Nascimento: ${a.birthDate || "-"}`,
     `E-mail: ${a.email.trim()}`,
     `WhatsApp: ${a.phone.trim()}`,
-    `Cidade: ${a.city.trim()}`,
+    `Endereço: ${address || a.city}`,
     `Modalidade: ${labelOf(STRICT_MODALITY_OPTIONS, a.modality)}`,
     course ? `Oferta: ${course.priceLabel}` : "",
     "",
@@ -220,7 +266,7 @@ export function buildPaidEmail(
 }
 
 export async function submitPaidEmail(
-  a: StrictAnswers,
+  a: Parameters<typeof buildPaidEmail>[0],
   payment: { paymentId: string; amount: number; status: string },
   meta: StrictMeta = {},
 ): Promise<{ ok: boolean }> {
@@ -249,7 +295,7 @@ export async function submitPaidEmail(
 }
 
 export function openPaidWhatsApp(
-  a: StrictAnswers,
+  a: Parameters<typeof buildPaidWhatsApp>[0],
   payment: { paymentId: string; amount: number; status: string },
   meta: StrictMeta = {},
 ): { ok: boolean } {

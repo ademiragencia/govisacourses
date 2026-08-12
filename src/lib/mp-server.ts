@@ -1,5 +1,4 @@
 import { createServerFn } from "@tanstack/react-start";
-import { COURSE_LIVE, COURSE_SELF } from "./config";
 import { SITE_URL } from "./seo";
 
 function mpToken() {
@@ -8,14 +7,6 @@ function mpToken() {
     process.env.MP_ACCESS_TOKEN ||
     ""
   ).trim();
-}
-
-function offer(modality: "self" | "live") {
-  const course = modality === "live" ? COURSE_LIVE : COURSE_SELF;
-  return {
-    title: `${course.name} — ${course.shortName}`,
-    amount: course.price,
-  };
 }
 
 function originFrom(raw?: string) {
@@ -38,8 +29,16 @@ export const createMpCheckout = createServerFn({ method: "POST" })
       name?: string;
       email?: string;
       phone?: string;
+      cpf?: string;
       city?: string;
+      street?: string;
+      number?: string;
+      zip?: string;
       modality?: string;
+      plan?: string;
+      amount?: number;
+      installments?: number;
+      title?: string;
       leadId?: string;
       origin?: string;
     };
@@ -49,12 +48,23 @@ export const createMpCheckout = createServerFn({ method: "POST" })
     if (d.modality !== "self" && d.modality !== "live")
       throw new Error("Modalidade inválida");
     if (!d.leadId) throw new Error("leadId ausente");
+    const amount = Number(d.amount);
+    if (!Number.isFinite(amount) || amount < 1) throw new Error("Valor inválido");
+    const installments = Math.max(1, Number(d.installments) || 1);
     return {
       name: d.name.trim(),
       email: d.email.trim(),
       phone: String(d.phone || "").trim(),
+      cpf: String(d.cpf || "").replace(/\D/g, ""),
       city: String(d.city || "").trim(),
+      street: String(d.street || "").trim(),
+      number: String(d.number || "").trim(),
+      zip: String(d.zip || "").replace(/\D/g, ""),
       modality: d.modality as "self" | "live",
+      plan: String(d.plan || "cash"),
+      amount,
+      installments,
+      title: String(d.title || "Formação Go Visa Courses"),
       leadId: d.leadId,
       origin: d.origin,
     };
@@ -69,30 +79,46 @@ export const createMpCheckout = createServerFn({ method: "POST" })
       };
     }
 
-    const item = offer(data.modality);
     const origin = originFrom(data.origin);
     const digits = data.phone.replace(/\D/g, "");
+    const planLabel =
+      data.plan === "installments"
+        ? `${data.installments}x no cartão`
+        : data.plan === "entry"
+          ? "Entrada"
+          : "À vista";
 
     const body = {
       items: [
         {
-          id: data.modality,
-          title: item.title,
-          description: "Matrícula Go Visa Courses",
+          id: `${data.modality}-${data.plan}`,
+          title: data.title,
+          description: `Matrícula Go Visa Courses · ${planLabel}`,
           quantity: 1,
           currency_id: "BRL",
-          unit_price: item.amount,
+          unit_price: data.amount,
         },
       ],
       payer: {
         name: data.name,
         email: data.email,
+        identification: data.cpf
+          ? { type: "CPF", number: data.cpf }
+          : undefined,
         phone: digits
           ? {
               area_code: digits.length >= 10 ? digits.slice(0, 2) : "",
               number: digits.length >= 10 ? digits.slice(2) : digits,
             }
           : undefined,
+        address:
+          data.zip || data.street
+            ? {
+                zip_code: data.zip,
+                street_name: data.street,
+                street_number: data.number,
+              }
+            : undefined,
       },
       back_urls: {
         success: `${origin}/matricula/sucesso`,
@@ -106,11 +132,14 @@ export const createMpCheckout = createServerFn({ method: "POST" })
       metadata: {
         lead_id: data.leadId,
         modality: data.modality,
+        plan: data.plan,
         city: data.city,
         phone: data.phone,
+        cpf: data.cpf,
       },
       payment_methods: {
-        installments: 12,
+        installments: data.installments,
+        default_installments: data.installments,
       },
     };
 

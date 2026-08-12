@@ -1,109 +1,46 @@
 import { useMemo, useState, type ReactNode } from "react";
-import {
-  ArrowLeft,
-  ArrowRight,
-  CheckCircle2,
-  CreditCard,
-  Loader2,
-  ShieldCheck,
-} from "lucide-react";
-import {
-  DECISION_OPTIONS,
-  MONEY_OPTIONS,
-  STRICT_AVAILABILITY_OPTIONS,
-  STRICT_MODALITY_OPTIONS,
-  STRICT_MOTIVATION_OPTIONS,
-  emptyStrictAnswers,
-  evaluateStrict,
-  formatPhoneInput,
-  isEmailValid,
-  isHardMoneyFail,
-  isPhoneValid,
-  type StrictAnswers,
-  type StrictMeta,
-  type StrictResult,
-} from "@/lib/strict-qualify";
+import { ArrowLeft, ArrowRight, CreditCard, Loader2 } from "lucide-react";
 import { COURSE_LIVE, COURSE_SELF } from "@/lib/config";
 import { createMpCheckout } from "@/lib/mp-server";
-import { newLeadId, offerFor, saveLead } from "@/lib/mp";
+import {
+  emptyContract,
+  formatCep,
+  formatCpf,
+  isCpfValid,
+  lookupCep,
+  newLeadId,
+  paymentOptions,
+  saveLead,
+  selectedOffer,
+  type ContractAnswers,
+} from "@/lib/mp";
+import { formatPhoneInput, isEmailValid, isPhoneValid } from "@/lib/qualify";
+import type { StrictMeta } from "@/lib/strict-qualify";
 import { cn } from "@/lib/utils";
 
-type Screen = "gate" | "commit" | "contact" | "pay" | "fail";
+type Screen = "offer" | "contract" | "pay";
 
-function OptionGrid({
-  options,
-  value,
-  onChange,
-  name,
-}: {
-  options: readonly { value: string; label: string }[];
-  value: string;
-  onChange: (v: string) => void;
-  name: string;
-}) {
-  return (
-    <div className="grid gap-2" role="radiogroup" aria-label={name}>
-      {options.map((opt) => {
-        const active = value === opt.value;
-        return (
-          <button
-            key={opt.value}
-            type="button"
-            role="radio"
-            aria-checked={active}
-            onClick={() => onChange(opt.value)}
-            className={cn(
-              "rounded-[var(--radius-md)] border px-4 py-3.5 text-left text-sm font-medium transition-all",
-              active
-                ? "border-brand-red bg-brand-red-soft text-fg shadow-[0_0_0_1px_rgba(225,29,46,0.35)]"
-                : "border-border bg-bg-elevated/50 text-fg-muted hover:border-border-strong hover:text-fg",
-            )}
-          >
-            <span className="flex items-center gap-3">
-              <span
-                className={cn(
-                  "flex size-4 shrink-0 items-center justify-center rounded-full border",
-                  active
-                    ? "border-brand-red bg-brand-red"
-                    : "border-fg-subtle/40",
-                )}
-              >
-                {active && <span className="size-1.5 rounded-full bg-white" />}
-              </span>
-              {opt.label}
-            </span>
-          </button>
-        );
-      })}
-    </div>
-  );
-}
+const UF = [
+  "AC","AL","AP","AM","BA","CE","DF","ES","GO","MA","MT","MS","MG","PA","PB",
+  "PR","PE","PI","RJ","RN","RS","RO","RR","SC","SP","SE","TO",
+];
 
 function Field({
   label,
   children,
   error,
   htmlFor,
-  hint,
 }: {
   label: string;
   children: ReactNode;
   error?: string;
   htmlFor?: string;
-  hint?: string;
 }) {
   return (
     <div className="block">
       <div className="mb-1.5 block text-xs font-bold uppercase tracking-[0.12em] text-fg-subtle">
-        {htmlFor ? (
-          <label htmlFor={htmlFor}>{label}</label>
-        ) : (
-          <span>{label}</span>
-        )}
+        {htmlFor ? <label htmlFor={htmlFor}>{label}</label> : <span>{label}</span>}
       </div>
-      {hint ? (
-        <p className="mb-2 text-xs leading-relaxed text-fg-muted">{hint}</p>
-      ) : null}
       {children}
       {error ? (
         <span className="mt-1.5 block text-xs font-medium text-brand-red">
@@ -125,76 +62,76 @@ export function MatriculaWizard({
   className?: string;
 }) {
   const fichaMeta: StrictMeta = { source: "ads-matricula", ...meta };
-
-  const [screen, setScreen] = useState<Screen>("gate");
-  const [answers, setAnswers] = useState<StrictAnswers>(emptyStrictAnswers);
-  const [errors, setErrors] = useState<
-    Partial<Record<keyof StrictAnswers, string>>
-  >({});
-  const [result, setResult] = useState<StrictResult | null>(null);
+  const [screen, setScreen] = useState<Screen>("offer");
+  const [answers, setAnswers] = useState<ContractAnswers>(emptyContract);
+  const [errors, setErrors] = useState<Partial<Record<keyof ContractAnswers, string>>>({});
   const [sending, setSending] = useState(false);
   const [payError, setPayError] = useState<string | null>(null);
+  const [cepLoading, setCepLoading] = useState(false);
 
-  const offer = offerFor(answers.modality);
+  const plans = paymentOptions(answers.modality);
+  const offer = selectedOffer(answers);
 
   const progress = useMemo(() => {
-    if (screen === "gate") return 20;
-    if (screen === "commit") return 45;
-    if (screen === "contact") return 70;
-    if (screen === "pay") return 90;
-    return 100;
+    if (screen === "offer") return 33;
+    if (screen === "contract") return 66;
+    return 92;
   }, [screen]);
 
   const set =
-    (key: keyof StrictAnswers) =>
+    (key: keyof ContractAnswers) =>
     (value: string) => {
       setAnswers((prev) => ({ ...prev, [key]: value }));
       setErrors((prev) => ({ ...prev, [key]: undefined }));
     };
 
-  function goGateNext() {
-    const e: Partial<Record<keyof StrictAnswers, string>> = {};
-    if (!answers.money) e.money = "Selecione quando você consegue pagar";
-    if (!answers.modality) e.modality = "Escolha a modalidade do curso";
-    setErrors(e);
-    if (Object.keys(e).length) return;
-
-    if (isHardMoneyFail(answers.money)) {
-      setResult(evaluateStrict(answers));
-      setScreen("fail");
-      return;
-    }
-    setScreen("commit");
+  async function onCep(value: string) {
+    const formatted = formatCep(value);
+    set("cep")(formatted);
+    if (formatted.replace(/\D/g, "").length !== 8) return;
+    setCepLoading(true);
+    const found = await lookupCep(formatted);
+    setCepLoading(false);
+    if (!found) return;
+    setAnswers((prev) => ({
+      ...prev,
+      cep: formatted,
+      street: found.street || prev.street,
+      neighborhood: found.neighborhood || prev.neighborhood,
+      city: found.city || prev.city,
+      state: found.state || prev.state,
+    }));
   }
 
-  function goCommitNext() {
-    const e: Partial<Record<keyof StrictAnswers, string>> = {};
-    if (!answers.decision) e.decision = "Selecione quem decide o pagamento";
-    if (!answers.availability)
-      e.availability = "Selecione sua disponibilidade";
-    if (!answers.motivation) e.motivation = "Selecione o que você quer agora";
+  function goOfferNext() {
+    const e: Partial<Record<keyof ContractAnswers, string>> = {};
+    if (!answers.modality) e.modality = "Escolha a formação";
+    if (!answers.plan) e.plan = "Escolha à vista ou parcelado";
     setErrors(e);
     if (Object.keys(e).length) return;
-
-    const r = evaluateStrict(answers);
-    setResult(r);
-    setScreen(r.status === "qualified" ? "contact" : "fail");
+    setScreen("contract");
   }
 
-  function goContactNext() {
-    const e: Partial<Record<keyof StrictAnswers, string>> = {};
-    if (answers.name.trim().length < 2) e.name = "Informe seu nome completo";
-    if (!isEmailValid(answers.email)) e.email = "Informe um e-mail válido";
-    if (!isPhoneValid(answers.phone))
-      e.phone = "WhatsApp válido com DDD (mín. 10 dígitos)";
-    if (answers.city.trim().length < 2) e.city = "Informe sua cidade";
+  function goContractNext() {
+    const e: Partial<Record<keyof ContractAnswers, string>> = {};
+    if (answers.name.trim().length < 5) e.name = "Informe o nome completo";
+    if (!isCpfValid(answers.cpf)) e.cpf = "CPF inválido";
+    if (answers.rg.trim().length < 4) e.rg = "Informe o RG";
+    if (!answers.birthDate) e.birthDate = "Informe a data de nascimento";
+    if (!isEmailValid(answers.email)) e.email = "E-mail inválido";
+    if (!isPhoneValid(answers.phone)) e.phone = "WhatsApp com DDD";
+    if (answers.cep.replace(/\D/g, "").length !== 8) e.cep = "CEP inválido";
+    if (answers.street.trim().length < 2) e.street = "Informe o endereço";
+    if (!answers.number.trim()) e.number = "Número";
+    if (answers.neighborhood.trim().length < 2) e.neighborhood = "Bairro";
+    if (answers.city.trim().length < 2) e.city = "Cidade";
+    if (!answers.state) e.state = "UF";
     setErrors(e);
     if (Object.keys(e).length) return;
     setScreen("pay");
   }
 
   async function startCheckout() {
-    if (!result || result.status !== "qualified") return;
     setSending(true);
     setPayError(null);
     const leadId = newLeadId();
@@ -203,7 +140,9 @@ export function MatriculaWizard({
       id: leadId,
       meta: fichaMeta,
       amount: offer.amount,
+      installments: offer.installments,
       courseTitle: offer.title,
+      planLabel: offer.planLabel,
     });
     try {
       const res = await createMpCheckout({
@@ -211,8 +150,16 @@ export function MatriculaWizard({
           name: answers.name,
           email: answers.email,
           phone: answers.phone,
+          cpf: answers.cpf,
           city: answers.city,
+          street: answers.street,
+          number: answers.number,
+          zip: answers.cep,
           modality: answers.modality === "live" ? "live" : "self",
+          plan: answers.plan || "cash",
+          amount: offer.amount,
+          installments: offer.installments,
+          title: offer.title,
           leadId,
           origin: window.location.origin,
         },
@@ -232,26 +179,18 @@ export function MatriculaWizard({
   }
 
   const title =
-    screen === "gate"
-      ? "Escolha sua formação"
-      : screen === "commit"
-        ? "Como você quer começar"
-        : screen === "contact"
-          ? "Seus dados para a matrícula"
-          : screen === "pay"
-            ? "Concluir matrícula"
-            : "Quando quiser, a vaga está aqui";
+    screen === "offer"
+      ? "Curso e pagamento"
+      : screen === "contract"
+        ? "Dados para o contrato"
+        : "Revisar e pagar";
 
   const hint =
-    screen === "gate"
-      ? "Valores à vista ou parcelado"
-      : screen === "commit"
-        ? "Assim a gente te ajuda do jeito certo"
-        : screen === "contact"
-          ? "No próximo passo você paga com segurança"
-          : screen === "pay"
-            ? "Pix, cartão ou boleto no Mercado Pago"
-            : "Pode voltar e concluir quando fizer sentido pra você.";
+    screen === "offer"
+      ? "À vista ou parcelado, como no anúncio"
+      : screen === "contract"
+        ? "Esses dados entram no contrato de matrícula"
+        : "Pagamento seguro no Mercado Pago";
 
   return (
     <div
@@ -277,90 +216,132 @@ export function MatriculaWizard({
       </div>
 
       <div className="flex-1 px-5 py-5 sm:px-6">
-        {screen === "gate" && (
+        {screen === "offer" && (
           <div className="space-y-5">
-            <div className="rounded-[var(--radius-md)] border border-border bg-bg/60 px-4 py-3 text-xs leading-relaxed text-fg-muted">
-              <p className="font-bold text-fg">Valores do curso</p>
-              <p className="mt-1">
-                {COURSE_SELF.shortName}: {COURSE_SELF.planLabel}
-              </p>
-              <p>
-                {COURSE_LIVE.shortName}: {COURSE_LIVE.planLabel}
-              </p>
-            </div>
-            <Field
-              label="Quando você quer garantir a vaga?"
-              error={errors.money}
-            >
-              <OptionGrid
-                name="Investimento"
-                options={MONEY_OPTIONS}
-                value={answers.money}
-                onChange={set("money")}
-              />
+            <Field label="Qual formação você quer?" error={errors.modality}>
+              <div className="grid gap-2">
+                {(
+                  [
+                    {
+                      id: "self" as const,
+                      t: COURSE_SELF.shortName,
+                      d: COURSE_SELF.planLabel,
+                    },
+                    {
+                      id: "live" as const,
+                      t: COURSE_LIVE.shortName,
+                      d: COURSE_LIVE.planLabel,
+                    },
+                  ] as const
+                ).map((c) => {
+                  const active = answers.modality === c.id;
+                  return (
+                    <button
+                      key={c.id}
+                      type="button"
+                      onClick={() => {
+                        setAnswers((prev) => ({
+                          ...prev,
+                          modality: c.id,
+                          plan: "",
+                        }));
+                        setErrors((prev) => ({
+                          ...prev,
+                          modality: undefined,
+                          plan: undefined,
+                        }));
+                      }}
+                      className={cn(
+                        "rounded-[var(--radius-md)] border px-4 py-3.5 text-left transition-all",
+                        active
+                          ? "border-brand-red bg-brand-red-soft text-fg"
+                          : "border-border bg-bg-elevated/50 text-fg-muted hover:text-fg",
+                      )}
+                    >
+                      <p className="text-sm font-bold">{c.t}</p>
+                      <p className="mt-0.5 text-xs opacity-80">{c.d}</p>
+                    </button>
+                  );
+                })}
+              </div>
             </Field>
-            <Field label="Qual curso você quer?" error={errors.modality}>
-              <OptionGrid
-                name="Modalidade"
-                options={STRICT_MODALITY_OPTIONS}
-                value={answers.modality}
-                onChange={set("modality")}
-              />
-            </Field>
+
+            {answers.modality && (
+              <Field label="Como você quer pagar?" error={errors.plan}>
+                <div className="grid gap-2">
+                  {plans.map((p) => {
+                    const active = answers.plan === p.id;
+                    return (
+                      <button
+                        key={p.id}
+                        type="button"
+                        onClick={() => set("plan")(p.id)}
+                        className={cn(
+                          "rounded-[var(--radius-md)] border px-4 py-3.5 text-left transition-all",
+                          active
+                            ? "border-brand-red bg-brand-red-soft text-fg"
+                            : "border-border bg-bg-elevated/50 text-fg-muted hover:text-fg",
+                        )}
+                      >
+                        <div className="flex items-baseline justify-between gap-3">
+                          <p className="text-sm font-bold">{p.label}</p>
+                          <p className="text-xs font-semibold">{p.amountLabel}</p>
+                        </div>
+                        <p className="mt-0.5 text-xs opacity-80">{p.detail}</p>
+                      </button>
+                    );
+                  })}
+                </div>
+              </Field>
+            )}
           </div>
         )}
 
-        {screen === "commit" && (
-          <div className="space-y-5">
-            <Field
-              label="Quem conclui a matrícula?"
-              error={errors.decision}
-            >
-              <OptionGrid
-                name="Decisão"
-                options={DECISION_OPTIONS}
-                value={answers.decision}
-                onChange={set("decision")}
-              />
-            </Field>
-            <Field
-              label="Horas por semana para o curso"
-              error={errors.availability}
-            >
-              <OptionGrid
-                name="Disponibilidade"
-                options={STRICT_AVAILABILITY_OPTIONS}
-                value={answers.availability}
-                onChange={set("availability")}
-              />
-            </Field>
-            <Field label="O que você quer agora?" error={errors.motivation}>
-              <OptionGrid
-                name="Motivação"
-                options={STRICT_MOTIVATION_OPTIONS}
-                value={answers.motivation}
-                onChange={set("motivation")}
-              />
-            </Field>
-          </div>
-        )}
-
-        {screen === "contact" && (
+        {screen === "contract" && (
           <div className="space-y-4">
-            <div className="flex items-start gap-3 rounded-[var(--radius-md)] border border-gold-line/30 bg-gold-line/10 px-4 py-3 text-xs leading-relaxed text-fg">
-              <ShieldCheck className="mt-0.5 size-4 shrink-0 text-gold-line" />
-              Quase lá. No próximo passo você conclui o pagamento e libera o
-              acesso.
-            </div>
             <Field label="Nome completo" error={errors.name} htmlFor="m-name">
               <input
                 id="m-name"
                 className={inputClass}
                 value={answers.name}
                 onChange={(e) => set("name")(e.target.value)}
-                placeholder="Como devemos te chamar"
+                placeholder="Como no documento"
                 autoComplete="name"
                 autoFocus
+              />
+            </Field>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Field label="CPF" error={errors.cpf} htmlFor="m-cpf">
+                <input
+                  id="m-cpf"
+                  className={inputClass}
+                  value={answers.cpf}
+                  onChange={(e) => set("cpf")(formatCpf(e.target.value))}
+                  placeholder="000.000.000-00"
+                  inputMode="numeric"
+                />
+              </Field>
+              <Field label="RG" error={errors.rg} htmlFor="m-rg">
+                <input
+                  id="m-rg"
+                  className={inputClass}
+                  value={answers.rg}
+                  onChange={(e) => set("rg")(e.target.value)}
+                  placeholder="Documento de identidade"
+                />
+              </Field>
+            </div>
+            <Field
+              label="Data de nascimento"
+              error={errors.birthDate}
+              htmlFor="m-birth"
+            >
+              <input
+                id="m-birth"
+                type="date"
+                className={inputClass}
+                value={answers.birthDate}
+                onChange={(e) => set("birthDate")(e.target.value)}
               />
             </Field>
             <Field label="E-mail" error={errors.email} htmlFor="m-email">
@@ -385,16 +366,89 @@ export function MatriculaWizard({
                 autoComplete="tel"
               />
             </Field>
-            <Field label="Cidade" error={errors.city} htmlFor="m-city">
+            <Field label="CEP" error={errors.cep} htmlFor="m-cep">
               <input
-                id="m-city"
+                id="m-cep"
                 className={inputClass}
-                value={answers.city}
-                onChange={(e) => set("city")(e.target.value)}
-                placeholder="Ex.: São Paulo, SP"
-                autoComplete="address-level2"
+                value={answers.cep}
+                onChange={(e) => void onCep(e.target.value)}
+                placeholder="00000-000"
+                inputMode="numeric"
+              />
+              {cepLoading && (
+                <span className="mt-1 block text-xs text-fg-subtle">
+                  Buscando endereço…
+                </span>
+              )}
+            </Field>
+            <Field label="Endereço" error={errors.street} htmlFor="m-street">
+              <input
+                id="m-street"
+                className={inputClass}
+                value={answers.street}
+                onChange={(e) => set("street")(e.target.value)}
+                placeholder="Rua / avenida"
+                autoComplete="address-line1"
               />
             </Field>
+            <div className="grid grid-cols-3 gap-3">
+              <Field label="Nº" error={errors.number} htmlFor="m-num">
+                <input
+                  id="m-num"
+                  className={inputClass}
+                  value={answers.number}
+                  onChange={(e) => set("number")(e.target.value)}
+                  placeholder="123"
+                />
+              </Field>
+              <div className="col-span-2">
+                <Field label="Complemento" htmlFor="m-comp">
+                  <input
+                    id="m-comp"
+                    className={inputClass}
+                    value={answers.complement}
+                    onChange={(e) => set("complement")(e.target.value)}
+                    placeholder="Apto, bloco"
+                  />
+                </Field>
+              </div>
+            </div>
+            <Field label="Bairro" error={errors.neighborhood} htmlFor="m-bairro">
+              <input
+                id="m-bairro"
+                className={inputClass}
+                value={answers.neighborhood}
+                onChange={(e) => set("neighborhood")(e.target.value)}
+              />
+            </Field>
+            <div className="grid grid-cols-3 gap-3">
+              <div className="col-span-2">
+                <Field label="Cidade" error={errors.city} htmlFor="m-city">
+                  <input
+                    id="m-city"
+                    className={inputClass}
+                    value={answers.city}
+                    onChange={(e) => set("city")(e.target.value)}
+                    autoComplete="address-level2"
+                  />
+                </Field>
+              </div>
+              <Field label="UF" error={errors.state} htmlFor="m-uf">
+                <select
+                  id="m-uf"
+                  className={inputClass}
+                  value={answers.state}
+                  onChange={(e) => set("state")(e.target.value)}
+                >
+                  <option value="">UF</option>
+                  {UF.map((uf) => (
+                    <option key={uf} value={uf}>
+                      {uf}
+                    </option>
+                  ))}
+                </select>
+              </Field>
+            </div>
           </div>
         )}
 
@@ -404,26 +458,31 @@ export function MatriculaWizard({
               <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-gold-line">
                 {offer.shortName}
               </p>
-              <p className="mt-2 font-display text-4xl font-extrabold text-fg">
-                {offer.priceLabel}
+              <p className="mt-2 font-display text-3xl font-extrabold text-fg">
+                {offer.planLabel}
               </p>
-              <p className="mt-1 text-sm text-fg-muted">{offer.planLabel}</p>
+              <p className="mt-1 text-sm text-fg-muted">{offer.planDetail}</p>
             </div>
             <dl className="space-y-2 text-sm">
               {[
                 ["Nome", answers.name],
+                ["CPF", answers.cpf],
                 ["E-mail", answers.email],
                 ["WhatsApp", answers.phone],
+                [
+                  "Endereço",
+                  `${answers.street}, ${answers.number} — ${answers.city}/${answers.state}`,
+                ],
               ].map(([k, v]) => (
                 <div key={k} className="flex justify-between gap-4">
-                  <dt className="text-fg-subtle">{k}</dt>
+                  <dt className="shrink-0 text-fg-subtle">{k}</dt>
                   <dd className="text-right font-medium text-fg">{v}</dd>
                 </div>
               ))}
             </dl>
             <p className="text-xs leading-relaxed text-fg-muted">
-              Pagamento seguro no Mercado Pago. Depois da confirmação, a equipe
-              te recebe para liberar o acesso.
+              Ao pagar, você confirma os dados para o contrato de matrícula.
+              Depois da confirmação a equipe libera o acesso.
             </p>
             {payError && (
               <div className="rounded-[var(--radius-md)] border border-brand-red/40 bg-brand-red-soft px-4 py-3 text-sm text-fg">
@@ -432,69 +491,37 @@ export function MatriculaWizard({
             )}
           </div>
         )}
-
-        {screen === "fail" && (
-          <div className="space-y-4 text-center">
-            <CheckCircle2 className="mx-auto size-10 text-gold-line" />
-            <p className="font-display text-xl font-extrabold text-fg">
-              Sem problema
-            </p>
-            <p className="text-sm leading-relaxed text-fg-muted">
-              Quando quiser garantir sua vaga, é só voltar e concluir a
-              matrícula. O curso continua aqui, no seu tempo.
-            </p>
-          </div>
-        )}
       </div>
 
       <div className="shrink-0 border-t border-border px-5 py-4 sm:px-6">
         <div className="flex gap-2">
-          {(screen === "commit" || screen === "contact" || screen === "pay") && (
+          {(screen === "contract" || screen === "pay") && (
             <button
               type="button"
-              onClick={() =>
-                setScreen(
-                  screen === "pay"
-                    ? "contact"
-                    : screen === "contact"
-                      ? "commit"
-                      : "gate",
-                )
-              }
+              onClick={() => setScreen(screen === "pay" ? "contract" : "offer")}
               className="inline-flex h-12 items-center justify-center gap-2 rounded-[var(--radius-md)] border border-border px-4 text-sm font-semibold text-fg-muted hover:bg-white/5 hover:text-fg"
             >
               <ArrowLeft className="size-4" />
               Voltar
             </button>
           )}
-
-          {screen === "gate" && (
+          {screen === "offer" && (
             <button
               type="button"
-              onClick={goGateNext}
+              onClick={goOfferNext}
               className="inline-flex h-12 flex-1 items-center justify-center gap-2 rounded-[var(--radius-md)] bg-brand-red px-5 text-sm font-bold uppercase tracking-[0.04em] text-white shadow-[0_10px_28px_rgba(225,29,46,0.3)] hover:brightness-110"
             >
               Continuar
               <ArrowRight className="size-4" />
             </button>
           )}
-          {screen === "commit" && (
+          {screen === "contract" && (
             <button
               type="button"
-              onClick={goCommitNext}
+              onClick={goContractNext}
               className="inline-flex h-12 flex-1 items-center justify-center gap-2 rounded-[var(--radius-md)] bg-brand-red px-5 text-sm font-bold uppercase tracking-[0.04em] text-white shadow-[0_10px_28px_rgba(225,29,46,0.3)] hover:brightness-110"
             >
-              Continuar
-              <ArrowRight className="size-4" />
-            </button>
-          )}
-          {screen === "contact" && (
-            <button
-              type="button"
-              onClick={goContactNext}
-              className="inline-flex h-12 flex-1 items-center justify-center gap-2 rounded-[var(--radius-md)] bg-brand-red px-5 text-sm font-bold uppercase tracking-[0.04em] text-white shadow-[0_10px_28px_rgba(225,29,46,0.3)] hover:brightness-110"
-            >
-              Ir para o pagamento
+              Revisar matrícula
               <ArrowRight className="size-4" />
             </button>
           )}
@@ -510,7 +537,7 @@ export function MatriculaWizard({
               ) : (
                 <CreditCard className="size-5" />
               )}
-              Pagar no Mercado Pago
+              Pagar {offer.planLabel}
             </button>
           )}
         </div>
