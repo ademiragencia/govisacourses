@@ -205,7 +205,7 @@ export function buildPaidWhatsApp(
     `*Modalidade:* ${labelOf(STRICT_MODALITY_OPTIONS, a.modality)}`,
     course ? `*Oferta:* ${course.priceLabel} (${course.planLabel})` : "",
     "",
-    `Paguei a matrícula no Mercado Pago. Seguem os dados para o contrato. Quero liberar o acesso.`,
+    `Paguei a matrícula. Seguem os dados para o contrato. Quero liberar o acesso.`,
   ]
     .filter(Boolean)
     .join("\n");
@@ -275,7 +275,7 @@ export async function submitPaidEmail(
   form.append("access_key", WEB3FORMS_ACCESS_KEY);
   form.append(
     "subject",
-    `[PAGO] ${a.name.trim()} — Mercado Pago ${payment.paymentId}`,
+    `[PAGO] ${a.name.trim()} — Matrícula ${payment.paymentId}`,
   );
   form.append("from_name", "Go Visa Courses · Pagamento");
   form.append("name", a.name.trim());

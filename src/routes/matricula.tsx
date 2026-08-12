@@ -8,7 +8,7 @@ import type { StrictMeta } from "@/lib/strict-qualify";
 const PAGE_TITLE =
   "Matrícula | Formação em Processos Imigratórios | Go Visa Courses";
 const PAGE_DESC =
-  "Matrícula da Formação em Processos Imigratórios. Dados para contrato e pagamento no Mercado Pago: 5× R$ 500 ou R$ 2.000 à vista.";
+  "Matrícula da Formação em Processos Imigratórios. Dados para contrato e pagamento no site: 5× R$ 500 ou R$ 2.000 à vista.";
 
 export const Route = createFileRoute("/matricula")({
   head: () => ({
@@ -84,7 +84,7 @@ function MatriculaPage() {
             </h1>
             <p className="mt-4 max-w-lg text-base leading-relaxed text-fg-muted">
               Preencha os dados do contrato, escolha à vista ou parcelado e
-              conclua no Mercado Pago. Depois da confirmação a equipe libera o
+              pague aqui mesmo. Depois da confirmação a equipe libera o
               acesso.
             </p>
 
@@ -103,7 +103,7 @@ function MatriculaPage() {
                 {
                   icon: ShieldCheck,
                   t: "Pagamento seguro",
-                  d: "Mercado Pago · Pix, cartão ou boleto",
+                  d: "Pix, cartão ou boleto no próprio site",
                 },
               ].map(({ icon: Icon, t, d }) => (
                 <li

@@ -1,196 +1,217 @@
 import { createServerFn } from "@tanstack/react-start";
-import { SITE_URL } from "./seo";
 import { MP_ACCESS_TOKEN } from "./mp-credentials";
 
-function mpToken() {
+function token() {
   return MP_ACCESS_TOKEN.trim();
 }
 
-function originFrom(raw?: string) {
-  const fallback = SITE_URL;
-  if (!raw) return fallback;
-  try {
-    const u = new URL(raw);
-    if (u.protocol === "http:" || u.protocol === "https:") {
-      return `${u.protocol}//${u.host}`;
-    }
-  } catch {
-    /* ignore */
-  }
-  return fallback;
+function splitName(full: string) {
+  const parts = full.trim().split(/\s+/);
+  return {
+    first: parts[0] || "Aluno",
+    last: parts.slice(1).join(" ") || parts[0] || "GoVisa",
+  };
 }
 
-export const createMpCheckout = createServerFn({ method: "POST" })
+const REJECT: Record<string, string> = {
+  cc_rejected_insufficient_amount: "Cartão sem limite suficiente.",
+  cc_rejected_bad_filled_security_code: "Código de segurança inválido.",
+  cc_rejected_bad_filled_date: "Validade do cartão inválida.",
+  cc_rejected_bad_filled_card_number: "Número do cartão inválido.",
+  cc_rejected_bad_filled_other: "Revise os dados do cartão.",
+  cc_rejected_blacklist: "Este cartão não pôde ser autorizado.",
+  cc_rejected_call_for_authorize: "Autorize a compra com o banco e tente de novo.",
+  cc_rejected_card_disabled: "Cartão desabilitado. Fale com o banco.",
+  cc_rejected_duplicated_payment: "Pagamento já registrado.",
+  cc_rejected_high_risk: "Pagamento não autorizado.",
+  cc_rejected_invalid_installments: "Parcelamento não disponível neste cartão.",
+  cc_rejected_max_attempts: "Muitas tentativas. Use outro cartão.",
+  cc_rejected_other_reason: "Pagamento não autorizado pelo banco.",
+};
+
+export type PayMethod = "pix" | "card" | "boleto";
+
+export const createSitePayment = createServerFn({ method: "POST" })
   .validator((data: unknown) => {
     const d = data as {
-      name?: string;
-      email?: string;
-      phone?: string;
-      cpf?: string;
-      city?: string;
-      street?: string;
-      number?: string;
-      zip?: string;
-      modality?: string;
-      plan?: string;
+      method?: PayMethod;
       amount?: number;
       installments?: number;
       title?: string;
+      email?: string;
+      name?: string;
+      cpf?: string;
+      phone?: string;
+      cardToken?: string;
+      paymentMethodId?: string;
+      issuerId?: string;
+      street?: string;
+      number?: string;
+      neighborhood?: string;
+      city?: string;
+      state?: string;
+      zip?: string;
       leadId?: string;
-      origin?: string;
     };
-    if (!d?.name || d.name.trim().length < 2) throw new Error("Nome inválido");
-    if (!d.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(d.email))
-      throw new Error("E-mail inválido");
-    if (d.modality !== "self" && d.modality !== "live")
-      throw new Error("Modalidade inválida");
-    if (!d.leadId) throw new Error("leadId ausente");
+    if (d.method !== "pix" && d.method !== "card" && d.method !== "boleto") {
+      throw new Error("Forma de pagamento inválida");
+    }
     const amount = Number(d.amount);
     if (!Number.isFinite(amount) || amount < 1) throw new Error("Valor inválido");
-    const installments = Math.max(1, Number(d.installments) || 1);
+    if (!d.email || !d.name || !d.cpf) throw new Error("Dados incompletos");
+    if (d.method === "card" && !d.cardToken) throw new Error("Cartão inválido");
     return {
-      name: d.name.trim(),
+      method: d.method,
+      amount,
+      installments: Math.max(1, Number(d.installments) || 1),
+      title: String(d.title || "Formação Go Visa Courses"),
       email: d.email.trim(),
-      phone: String(d.phone || "").trim(),
-      cpf: String(d.cpf || "").replace(/\D/g, ""),
-      city: String(d.city || "").trim(),
+      name: d.name.trim(),
+      cpf: String(d.cpf).replace(/\D/g, ""),
+      phone: String(d.phone || "").replace(/\D/g, ""),
+      cardToken: d.cardToken || "",
+      paymentMethodId: d.paymentMethodId || "",
+      issuerId: d.issuerId || "",
       street: String(d.street || "").trim(),
       number: String(d.number || "").trim(),
+      neighborhood: String(d.neighborhood || "").trim(),
+      city: String(d.city || "").trim(),
+      state: String(d.state || "").trim(),
       zip: String(d.zip || "").replace(/\D/g, ""),
-      modality: d.modality as "self" | "live",
-      plan: String(d.plan || "cash"),
-      amount,
-      installments,
-      title: String(d.title || "Formação Go Visa Courses"),
-      leadId: d.leadId,
-      origin: d.origin,
+      leadId: String(d.leadId || ""),
     };
   })
   .handler(async ({ data }) => {
-    const token = mpToken();
-    if (!token) {
-      return {
-        ok: false as const,
-        error:
-          "Mercado Pago ainda não está configurado. Envie o Access Token da conta.",
+    const access = token();
+    if (!access) {
+      return { ok: false as const, error: "Pagamento ainda não configurado." };
+    }
+
+    const { first, last } = splitName(data.name);
+    const payerBase = {
+      email: data.email,
+      first_name: first,
+      last_name: last,
+      identification: { type: "CPF", number: data.cpf },
+    };
+
+    let body: Record<string, unknown> = {
+      transaction_amount: Number(data.amount.toFixed(2)),
+      description: data.title,
+      external_reference: data.leadId,
+      metadata: { lead_id: data.leadId, method: data.method },
+    };
+
+    if (data.method === "pix") {
+      body = {
+        ...body,
+        payment_method_id: "pix",
+        payer: payerBase,
+      };
+    } else if (data.method === "card") {
+      body = {
+        ...body,
+        token: data.cardToken,
+        installments: data.installments,
+        payment_method_id: data.paymentMethodId || undefined,
+        issuer_id: data.issuerId || undefined,
+        payer: payerBase,
+      };
+    } else {
+      body = {
+        ...body,
+        payment_method_id: "bolbradesco",
+        payer: {
+          ...payerBase,
+          address: {
+            zip_code: data.zip,
+            street_name: data.street,
+            street_number: data.number,
+            neighborhood: data.neighborhood,
+            city: data.city,
+            federal_unit: data.state,
+          },
+        },
       };
     }
 
-    const origin = originFrom(data.origin);
-    const digits = data.phone.replace(/\D/g, "");
-    const planLabel =
-      data.plan === "installments"
-        ? `${data.installments}x no cartão`
-        : data.plan === "entry"
-          ? "Entrada"
-          : "À vista";
-
-    const body = {
-      items: [
-        {
-          id: `${data.modality}-${data.plan}`,
-          title: data.title,
-          description: `Matrícula Go Visa Courses · ${planLabel}`,
-          quantity: 1,
-          currency_id: "BRL",
-          unit_price: data.amount,
-        },
-      ],
-      payer: {
-        name: data.name,
-        email: data.email,
-        identification: data.cpf
-          ? { type: "CPF", number: data.cpf }
-          : undefined,
-        phone: digits
-          ? {
-              area_code: digits.length >= 10 ? digits.slice(0, 2) : "",
-              number: digits.length >= 10 ? digits.slice(2) : digits,
-            }
-          : undefined,
-        address:
-          data.zip || data.street
-            ? {
-                zip_code: data.zip,
-                street_name: data.street,
-                street_number: data.number,
-              }
-            : undefined,
-      },
-      back_urls: {
-        success: `${origin}/matricula/sucesso`,
-        failure: `${origin}/matricula/falhou`,
-        pending: `${origin}/matricula/pendente`,
-      },
-      auto_return: "approved",
-      external_reference: data.leadId,
-      notification_url: `${SITE_URL}/api/mp/webhook`,
-      statement_descriptor: "GOVISA CURSOS",
-      metadata: {
-        lead_id: data.leadId,
-        modality: data.modality,
-        plan: data.plan,
-        city: data.city,
-        phone: data.phone,
-        cpf: data.cpf,
-      },
-      payment_methods: {
-        installments: data.installments,
-        default_installments: data.installments,
-      },
-    };
-
-    const res = await fetch("https://api.mercadopago.com/checkout/preferences", {
+    const res = await fetch("https://api.mercadopago.com/v1/payments", {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${token}`,
+        Authorization: `Bearer ${access}`,
         "Content-Type": "application/json",
-        "X-Idempotency-Key": data.leadId,
+        "X-Idempotency-Key": `${data.leadId}-${data.method}-${Date.now()}`,
       },
       body: JSON.stringify(body),
     });
 
     const json = (await res.json().catch(() => ({}))) as {
-      id?: string;
-      init_point?: string;
-      sandbox_init_point?: string;
+      id?: number;
+      status?: string;
+      status_detail?: string;
       message?: string;
       error?: string;
+      cause?: { description?: string }[];
+      point_of_interaction?: {
+        transaction_data?: {
+          qr_code?: string;
+          qr_code_base64?: string;
+        };
+      };
+      barcode?: { content?: string };
+      transaction_details?: {
+        digitable_line?: string;
+        external_resource_url?: string;
+      };
     };
 
-    if (!res.ok || !json.init_point) {
+    if (!res.ok || !json.id) {
+      const msg =
+        json.cause?.[0]?.description ||
+        json.message ||
+        json.error ||
+        "Não foi possível processar o pagamento.";
+      return { ok: false as const, error: msg };
+    }
+
+    if (json.status === "rejected") {
       return {
         ok: false as const,
         error:
-          json.message ||
-          json.error ||
-          `Mercado Pago recusou o checkout (HTTP ${res.status})`,
+          REJECT[json.status_detail || ""] ||
+          "Pagamento não autorizado. Tente outro cartão ou o Pix.",
       };
     }
 
     return {
       ok: true as const,
-      preferenceId: json.id || "",
-      initPoint: json.init_point,
-      sandboxInitPoint: json.sandbox_init_point || json.init_point,
+      paymentId: String(json.id),
+      status: json.status || "pending",
+      statusDetail: json.status_detail || "",
+      qrCode: json.point_of_interaction?.transaction_data?.qr_code || "",
+      qrBase64:
+        json.point_of_interaction?.transaction_data?.qr_code_base64 || "",
+      barcode:
+        json.barcode?.content ||
+        json.transaction_details?.digitable_line ||
+        "",
     };
   });
 
 export const verifyMpPayment = createServerFn({ method: "GET" })
   .validator((data: unknown) => {
     const d = data as { paymentId?: string };
-    if (!d?.paymentId) throw new Error("paymentId ausente");
+    if (!d?.paymentId) throw new Error("pagamento ausente");
     return { paymentId: String(d.paymentId) };
   })
   .handler(async ({ data }) => {
-    const token = mpToken();
-    if (!token) {
+    const access = token();
+    if (!access) {
       return { ok: false as const, status: "unknown", error: "sem token" };
     }
-
     const res = await fetch(
       `https://api.mercadopago.com/v1/payments/${encodeURIComponent(data.paymentId)}`,
-      { headers: { Authorization: `Bearer ${token}` } },
+      { headers: { Authorization: `Bearer ${access}` } },
     );
     const json = (await res.json().catch(() => ({}))) as {
       id?: number;
@@ -198,14 +219,9 @@ export const verifyMpPayment = createServerFn({ method: "GET" })
       status_detail?: string;
       transaction_amount?: number;
       external_reference?: string;
-      payer?: { email?: string };
     };
     if (!res.ok) {
-      return {
-        ok: false as const,
-        status: "unknown",
-        error: "falha ao consultar",
-      };
+      return { ok: false as const, status: "unknown", error: "falha ao consultar" };
     }
     return {
       ok: true as const,
@@ -213,7 +229,6 @@ export const verifyMpPayment = createServerFn({ method: "GET" })
       statusDetail: json.status_detail || "",
       amount: json.transaction_amount || 0,
       externalReference: json.external_reference || "",
-      email: json.payer?.email || "",
       paymentId: String(json.id || data.paymentId),
     };
   });

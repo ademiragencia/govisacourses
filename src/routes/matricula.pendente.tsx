@@ -23,7 +23,7 @@ function PendentePage() {
         </h1>
         <p className="mt-2 text-sm leading-relaxed text-fg-muted">
           Pix e boleto podem levar alguns minutos (ou até o vencimento do
-          boleto). Assim que o Mercado Pago confirmar, você volta para liberar
+          boleto). Assim que o pagamento confirmar, o acesso é liberado.
           o WhatsApp da equipe.
         </p>
         <a

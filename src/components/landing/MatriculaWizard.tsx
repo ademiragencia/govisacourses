@@ -1,7 +1,7 @@
-import { useMemo, useState, type ReactNode } from "react";
-import { ArrowLeft, ArrowRight, CreditCard, Loader2 } from "lucide-react";
+import { useCallback, useMemo, useState, type ReactNode } from "react";
+import { ArrowLeft, ArrowRight, CheckCircle2, MessageCircle } from "lucide-react";
 import { COURSE_LIVE, COURSE_SELF } from "@/lib/config";
-import { createMpCheckout } from "@/lib/mp-server";
+import { CheckoutPay } from "@/components/landing/CheckoutPay";
 import {
   emptyContract,
   formatCep,
@@ -13,12 +13,17 @@ import {
   saveLead,
   selectedOffer,
   type ContractAnswers,
+  type StoredLead,
 } from "@/lib/mp";
 import { formatPhoneInput, isEmailValid, isPhoneValid } from "@/lib/qualify";
-import type { StrictMeta } from "@/lib/strict-qualify";
+import {
+  openPaidWhatsApp,
+  submitPaidEmail,
+  type StrictMeta,
+} from "@/lib/strict-qualify";
 import { cn } from "@/lib/utils";
 
-type Screen = "offer" | "contract" | "pay";
+type Screen = "offer" | "contract" | "pay" | "done";
 
 const UF = [
   "AC","AL","AP","AM","BA","CE","DF","ES","GO","MA","MT","MS","MG","PA","PB",
@@ -65,17 +70,17 @@ export function MatriculaWizard({
   const [screen, setScreen] = useState<Screen>("offer");
   const [answers, setAnswers] = useState<ContractAnswers>(emptyContract);
   const [errors, setErrors] = useState<Partial<Record<keyof ContractAnswers, string>>>({});
-  const [sending, setSending] = useState(false);
-  const [payError, setPayError] = useState<string | null>(null);
   const [cepLoading, setCepLoading] = useState(false);
+  const [lead, setLead] = useState<StoredLead | null>(null);
 
   const plans = paymentOptions(answers.modality);
   const offer = selectedOffer(answers);
 
   const progress = useMemo(() => {
-    if (screen === "offer") return 33;
-    if (screen === "contract") return 66;
-    return 92;
+    if (screen === "offer") return 30;
+    if (screen === "contract") return 60;
+    if (screen === "pay") return 85;
+    return 100;
   }, [screen]);
 
   const set =
@@ -128,69 +133,51 @@ export function MatriculaWizard({
     if (!answers.state) e.state = "UF";
     setErrors(e);
     if (Object.keys(e).length) return;
-    setScreen("pay");
-  }
-
-  async function startCheckout() {
-    setSending(true);
-    setPayError(null);
-    const leadId = newLeadId();
-    saveLead({
+    const next: StoredLead = {
       ...answers,
-      id: leadId,
+      id: newLeadId(),
       meta: fichaMeta,
       amount: offer.amount,
       installments: offer.installments,
       courseTitle: offer.title,
       planLabel: offer.planLabel,
-    });
-    try {
-      const res = await createMpCheckout({
-        data: {
-          name: answers.name,
-          email: answers.email,
-          phone: answers.phone,
-          cpf: answers.cpf,
-          city: answers.city,
-          street: answers.street,
-          number: answers.number,
-          zip: answers.cep,
-          modality: answers.modality === "live" ? "live" : "self",
-          plan: answers.plan || "cash",
-          amount: offer.amount,
-          installments: offer.installments,
-          title: offer.title,
-          leadId,
-          origin: window.location.origin,
-        },
-      });
-      if (!res.ok) {
-        setPayError(res.error);
-        return;
-      }
-      window.location.href = res.initPoint;
-    } catch (err) {
-      setPayError(
-        err instanceof Error ? err.message : "Não foi possível abrir o pagamento",
-      );
-    } finally {
-      setSending(false);
-    }
+    };
+    saveLead(next);
+    setLead(next);
+    setScreen("pay");
   }
+
+  const onPaid = useCallback(
+    (paymentId: string, amount: number) => {
+      setLead((current) => {
+        if (!current) return current;
+        const payment = { paymentId, amount, status: "approved" };
+        void submitPaidEmail(current, payment, current.meta);
+        openPaidWhatsApp(current, payment, current.meta);
+        return current;
+      });
+      setScreen("done");
+    },
+    [],
+  );
 
   const title =
     screen === "offer"
       ? "Curso e pagamento"
       : screen === "contract"
         ? "Dados para o contrato"
-        : "Revisar e pagar";
+        : screen === "pay"
+          ? "Pagamento"
+          : "Matrícula confirmada";
 
   const hint =
     screen === "offer"
       ? "À vista ou parcelado, como no anúncio"
       : screen === "contract"
         ? "Esses dados entram no contrato de matrícula"
-        : "Pagamento seguro no Mercado Pago";
+        : screen === "pay"
+          ? "Pix, cartão ou boleto aqui mesmo"
+          : "Acesso em liberação";
 
   return (
     <div
@@ -452,7 +439,7 @@ export function MatriculaWizard({
           </div>
         )}
 
-        {screen === "pay" && (
+        {screen === "pay" && lead && (
           <div className="space-y-5">
             <div className="rounded-[var(--radius-xl)] border border-gold-line/40 bg-gold-line/10 p-5 text-center">
               <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-gold-line">
@@ -463,36 +450,47 @@ export function MatriculaWizard({
               </p>
               <p className="mt-1 text-sm text-fg-muted">{offer.planDetail}</p>
             </div>
-            <dl className="space-y-2 text-sm">
-              {[
-                ["Nome", answers.name],
-                ["CPF", answers.cpf],
-                ["E-mail", answers.email],
-                ["WhatsApp", answers.phone],
-                [
-                  "Endereço",
-                  `${answers.street}, ${answers.number} — ${answers.city}/${answers.state}`,
-                ],
-              ].map(([k, v]) => (
-                <div key={k} className="flex justify-between gap-4">
-                  <dt className="shrink-0 text-fg-subtle">{k}</dt>
-                  <dd className="text-right font-medium text-fg">{v}</dd>
-                </div>
-              ))}
-            </dl>
-            <p className="text-xs leading-relaxed text-fg-muted">
-              Ao pagar, você confirma os dados para o contrato de matrícula.
-              Depois da confirmação a equipe libera o acesso.
+            <p className="text-xs text-fg-muted">
+              {answers.name} · {answers.cpf}
             </p>
-            {payError && (
-              <div className="rounded-[var(--radius-md)] border border-brand-red/40 bg-brand-red-soft px-4 py-3 text-sm text-fg">
-                {payError}
-              </div>
-            )}
+            <CheckoutPay lead={lead} onPaid={onPaid} />
+          </div>
+        )}
+
+        {screen === "done" && (
+          <div className="space-y-4 text-center">
+            <CheckCircle2 className="mx-auto size-12 text-wa" />
+            <p className="font-display text-xl font-extrabold text-fg">
+              Pagamento confirmado
+            </p>
+            <p className="text-sm leading-relaxed text-fg-muted">
+              A equipe já recebeu os dados do contrato. Se o WhatsApp não
+              abriu, use o botão abaixo.
+            </p>
+            <button
+              type="button"
+              onClick={() => {
+                if (!lead) return;
+                openPaidWhatsApp(
+                  lead,
+                  {
+                    paymentId: "aprovado",
+                    amount: lead.amount,
+                    status: "approved",
+                  },
+                  lead.meta,
+                );
+              }}
+              className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-[var(--radius-md)] bg-wa text-sm font-bold uppercase tracking-[0.04em] text-white"
+            >
+              <MessageCircle className="size-5" />
+              Abrir WhatsApp
+            </button>
           </div>
         )}
       </div>
 
+      {screen !== "done" && (
       <div className="shrink-0 border-t border-border px-5 py-4 sm:px-6">
         <div className="flex gap-2">
           {(screen === "contract" || screen === "pay") && (
@@ -521,27 +519,13 @@ export function MatriculaWizard({
               onClick={goContractNext}
               className="inline-flex h-12 flex-1 items-center justify-center gap-2 rounded-[var(--radius-md)] bg-brand-red px-5 text-sm font-bold uppercase tracking-[0.04em] text-white shadow-[0_10px_28px_rgba(225,29,46,0.3)] hover:brightness-110"
             >
-              Revisar matrícula
+              Ir para o pagamento
               <ArrowRight className="size-4" />
-            </button>
-          )}
-          {screen === "pay" && (
-            <button
-              type="button"
-              onClick={() => void startCheckout()}
-              disabled={sending}
-              className="inline-flex h-12 flex-1 items-center justify-center gap-2 rounded-[var(--radius-md)] bg-brand-red px-5 text-sm font-bold uppercase tracking-[0.04em] text-white shadow-[0_10px_28px_rgba(225,29,46,0.3)] hover:brightness-110 disabled:opacity-70"
-            >
-              {sending ? (
-                <Loader2 className="size-4 animate-spin" />
-              ) : (
-                <CreditCard className="size-5" />
-              )}
-              Pagar {offer.planLabel}
             </button>
           )}
         </div>
       </div>
+      )}
     </div>
   );
 }
