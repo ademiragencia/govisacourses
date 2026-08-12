@@ -2,10 +2,10 @@ import { useMemo, useState, type ReactNode } from "react";
 import {
   ArrowLeft,
   ArrowRight,
+  CheckCircle2,
   CreditCard,
   Loader2,
   ShieldCheck,
-  XCircle,
 } from "lucide-react";
 import {
   DECISION_OPTIONS,
@@ -233,25 +233,25 @@ export function MatriculaWizard({
 
   const title =
     screen === "gate"
-      ? "Investimento do curso"
+      ? "Escolha sua formação"
       : screen === "commit"
-        ? "Compromisso com a formação"
+        ? "Como você quer começar"
         : screen === "contact"
-          ? "Seus dados para matrícula"
+          ? "Seus dados para a matrícula"
           : screen === "pay"
-            ? "Pague para garantir a vaga"
-            : "Ainda não é o momento";
+            ? "Concluir matrícula"
+            : "Quando quiser, a vaga está aqui";
 
   const hint =
     screen === "gate"
-      ? "Só segue quem consegue pagar agora"
+      ? "Valores à vista ou parcelado"
       : screen === "commit"
-        ? "Queremos alunos prontos para começar"
+        ? "Assim a gente te ajuda do jeito certo"
         : screen === "contact"
-          ? "Depois você paga no Mercado Pago"
+          ? "No próximo passo você paga com segurança"
           : screen === "pay"
-            ? "WhatsApp só depois do pagamento aprovado"
-            : "Esta turma é para quem já tem o investimento.";
+            ? "Pix, cartão ou boleto no Mercado Pago"
+            : "Pode voltar e concluir quando fizer sentido pra você.";
 
   return (
     <div
@@ -289,7 +289,7 @@ export function MatriculaWizard({
               </p>
             </div>
             <Field
-              label="Você consegue pagar a matrícula agora?"
+              label="Quando você quer garantir a vaga?"
               error={errors.money}
             >
               <OptionGrid
@@ -313,7 +313,7 @@ export function MatriculaWizard({
         {screen === "commit" && (
           <div className="space-y-5">
             <Field
-              label="Você decide e paga a matrícula?"
+              label="Quem conclui a matrícula?"
               error={errors.decision}
             >
               <OptionGrid
@@ -347,10 +347,10 @@ export function MatriculaWizard({
 
         {screen === "contact" && (
           <div className="space-y-4">
-            <div className="flex items-start gap-3 rounded-[var(--radius-md)] border border-wa/30 bg-wa/10 px-4 py-3 text-xs leading-relaxed text-fg">
-              <ShieldCheck className="mt-0.5 size-4 shrink-0 text-wa" />
-              Você passou no filtro. No próximo passo o pagamento é no Mercado
-              Pago. A equipe só é avisada depois da aprovação.
+            <div className="flex items-start gap-3 rounded-[var(--radius-md)] border border-gold-line/30 bg-gold-line/10 px-4 py-3 text-xs leading-relaxed text-fg">
+              <ShieldCheck className="mt-0.5 size-4 shrink-0 text-gold-line" />
+              Quase lá. No próximo passo você conclui o pagamento e libera o
+              acesso.
             </div>
             <Field label="Nome completo" error={errors.name} htmlFor="m-name">
               <input
@@ -422,8 +422,8 @@ export function MatriculaWizard({
               ))}
             </dl>
             <p className="text-xs leading-relaxed text-fg-muted">
-              Pix, cartão ou boleto no Mercado Pago. Depois que o pagamento
-              for aprovado, você cai no WhatsApp da equipe com a comprovação.
+              Pagamento seguro no Mercado Pago. Depois da confirmação, a equipe
+              te recebe para liberar o acesso.
             </p>
             {payError && (
               <div className="rounded-[var(--radius-md)] border border-brand-red/40 bg-brand-red-soft px-4 py-3 text-sm text-fg">
@@ -435,18 +435,13 @@ export function MatriculaWizard({
 
         {screen === "fail" && (
           <div className="space-y-4 text-center">
-            <XCircle className="mx-auto size-10 text-brand-red" />
+            <CheckCircle2 className="mx-auto size-10 text-gold-line" />
             <p className="font-display text-xl font-extrabold text-fg">
-              Esta matrícula é para quem já pode investir
+              Sem problema
             </p>
             <p className="text-sm leading-relaxed text-fg-muted">
-              O curso tem valor definido (
-              {COURSE_SELF.planLabel} ou {COURSE_LIVE.planLabel}). Quando você
-              tiver o investimento e quiser começar, volte nesta página e
-              preencha de novo.
-            </p>
-            <p className="text-xs text-fg-subtle">
-              Não enviamos sua ficha para a equipe neste momento.
+              Quando quiser garantir sua vaga, é só voltar e concluir a
+              matrícula. O curso continua aqui, no seu tempo.
             </p>
           </div>
         )}

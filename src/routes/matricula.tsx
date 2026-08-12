@@ -8,7 +8,7 @@ import type { StrictMeta } from "@/lib/strict-qualify";
 const PAGE_TITLE =
   "Matrícula | Formação em Processos Imigratórios | Go Visa Courses";
 const PAGE_DESC =
-  "Matrícula online com pagamento no Mercado Pago. Só quem já pode investir segue. WhatsApp da equipe só depois do pagamento aprovado.";
+  "Matricule-se na Formação em Processos Imigratórios. Pagamento online no Mercado Pago e acesso liberado após a confirmação.";
 
 export const Route = createFileRoute("/matricula")({
   head: () => ({
@@ -75,19 +75,17 @@ function MatriculaPage() {
         <div className="mx-auto grid max-w-5xl gap-10 lg:grid-cols-[1fr_minmax(0,440px)] lg:items-start">
           <div className="lg:pt-2">
             <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-gold-line/40 bg-gold-line/10 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.14em] text-gold-line">
-              Matrícula + Mercado Pago
+              Matrícula online
             </div>
             <h1 className="display text-[clamp(1.85rem,4vw,2.75rem)] text-fg">
-              Pague a formação.
+              Garanta sua vaga
               <br />
-              <span className="text-brand-red">
-                WhatsApp só depois do pagamento.
-              </span>
+              <span className="text-brand-red">na formação.</span>
             </h1>
             <p className="mt-4 max-w-lg text-base leading-relaxed text-fg-muted">
-              Filtro de quem consegue investir, pagamento no Mercado Pago (Pix,
-              cartão ou boleto) e só então a equipe recebe você no WhatsApp com
-              o comprovante.
+              Escolha a modalidade, preencha seus dados e conclua o pagamento no
+              Mercado Pago. Pix, cartão ou boleto. Depois da confirmação, a
+              equipe libera seu acesso.
             </p>
 
             <ul className="mt-8 space-y-3">
@@ -104,8 +102,8 @@ function MatriculaPage() {
                 },
                 {
                   icon: ShieldCheck,
-                  t: "Sem curiosos no WhatsApp",
-                  d: "Quem não paga não chega na equipe",
+                  t: "Pagamento seguro",
+                  d: "Mercado Pago · Pix, cartão ou boleto",
                 },
               ].map(({ icon: Icon, t, d }) => (
                 <li

@@ -44,19 +44,19 @@ export type StrictMeta = {
 export const MONEY_OPTIONS = [
   {
     value: "now",
-    label: "Sim. Tenho o valor agora (à vista ou na 1ª parcela)",
+    label: "Quero garantir minha vaga agora",
   },
   {
     value: "week",
-    label: "Sim. Consigo pagar ainda esta semana",
+    label: "Quero concluir ainda esta semana",
   },
   {
     value: "month",
-    label: "Só no próximo mês",
+    label: "Prefiro começar no próximo mês",
   },
   {
     value: "no",
-    label: "Não tenho o valor agora",
+    label: "Quero me informar melhor antes",
   },
 ] as const;
 
@@ -72,14 +72,14 @@ export const STRICT_MODALITY_OPTIONS = [
 ] as const;
 
 export const DECISION_OPTIONS = [
-  { value: "self", label: "Sim, eu decido e pago a matrícula" },
+  { value: "self", label: "Eu mesmo concluo a matrícula" },
   {
     value: "partner",
-    label: "Preciso alinhar com outra pessoa, mas o valor já existe",
+    label: "Vou alinhar com alguém e já finalizo",
   },
   {
     value: "loan",
-    label: "Dependo de empréstimo ou de alguém liberar o dinheiro",
+    label: "Quero ver isso com mais calma depois",
   },
 ] as const;
 
@@ -92,10 +92,10 @@ export const STRICT_AVAILABILITY_OPTIONS = [
 export const STRICT_MOTIVATION_OPTIONS = [
   {
     value: "hire",
-    label: "Quero a formação e a chance de faturar em dólar com o escritório",
+    label: "Quero a formação e crescer com o mercado americano",
   },
   { value: "career", label: "Quero me profissionalizar em imigração agora" },
-  { value: "explore", label: "Estou só conhecendo / sem prazo para matricular" },
+  { value: "explore", label: "Ainda estou conhecendo o curso" },
 ] as const;
 
 export function emptyStrictAnswers(): StrictAnswers {
