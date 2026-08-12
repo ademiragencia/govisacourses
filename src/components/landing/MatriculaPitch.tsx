@@ -129,8 +129,7 @@ export function MatriculaPitch() {
 
       <p className="mt-8 flex items-start gap-2 text-xs leading-relaxed text-fg-subtle">
         <Clock className="mt-0.5 size-3.5 shrink-0" />
-        Acesso liberado após a confirmação do pagamento. Pix, cartão ou boleto
-        nesta página. Sem inglês obrigatório.
+        Acesso liberado após a confirmação do pagamento no cartão de crédito.
       </p>
     </div>
   );

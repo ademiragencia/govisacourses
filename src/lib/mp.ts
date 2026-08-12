@@ -71,7 +71,7 @@ export function paymentOptions(modality: CourseId | ""): PaymentOption[] {
       {
         id: "cash",
         label: "R$ 3.000,00 à vista",
-        detail: "Pix, cartão ou boleto",
+        detail: "Cartão de crédito",
         amount: COURSE_LIVE.price,
         installments: 1,
         amountLabel: brl(COURSE_LIVE.price),

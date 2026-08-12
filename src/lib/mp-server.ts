@@ -171,8 +171,6 @@ export const createSitePayment = createServerFn({ method: "POST" })
         json.message ||
         json.error ||
         "";
-      const friendly = /without key|QR render|Financial Identity/i.test(raw)
-        ? "Pix ainda não está liberado nesta conta. Pague com cartão ou boleto."
         : raw || "Não foi possível processar o pagamento.";
       return { ok: false as const, error: friendly };
     }
@@ -182,7 +180,7 @@ export const createSitePayment = createServerFn({ method: "POST" })
         ok: false as const,
         error:
           REJECT[json.status_detail || ""] ||
-          "Pagamento não autorizado. Tente outro cartão ou o Pix.",
+          "Pagamento não autorizado. Tente outro cartão de crédito.",
       };
     }
 

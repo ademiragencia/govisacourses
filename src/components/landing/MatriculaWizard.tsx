@@ -202,7 +202,7 @@ export function MatriculaWizard({
       : screen === "contract"
         ? "Esses dados entram no contrato de matrícula"
         : screen === "pay"
-          ? "Pix, cartão ou boleto aqui mesmo"
+          ? "Cartão de crédito"
           : "Acesso em liberação";
 
   return (

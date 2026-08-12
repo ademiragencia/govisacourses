@@ -139,8 +139,8 @@ function SucessoPage() {
               Pagamento ainda não confirmado
             </h1>
             <p className="mt-2 text-sm text-fg-muted">
-              Se você pagou no boleto ou o Pix ainda está processando, aguarde a
-              confirmação. O WhatsApp só abre depois da aprovação.
+              Se o cartão ficou em análise, aguarde a confirmação. O WhatsApp
+              só abre depois da aprovação.
             </p>
             <a
               href="/matricula/pendente"

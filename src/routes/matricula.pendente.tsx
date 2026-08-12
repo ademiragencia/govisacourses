@@ -22,9 +22,8 @@ function PendentePage() {
           Pagamento em análise
         </h1>
         <p className="mt-2 text-sm leading-relaxed text-fg-muted">
-          Pix e boleto podem levar alguns minutos (ou até o vencimento do
-          boleto). Assim que o pagamento confirmar, o acesso é liberado.
-          o WhatsApp da equipe.
+          O cartão ficou em análise. Assim que o pagamento confirmar, o acesso
+          é liberado e a equipe recebe você no WhatsApp.
         </p>
         <a
           href="/matricula"
