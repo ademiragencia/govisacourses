@@ -13,6 +13,7 @@ import {
   formatExpiry,
   tokenizeCard,
 } from "@/lib/mp-sdk";
+import { buildPixCode, pixQrUrl } from "@/lib/pix";
 import type { StoredLead } from "@/lib/mp";
 import { cn } from "@/lib/utils";
 
@@ -25,9 +26,10 @@ export function CheckoutPay({
   lead: StoredLead;
   onPaid: (paymentId: string, amount: number) => void;
 }) {
-  const [method, setMethod] = useState<Method>("card");
+  const [method, setMethod] = useState<Method>("pix");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [pixManual, setPixManual] = useState(false);
 
   const [holder, setHolder] = useState(lead.name);
   const [number, setNumber] = useState("");
@@ -41,7 +43,7 @@ export function CheckoutPay({
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
-    if (!paymentId || method === "card") return;
+    if (!paymentId || method !== "pix" || pixManual) return;
     let stop = false;
     const tick = async () => {
       const r = await verifyMpPayment({ data: { paymentId } });
@@ -75,19 +77,28 @@ export function CheckoutPay({
           leadId: lead.id,
         },
       });
-      if (!res.ok) {
-        setError(res.error);
-        return;
-      }
-      if (res.status === "approved") {
+      if (res.ok && res.status === "approved") {
         onPaid(res.paymentId, lead.amount);
         return;
       }
-      setPaymentId(res.paymentId);
-      setQr(res.qrCode);
-      setQrImg(res.qrBase64);
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Erro no Pix");
+      if (res.ok && res.qrCode) {
+        setPaymentId(res.paymentId);
+        setQr(res.qrCode);
+        setQrImg(res.qrBase64);
+        setPixManual(false);
+        return;
+      }
+      const code = buildPixCode({ amount: lead.amount, txid: lead.id });
+      setQr(code);
+      setQrImg("");
+      setPixManual(true);
+      setPaymentId(`pix-${lead.id}`);
+    } catch {
+      const code = buildPixCode({ amount: lead.amount, txid: lead.id });
+      setQr(code);
+      setQrImg("");
+      setPixManual(true);
+      setPaymentId(`pix-${lead.id}`);
     } finally {
       setBusy(false);
     }
@@ -237,15 +248,17 @@ export function CheckoutPay({
 
       {method === "pix" && qr && (
         <div className="space-y-3 text-center">
-          {qrImg && (
-            <img
-              src={`data:image/png;base64,${qrImg}`}
-              alt="QR Code Pix"
-              className="mx-auto h-44 w-44 rounded-[var(--radius-md)] bg-white p-2"
-            />
-          )}
+          <img
+            src={
+              qrImg
+                ? `data:image/png;base64,${qrImg}`
+                : pixQrUrl(qr)
+            }
+            alt="QR Code Pix"
+            className="mx-auto h-44 w-44 rounded-[var(--radius-md)] bg-white p-2"
+          />
           <p className="text-xs text-fg-muted">
-            Escaneie o QR ou copie o código. A confirmação é automática.
+            Escaneie o QR ou copie o código no app do banco.
           </p>
           <button
             type="button"
@@ -255,6 +268,15 @@ export function CheckoutPay({
             {copied ? <CheckCircle2 className="size-4 text-wa" /> : <Copy className="size-4" />}
             {copied ? "Código copiado" : "Copiar código Pix"}
           </button>
+          {pixManual && (
+            <button
+              type="button"
+              onClick={() => onPaid(paymentId || `pix-${lead.id}`, lead.amount)}
+              className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-[var(--radius-md)] bg-brand-red text-sm font-bold uppercase tracking-[0.04em] text-white hover:brightness-110"
+            >
+              Já paguei o Pix
+            </button>
+          )}
         </div>
       )}
 
