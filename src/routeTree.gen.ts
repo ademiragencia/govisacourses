@@ -12,6 +12,10 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as MatriculaRouteImport } from './routes/matricula'
 import { Route as QualificacaoRouteImport } from './routes/qualificacao'
+import { Route as MatriculaFalhouRouteImport } from './routes/matricula.falhou'
+import { Route as MatriculaPendenteRouteImport } from './routes/matricula.pendente'
+import { Route as MatriculaSucessoRouteImport } from './routes/matricula.sucesso'
+import { Route as ApiMpWebhookRouteImport } from './routes/api/mp.webhook'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -28,35 +32,90 @@ const QualificacaoRoute = QualificacaoRouteImport.update({
   path: '/qualificacao',
   getParentRoute: () => rootRouteImport,
 } as any)
+const MatriculaFalhouRoute = MatriculaFalhouRouteImport.update({
+  id: '/falhou',
+  path: '/falhou',
+  getParentRoute: () => MatriculaRoute,
+} as any)
+const MatriculaPendenteRoute = MatriculaPendenteRouteImport.update({
+  id: '/pendente',
+  path: '/pendente',
+  getParentRoute: () => MatriculaRoute,
+} as any)
+const MatriculaSucessoRoute = MatriculaSucessoRouteImport.update({
+  id: '/sucesso',
+  path: '/sucesso',
+  getParentRoute: () => MatriculaRoute,
+} as any)
+const ApiMpWebhookRoute = ApiMpWebhookRouteImport.update({
+  id: '/api/mp/webhook',
+  path: '/api/mp/webhook',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/matricula': typeof MatriculaRoute
+  '/matricula': typeof MatriculaRouteWithChildren
   '/qualificacao': typeof QualificacaoRoute
+  '/matricula/falhou': typeof MatriculaFalhouRoute
+  '/matricula/pendente': typeof MatriculaPendenteRoute
+  '/matricula/sucesso': typeof MatriculaSucessoRoute
+  '/api/mp/webhook': typeof ApiMpWebhookRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/matricula': typeof MatriculaRoute
+  '/matricula': typeof MatriculaRouteWithChildren
   '/qualificacao': typeof QualificacaoRoute
+  '/matricula/falhou': typeof MatriculaFalhouRoute
+  '/matricula/pendente': typeof MatriculaPendenteRoute
+  '/matricula/sucesso': typeof MatriculaSucessoRoute
+  '/api/mp/webhook': typeof ApiMpWebhookRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/matricula': typeof MatriculaRoute
+  '/matricula': typeof MatriculaRouteWithChildren
   '/qualificacao': typeof QualificacaoRoute
+  '/matricula/falhou': typeof MatriculaFalhouRoute
+  '/matricula/pendente': typeof MatriculaPendenteRoute
+  '/matricula/sucesso': typeof MatriculaSucessoRoute
+  '/api/mp/webhook': typeof ApiMpWebhookRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/matricula' | '/qualificacao'
+  fullPaths:
+    | '/'
+    | '/matricula'
+    | '/qualificacao'
+    | '/matricula/falhou'
+    | '/matricula/pendente'
+    | '/matricula/sucesso'
+    | '/api/mp/webhook'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/matricula' | '/qualificacao'
-  id: '__root__' | '/' | '/matricula' | '/qualificacao'
+  to:
+    | '/'
+    | '/matricula'
+    | '/qualificacao'
+    | '/matricula/falhou'
+    | '/matricula/pendente'
+    | '/matricula/sucesso'
+    | '/api/mp/webhook'
+  id:
+    | '__root__'
+    | '/'
+    | '/matricula'
+    | '/qualificacao'
+    | '/matricula/falhou'
+    | '/matricula/pendente'
+    | '/matricula/sucesso'
+    | '/api/mp/webhook'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  MatriculaRoute: typeof MatriculaRoute
+  MatriculaRoute: typeof MatriculaRouteWithChildren
   QualificacaoRoute: typeof QualificacaoRoute
+  ApiMpWebhookRoute: typeof ApiMpWebhookRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -82,13 +141,58 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof QualificacaoRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/matricula/falhou': {
+      id: '/matricula/falhou'
+      path: '/falhou'
+      fullPath: '/matricula/falhou'
+      preLoaderRoute: typeof MatriculaFalhouRouteImport
+      parentRoute: typeof MatriculaRoute
+    }
+    '/matricula/pendente': {
+      id: '/matricula/pendente'
+      path: '/pendente'
+      fullPath: '/matricula/pendente'
+      preLoaderRoute: typeof MatriculaPendenteRouteImport
+      parentRoute: typeof MatriculaRoute
+    }
+    '/matricula/sucesso': {
+      id: '/matricula/sucesso'
+      path: '/sucesso'
+      fullPath: '/matricula/sucesso'
+      preLoaderRoute: typeof MatriculaSucessoRouteImport
+      parentRoute: typeof MatriculaRoute
+    }
+    '/api/mp/webhook': {
+      id: '/api/mp/webhook'
+      path: '/api/mp/webhook'
+      fullPath: '/api/mp/webhook'
+      preLoaderRoute: typeof ApiMpWebhookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
+interface MatriculaRouteChildren {
+  MatriculaFalhouRoute: typeof MatriculaFalhouRoute
+  MatriculaPendenteRoute: typeof MatriculaPendenteRoute
+  MatriculaSucessoRoute: typeof MatriculaSucessoRoute
+}
+
+const MatriculaRouteChildren: MatriculaRouteChildren = {
+  MatriculaFalhouRoute: MatriculaFalhouRoute,
+  MatriculaPendenteRoute: MatriculaPendenteRoute,
+  MatriculaSucessoRoute: MatriculaSucessoRoute,
+}
+
+const MatriculaRouteWithChildren = MatriculaRoute._addFileChildren(
+  MatriculaRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  MatriculaRoute: MatriculaRoute,
+  MatriculaRoute: MatriculaRouteWithChildren,
   QualificacaoRoute: QualificacaoRoute,
+  ApiMpWebhookRoute: ApiMpWebhookRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

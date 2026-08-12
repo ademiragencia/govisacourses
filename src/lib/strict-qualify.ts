@@ -158,6 +158,107 @@ function sourceLabel(meta: StrictMeta): string {
     : meta.source || "Matrícula";
 }
 
+export function buildPaidWhatsApp(
+  a: StrictAnswers,
+  payment: { paymentId: string; amount: number; status: string },
+  meta: StrictMeta = {},
+): string {
+  const course =
+    a.modality === "live" || a.modality === "self"
+      ? COURSES[a.modality]
+      : null;
+
+  return [
+    `✅ *PAGAMENTO APROVADO — Mercado Pago*`,
+    `Status MP: *${payment.status}*`,
+    `ID do pagamento: ${payment.paymentId}`,
+    `Valor: R$ ${payment.amount.toFixed(2).replace(".", ",")}`,
+    `Origem: *${sourceLabel(meta)}*`,
+    "",
+    `*Nome:* ${a.name.trim()}`,
+    `*E-mail:* ${a.email.trim()}`,
+    `*WhatsApp do aluno:* ${a.phone.trim()}`,
+    `*Cidade:* ${a.city.trim()}`,
+    `*Modalidade:* ${labelOf(STRICT_MODALITY_OPTIONS, a.modality)}`,
+    course ? `*Oferta:* ${course.priceLabel} (${course.planLabel})` : "",
+    "",
+    `Paguei a matrícula no Mercado Pago. Quero liberar o acesso da Formação em Processos Imigratórios.`,
+  ]
+    .filter(Boolean)
+    .join("\n");
+}
+
+export function buildPaidEmail(
+  a: StrictAnswers,
+  payment: { paymentId: string; amount: number; status: string },
+  meta: StrictMeta = {},
+): string {
+  const course =
+    a.modality === "live" || a.modality === "self"
+      ? COURSES[a.modality]
+      : null;
+  return [
+    "PAGAMENTO APROVADO — Mercado Pago",
+    "========================================",
+    `Status MP: ${payment.status}`,
+    `Payment ID: ${payment.paymentId}`,
+    `Valor: R$ ${payment.amount.toFixed(2)}`,
+    `Origem: ${sourceLabel(meta)}`,
+    "",
+    "ALUNO",
+    `Nome: ${a.name.trim()}`,
+    `E-mail: ${a.email.trim()}`,
+    `WhatsApp: ${a.phone.trim()}`,
+    `Cidade: ${a.city.trim()}`,
+    `Modalidade: ${labelOf(STRICT_MODALITY_OPTIONS, a.modality)}`,
+    course ? `Oferta: ${course.priceLabel}` : "",
+    "",
+    `Enviado em: ${new Date().toLocaleString("pt-BR")}`,
+  ]
+    .filter(Boolean)
+    .join("\n");
+}
+
+export async function submitPaidEmail(
+  a: StrictAnswers,
+  payment: { paymentId: string; amount: number; status: string },
+  meta: StrictMeta = {},
+): Promise<{ ok: boolean }> {
+  if (!WEB3FORMS_ACCESS_KEY) return { ok: false };
+  const form = new FormData();
+  form.append("access_key", WEB3FORMS_ACCESS_KEY);
+  form.append(
+    "subject",
+    `[PAGO] ${a.name.trim()} — Mercado Pago ${payment.paymentId}`,
+  );
+  form.append("from_name", "Go Visa Courses · Pagamento");
+  form.append("name", a.name.trim());
+  form.append("email", a.email.trim());
+  form.append("phone", a.phone.trim());
+  form.append("payment_id", payment.paymentId);
+  form.append("status", payment.status);
+  form.append("message", buildPaidEmail(a, payment, meta));
+  form.append("botcheck", "");
+  try {
+    const res = await fetch(WEB3FORMS_ENDPOINT, { method: "POST", body: form });
+    const data = (await res.json().catch(() => ({}))) as { success?: boolean };
+    return { ok: Boolean(res.ok && data.success !== false) };
+  } catch {
+    return { ok: false };
+  }
+}
+
+export function openPaidWhatsApp(
+  a: StrictAnswers,
+  payment: { paymentId: string; amount: number; status: string },
+  meta: StrictMeta = {},
+): { ok: boolean } {
+  const url = getWhatsAppUrl(buildPaidWhatsApp(a, payment, meta));
+  if (!url) return { ok: false };
+  window.open(url, "_blank", "noopener,noreferrer");
+  return { ok: true };
+}
+
 export function buildStrictWhatsApp(
   a: StrictAnswers,
   result: StrictResult,
@@ -353,7 +454,8 @@ export function openStrictWhatsApp(
   result: StrictResult,
   meta: StrictMeta = {},
 ): { ok: boolean } {
-  const url = getWhatsAppUrl(buildStrictWhatsApp(a, result, meta));
+  const message = buildStrictWhatsApp(a, result, meta);
+  const url = getWhatsAppUrl(message);
   if (!url) return { ok: false };
   window.open(url, "_blank", "noopener,noreferrer");
   return { ok: true };

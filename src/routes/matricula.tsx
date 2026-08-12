@@ -8,7 +8,7 @@ import type { StrictMeta } from "@/lib/strict-qualify";
 const PAGE_TITLE =
   "Matrícula | Formação em Processos Imigratórios | Go Visa Courses";
 const PAGE_DESC =
-  "Formulário de matrícula da formação 100% online. Só segue quem já pode investir no curso. 5× R$ 500 ou R$ 2.000 à vista, ou turma ao vivo R$ 3.000.";
+  "Matrícula online com pagamento no Mercado Pago. Só quem já pode investir segue. WhatsApp da equipe só depois do pagamento aprovado.";
 
 export const Route = createFileRoute("/matricula")({
   head: () => ({
@@ -75,19 +75,19 @@ function MatriculaPage() {
         <div className="mx-auto grid max-w-5xl gap-10 lg:grid-cols-[1fr_minmax(0,440px)] lg:items-start">
           <div className="lg:pt-2">
             <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-gold-line/40 bg-gold-line/10 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.14em] text-gold-line">
-              Matrícula do curso
+              Matrícula + Mercado Pago
             </div>
             <h1 className="display text-[clamp(1.85rem,4vw,2.75rem)] text-fg">
-              Matricule-se na formação.
+              Pague a formação.
               <br />
               <span className="text-brand-red">
-                Só para quem já pode investir.
+                WhatsApp só depois do pagamento.
               </span>
             </h1>
             <p className="mt-4 max-w-lg text-base leading-relaxed text-fg-muted">
-              Este formulário filtra quem ainda não tem o valor do curso. Se
-              você já consegue pagar, a ficha vai para a equipe fechar a
-              matrícula no WhatsApp.
+              Filtro de quem consegue investir, pagamento no Mercado Pago (Pix,
+              cartão ou boleto) e só então a equipe recebe você no WhatsApp com
+              o comprovante.
             </p>
 
             <ul className="mt-8 space-y-3">
@@ -104,8 +104,8 @@ function MatriculaPage() {
                 },
                 {
                   icon: ShieldCheck,
-                  t: "Sem curiosos na equipe",
-                  d: "Quem não pode pagar agora não chega no WhatsApp",
+                  t: "Sem curiosos no WhatsApp",
+                  d: "Quem não paga não chega na equipe",
                 },
               ].map(({ icon: Icon, t, d }) => (
                 <li

@@ -2,9 +2,8 @@ import { useMemo, useState, type ReactNode } from "react";
 import {
   ArrowLeft,
   ArrowRight,
-  CheckCircle2,
+  CreditCard,
   Loader2,
-  MessageCircle,
   ShieldCheck,
   XCircle,
 } from "lucide-react";
@@ -20,16 +19,16 @@ import {
   isEmailValid,
   isHardMoneyFail,
   isPhoneValid,
-  openStrictWhatsApp,
-  submitStrictLeadEmail,
   type StrictAnswers,
   type StrictMeta,
   type StrictResult,
 } from "@/lib/strict-qualify";
 import { COURSE_LIVE, COURSE_SELF } from "@/lib/config";
+import { createMpCheckout } from "@/lib/mp-server";
+import { newLeadId, offerFor, saveLead } from "@/lib/mp";
 import { cn } from "@/lib/utils";
 
-type Screen = "gate" | "commit" | "contact" | "pass" | "fail";
+type Screen = "gate" | "commit" | "contact" | "pay" | "fail";
 
 function OptionGrid({
   options,
@@ -134,12 +133,15 @@ export function MatriculaWizard({
   >({});
   const [result, setResult] = useState<StrictResult | null>(null);
   const [sending, setSending] = useState(false);
-  const [emailSent, setEmailSent] = useState(false);
+  const [payError, setPayError] = useState<string | null>(null);
+
+  const offer = offerFor(answers.modality);
 
   const progress = useMemo(() => {
-    if (screen === "gate") return 25;
-    if (screen === "commit") return 55;
-    if (screen === "contact") return 80;
+    if (screen === "gate") return 20;
+    if (screen === "commit") return 45;
+    if (screen === "contact") return 70;
+    if (screen === "pay") return 90;
     return 100;
   }, [screen]);
 
@@ -188,16 +190,42 @@ export function MatriculaWizard({
     if (answers.city.trim().length < 2) e.city = "Informe sua cidade";
     setErrors(e);
     if (Object.keys(e).length) return;
-    setScreen("pass");
+    setScreen("pay");
   }
 
-  async function finishMatricula() {
+  async function startCheckout() {
     if (!result || result.status !== "qualified") return;
     setSending(true);
+    setPayError(null);
+    const leadId = newLeadId();
+    saveLead({
+      ...answers,
+      id: leadId,
+      meta: fichaMeta,
+      amount: offer.amount,
+      courseTitle: offer.title,
+    });
     try {
-      const mail = await submitStrictLeadEmail(answers, result, fichaMeta);
-      if (mail.ok) setEmailSent(true);
-      openStrictWhatsApp(answers, result, fichaMeta);
+      const res = await createMpCheckout({
+        data: {
+          name: answers.name,
+          email: answers.email,
+          phone: answers.phone,
+          city: answers.city,
+          modality: answers.modality === "live" ? "live" : "self",
+          leadId,
+          origin: window.location.origin,
+        },
+      });
+      if (!res.ok) {
+        setPayError(res.error);
+        return;
+      }
+      window.location.href = res.initPoint;
+    } catch (err) {
+      setPayError(
+        err instanceof Error ? err.message : "Não foi possível abrir o pagamento",
+      );
     } finally {
       setSending(false);
     }
@@ -210,8 +238,8 @@ export function MatriculaWizard({
         ? "Compromisso com a formação"
         : screen === "contact"
           ? "Seus dados para matrícula"
-          : screen === "pass"
-            ? "Perfil aprovado para matrícula"
+          : screen === "pay"
+            ? "Pague para garantir a vaga"
             : "Ainda não é o momento";
 
   const hint =
@@ -220,9 +248,9 @@ export function MatriculaWizard({
       : screen === "commit"
         ? "Queremos alunos prontos para começar"
         : screen === "contact"
-          ? "A equipe recebe só quem passou no filtro"
-          : screen === "pass"
-            ? "Ficha pronta. Abra o WhatsApp para fechar."
+          ? "Depois você paga no Mercado Pago"
+          : screen === "pay"
+            ? "WhatsApp só depois do pagamento aprovado"
             : "Esta turma é para quem já tem o investimento.";
 
   return (
@@ -321,8 +349,8 @@ export function MatriculaWizard({
           <div className="space-y-4">
             <div className="flex items-start gap-3 rounded-[var(--radius-md)] border border-wa/30 bg-wa/10 px-4 py-3 text-xs leading-relaxed text-fg">
               <ShieldCheck className="mt-0.5 size-4 shrink-0 text-wa" />
-              Você passou no filtro. Agora a ficha vai para a equipe fechar a
-              matrícula.
+              Você passou no filtro. No próximo passo o pagamento é no Mercado
+              Pago. A equipe só é avisada depois da aprovação.
             </div>
             <Field label="Nome completo" error={errors.name} htmlFor="m-name">
               <input
@@ -370,45 +398,37 @@ export function MatriculaWizard({
           </div>
         )}
 
-        {screen === "pass" && result && (
+        {screen === "pay" && (
           <div className="space-y-5">
-            <div className="rounded-[var(--radius-xl)] border border-wa/40 bg-wa/10 p-5 text-center">
-              <CheckCircle2 className="mx-auto size-10 text-wa" />
-              <p className="mt-3 font-display text-xl font-extrabold text-fg">
-                Pronto para matricular
+            <div className="rounded-[var(--radius-xl)] border border-gold-line/40 bg-gold-line/10 p-5 text-center">
+              <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-gold-line">
+                {offer.shortName}
               </p>
-              <p className="mt-2 text-sm leading-relaxed text-fg-muted">
-                Envie a ficha no WhatsApp para a equipe confirmar pagamento e
-                liberar o acesso.
+              <p className="mt-2 font-display text-4xl font-extrabold text-fg">
+                {offer.priceLabel}
               </p>
+              <p className="mt-1 text-sm text-fg-muted">{offer.planLabel}</p>
             </div>
-            <div className="rounded-[var(--radius-lg)] border border-border bg-bg/50 p-4 text-sm">
-              <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-fg-subtle">
-                Resumo
-              </p>
-              <dl className="mt-3 space-y-2">
-                {[
-                  ["Nome", answers.name],
-                  ["E-mail", answers.email],
-                  ["WhatsApp", answers.phone],
-                  [
-                    "Curso",
-                    answers.modality === "live"
-                      ? COURSE_LIVE.shortName
-                      : COURSE_SELF.shortName,
-                  ],
-                ].map(([k, v]) => (
-                  <div key={k} className="flex justify-between gap-4">
-                    <dt className="text-fg-subtle">{k}</dt>
-                    <dd className="text-right font-medium text-fg">{v}</dd>
-                  </div>
-                ))}
-              </dl>
-            </div>
-            {emailSent && (
-              <p className="text-sm text-fg-muted">
-                Ficha enviada por e-mail para a equipe.
-              </p>
+            <dl className="space-y-2 text-sm">
+              {[
+                ["Nome", answers.name],
+                ["E-mail", answers.email],
+                ["WhatsApp", answers.phone],
+              ].map(([k, v]) => (
+                <div key={k} className="flex justify-between gap-4">
+                  <dt className="text-fg-subtle">{k}</dt>
+                  <dd className="text-right font-medium text-fg">{v}</dd>
+                </div>
+              ))}
+            </dl>
+            <p className="text-xs leading-relaxed text-fg-muted">
+              Pix, cartão ou boleto no Mercado Pago. Depois que o pagamento
+              for aprovado, você cai no WhatsApp da equipe com a comprovação.
+            </p>
+            {payError && (
+              <div className="rounded-[var(--radius-md)] border border-brand-red/40 bg-brand-red-soft px-4 py-3 text-sm text-fg">
+                {payError}
+              </div>
             )}
           </div>
         )}
@@ -434,11 +454,17 @@ export function MatriculaWizard({
 
       <div className="shrink-0 border-t border-border px-5 py-4 sm:px-6">
         <div className="flex gap-2">
-          {(screen === "commit" || screen === "contact") && (
+          {(screen === "commit" || screen === "contact" || screen === "pay") && (
             <button
               type="button"
               onClick={() =>
-                setScreen(screen === "contact" ? "commit" : "gate")
+                setScreen(
+                  screen === "pay"
+                    ? "contact"
+                    : screen === "contact"
+                      ? "commit"
+                      : "gate",
+                )
               }
               className="inline-flex h-12 items-center justify-center gap-2 rounded-[var(--radius-md)] border border-border px-4 text-sm font-semibold text-fg-muted hover:bg-white/5 hover:text-fg"
             >
@@ -473,23 +499,23 @@ export function MatriculaWizard({
               onClick={goContactNext}
               className="inline-flex h-12 flex-1 items-center justify-center gap-2 rounded-[var(--radius-md)] bg-brand-red px-5 text-sm font-bold uppercase tracking-[0.04em] text-white shadow-[0_10px_28px_rgba(225,29,46,0.3)] hover:brightness-110"
             >
-              Continuar
+              Ir para o pagamento
               <ArrowRight className="size-4" />
             </button>
           )}
-          {screen === "pass" && (
+          {screen === "pay" && (
             <button
               type="button"
-              onClick={() => void finishMatricula()}
+              onClick={() => void startCheckout()}
               disabled={sending}
-              className="inline-flex h-12 flex-1 items-center justify-center gap-2 rounded-[var(--radius-md)] bg-wa px-5 text-sm font-bold uppercase tracking-[0.04em] text-white shadow-[0_12px_32px_rgba(34,163,90,0.35)] hover:bg-wa-hover disabled:opacity-70"
+              className="inline-flex h-12 flex-1 items-center justify-center gap-2 rounded-[var(--radius-md)] bg-brand-red px-5 text-sm font-bold uppercase tracking-[0.04em] text-white shadow-[0_10px_28px_rgba(225,29,46,0.3)] hover:brightness-110 disabled:opacity-70"
             >
               {sending ? (
                 <Loader2 className="size-4 animate-spin" />
               ) : (
-                <MessageCircle className="size-5" />
+                <CreditCard className="size-5" />
               )}
-              Fechar matrícula no WhatsApp
+              Pagar no Mercado Pago
             </button>
           )}
         </div>
