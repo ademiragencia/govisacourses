@@ -171,8 +171,10 @@ export const createSitePayment = createServerFn({ method: "POST" })
         json.message ||
         json.error ||
         "";
-        : raw || "Não foi possível processar o pagamento.";
-      return { ok: false as const, error: friendly };
+      return {
+        ok: false as const,
+        error: raw || "Não foi possível processar o pagamento.",
+      };
     }
 
     if (json.status === "rejected") {
