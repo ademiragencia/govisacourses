@@ -1,14 +1,14 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { BadgeDollarSign, ShieldCheck, Wallet } from "lucide-react";
 import { MatriculaWizard } from "@/components/landing/MatriculaWizard";
-import { BRAND, COURSE_LIVE, COURSE_SELF } from "@/lib/config";
+import { MatriculaPitch } from "@/components/landing/MatriculaPitch";
+import { BRAND } from "@/lib/config";
 import { SITE_URL } from "@/lib/seo";
 import type { StrictMeta } from "@/lib/strict-qualify";
 
 const PAGE_TITLE =
   "Matrícula | Formação em Processos Imigratórios | Go Visa Courses";
 const PAGE_DESC =
-  "Matrícula da Formação em Processos Imigratórios. Dados para contrato e pagamento no site: 5× R$ 500 ou R$ 2.000 à vista.";
+  "Formação Profissional em Processos Imigratórios com a Go Visa Law Firm, o maior escritório dos EUA. 100% online. 5× R$ 500 ou R$ 2.000 à vista. Os melhores alunos são contratados e já faturam em dólar.";
 
 export const Route = createFileRoute("/matricula")({
   head: () => ({
@@ -62,73 +62,35 @@ function MatriculaPage() {
               className="h-7 w-auto"
             />
           </Link>
-          <Link
-            to="/"
-            className="text-xs font-semibold text-fg-muted transition-colors hover:text-fg"
+          <a
+            href="#formulario"
+            className="text-xs font-semibold text-fg-muted transition-colors hover:text-fg lg:hidden"
           >
-            Ver o curso
-          </Link>
+            Ir para matrícula
+          </a>
         </div>
       </header>
 
       <main className="container-lp py-10 md:py-14">
-        <div className="mx-auto grid max-w-5xl gap-10 lg:grid-cols-[1fr_minmax(0,440px)] lg:items-start">
-          <div className="lg:pt-2">
-            <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-gold-line/40 bg-gold-line/10 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.14em] text-gold-line">
-              Matrícula online
-            </div>
-            <h1 className="display text-[clamp(1.85rem,4vw,2.75rem)] text-fg">
-              Matrícula da formação
-              <br />
-              <span className="text-brand-red">com contrato e pagamento.</span>
-            </h1>
-            <p className="mt-4 max-w-lg text-base leading-relaxed text-fg-muted">
-              Preencha os dados do contrato, escolha à vista ou parcelado e
-              pague aqui mesmo. Depois da confirmação a equipe libera o
-              acesso.
-            </p>
-
-            <ul className="mt-8 space-y-3">
-              {[
-                {
-                  icon: Wallet,
-                  t: COURSE_SELF.shortName,
-                  d: COURSE_SELF.planLabel,
-                },
-                {
-                  icon: BadgeDollarSign,
-                  t: COURSE_LIVE.shortName,
-                  d: COURSE_LIVE.planLabel,
-                },
-                {
-                  icon: ShieldCheck,
-                  t: "Pagamento seguro",
-                  d: "Pix, cartão ou boleto no próprio site",
-                },
-              ].map(({ icon: Icon, t, d }) => (
-                <li
-                  key={t}
-                  className="flex items-start gap-3 rounded-[var(--radius-lg)] border border-border bg-surface/50 px-4 py-3"
-                >
-                  <span className="flex size-9 shrink-0 items-center justify-center rounded-[var(--radius-md)] bg-brand-red-soft text-brand-red">
-                    <Icon className="size-4" strokeWidth={1.75} />
-                  </span>
-                  <div>
-                    <p className="text-sm font-bold text-fg">{t}</p>
-                    <p className="text-xs text-fg-muted">{d}</p>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          <div id="formulario" className="w-full">
+        <div className="mx-auto grid max-w-6xl gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,440px)] lg:items-start">
+          <MatriculaPitch />
+          <div
+            id="formulario"
+            className="w-full lg:sticky lg:top-6 lg:self-start"
+          >
             <MatriculaWizard meta={meta} />
           </div>
         </div>
       </main>
 
-      <footer className="border-t border-border py-8">
+      <a
+        href="#formulario"
+        className="fixed inset-x-4 bottom-4 z-20 inline-flex h-12 items-center justify-center rounded-[var(--radius-md)] bg-brand-red text-sm font-bold uppercase tracking-[0.04em] text-white shadow-[0_10px_28px_rgba(225,29,46,0.35)] lg:hidden"
+      >
+        Garantir matrícula
+      </a>
+
+      <footer className="border-t border-border py-8 pb-24 lg:pb-8">
         <div className="container-lp flex flex-col items-center justify-between gap-3 text-center text-xs text-fg-subtle sm:flex-row sm:text-left">
           <p>
             © {new Date().getFullYear()} Go Visa Courses. {BRAND.firm}.
