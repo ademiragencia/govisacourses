@@ -132,6 +132,33 @@ export function formatCpf(raw: string) {
   return `${d.slice(0, 3)}.${d.slice(3, 6)}.${d.slice(6, 9)}-${d.slice(9)}`;
 }
 
+export function formatBirthDate(raw: string) {
+  const d = raw.replace(/\D/g, "").slice(0, 8);
+  if (d.length <= 2) return d;
+  if (d.length <= 4) return `${d.slice(0, 2)}/${d.slice(2)}`;
+  return `${d.slice(0, 2)}/${d.slice(2, 4)}/${d.slice(4)}`;
+}
+
+export function birthError(value: string): string | null {
+  const m = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(value.trim());
+  if (!m) return "Use o formato 00/00/0000";
+  const day = Number(m[1]);
+  const month = Number(m[2]);
+  const year = Number(m[3]);
+  const now = new Date().getFullYear();
+  if (month < 1 || month > 12 || day < 1 || day > 31) return "Data inválida";
+  if (year < 1930 || year > now - 16) return "Informe uma data de nascimento válida";
+  const dt = new Date(year, month - 1, day);
+  if (
+    dt.getFullYear() !== year ||
+    dt.getMonth() !== month - 1 ||
+    dt.getDate() !== day
+  ) {
+    return "Data inválida";
+  }
+  return null;
+}
+
 export function formatCep(raw: string) {
   const d = raw.replace(/\D/g, "").slice(0, 8);
   if (d.length <= 5) return d;

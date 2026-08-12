@@ -4,10 +4,11 @@ import { COURSE_LIVE, COURSE_SELF } from "@/lib/config";
 import { CheckoutPay } from "@/components/landing/CheckoutPay";
 import {
   emptyContract,
+  formatBirthDate,
   formatCep,
   formatCpf,
+  birthError,
   cpfError,
-  isCpfValid,
   lookupCep,
   newLeadId,
   paymentOptions,
@@ -124,18 +125,40 @@ export function MatriculaWizard({
     const cpfMsg = cpfError(answers.cpf);
     if (cpfMsg) e.cpf = cpfMsg;
     if (answers.rg.trim().length < 4) e.rg = "Informe o RG";
-    if (!answers.birthDate) e.birthDate = "Informe a data de nascimento";
+    const birthMsg = birthError(answers.birthDate);
+    if (birthMsg) e.birthDate = birthMsg;
     if (!isEmailValid(answers.email)) e.email = "E-mail inválido";
     const phoneMsg = phoneError(answers.phone);
     if (phoneMsg) e.phone = phoneMsg;
     if (answers.cep.replace(/\D/g, "").length !== 8) e.cep = "CEP inválido";
     if (answers.street.trim().length < 2) e.street = "Informe o endereço";
     if (!answers.number.trim()) e.number = "Número";
-    if (answers.neighborhood.trim().length < 2) e.neighborhood = "Bairro";
     if (answers.city.trim().length < 2) e.city = "Cidade";
     if (!answers.state) e.state = "UF";
     setErrors(e);
-    if (Object.keys(e).length) return;
+    if (Object.keys(e).length) {
+      const first = Object.keys(e)[0];
+      const ids: Record<string, string> = {
+        name: "m-name",
+        cpf: "m-cpf",
+        rg: "m-rg",
+        birthDate: "m-birth",
+        email: "m-email",
+        phone: "m-phone",
+        cep: "m-cep",
+        street: "m-street",
+        number: "m-num",
+        city: "m-city",
+        state: "m-uf",
+      };
+      requestAnimationFrame(() => {
+        document.getElementById(ids[first] || "m-name")?.scrollIntoView({
+          behavior: "smooth",
+          block: "center",
+        });
+      });
+      return;
+    }
     const next: StoredLead = {
       ...answers,
       id: newLeadId(),
@@ -340,10 +363,12 @@ export function MatriculaWizard({
             >
               <input
                 id="m-birth"
-                type="date"
                 className={inputClass}
                 value={answers.birthDate}
-                onChange={(e) => set("birthDate")(e.target.value)}
+                onChange={(e) => set("birthDate")(formatBirthDate(e.target.value))}
+                placeholder="00/00/0000"
+                inputMode="numeric"
+                autoComplete="bday"
               />
             </Field>
             <Field label="E-mail" error={errors.email} htmlFor="m-email">
@@ -544,14 +569,21 @@ export function MatriculaWizard({
             </button>
           )}
           {screen === "contract" && (
-            <button
-              type="button"
-              onClick={goContractNext}
-              className="inline-flex h-12 flex-1 items-center justify-center gap-2 rounded-[var(--radius-md)] bg-brand-red px-5 text-sm font-bold uppercase tracking-[0.04em] text-white shadow-[0_10px_28px_rgba(225,29,46,0.3)] hover:brightness-110"
-            >
-              Ir para o pagamento
-              <ArrowRight className="size-4" />
-            </button>
+            <div className="w-full space-y-2">
+              {Object.values(errors).filter(Boolean).length > 0 && (
+                <p className="text-center text-xs font-medium text-brand-red">
+                  Confira os campos em vermelho para seguir ao pagamento.
+                </p>
+              )}
+              <button
+                type="button"
+                onClick={goContractNext}
+                className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-[var(--radius-md)] bg-brand-red px-5 text-sm font-bold uppercase tracking-[0.04em] text-white shadow-[0_10px_28px_rgba(225,29,46,0.3)] hover:brightness-110"
+              >
+                Ir para o pagamento
+                <ArrowRight className="size-4" />
+              </button>
+            </div>
           )}
         </div>
       </div>
