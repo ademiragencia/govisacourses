@@ -166,12 +166,15 @@ export const createSitePayment = createServerFn({ method: "POST" })
     };
 
     if (!res.ok || !json.id) {
-      const msg =
+      const raw =
         json.cause?.[0]?.description ||
         json.message ||
         json.error ||
-        "Não foi possível processar o pagamento.";
-      return { ok: false as const, error: msg };
+        "";
+      const friendly = /without key|QR render|Financial Identity/i.test(raw)
+        ? "Pix ainda não está liberado nesta conta. Pague com cartão ou boleto."
+        : raw || "Não foi possível processar o pagamento.";
+      return { ok: false as const, error: friendly };
     }
 
     if (json.status === "rejected") {

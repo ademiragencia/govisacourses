@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
 import { MatriculaWizard } from "@/components/landing/MatriculaWizard";
 import { MatriculaPitch } from "@/components/landing/MatriculaPitch";
 import { BRAND } from "@/lib/config";
@@ -51,6 +52,20 @@ function MatriculaPage() {
     utm_term: search.utm_term,
   };
 
+  const [showSticky, setShowSticky] = useState(false);
+
+  useEffect(() => {
+    const el = document.getElementById("formulario");
+    if (!el) return;
+    const io = new IntersectionObserver(
+      ([entry]) => setShowSticky(!entry.isIntersecting),
+      { threshold: 0.2 },
+    );
+    io.observe(el);
+    setShowSticky(true);
+    return () => io.disconnect();
+  }, []);
+
   return (
     <div className="relative min-h-dvh">
       <header className="border-b border-border bg-bg/80 backdrop-blur-lg">
@@ -83,12 +98,14 @@ function MatriculaPage() {
         </div>
       </main>
 
-      <a
-        href="#formulario"
-        className="fixed inset-x-4 bottom-4 z-20 inline-flex h-12 items-center justify-center rounded-[var(--radius-md)] bg-brand-red text-sm font-bold uppercase tracking-[0.04em] text-white shadow-[0_10px_28px_rgba(225,29,46,0.35)] lg:hidden"
-      >
-        Garantir matrícula
-      </a>
+      {showSticky && (
+        <a
+          href="#formulario"
+          className="fixed inset-x-4 bottom-4 z-20 inline-flex h-12 items-center justify-center rounded-[var(--radius-md)] bg-brand-red text-sm font-bold uppercase tracking-[0.04em] text-white shadow-[0_10px_28px_rgba(225,29,46,0.35)] lg:hidden"
+        >
+          Garantir matrícula
+        </a>
+      )}
 
       <footer className="border-t border-border py-8 pb-24 lg:pb-8">
         <div className="container-lp flex flex-col items-center justify-between gap-3 text-center text-xs text-fg-subtle sm:flex-row sm:text-left">

@@ -25,7 +25,7 @@ export function CheckoutPay({
   lead: StoredLead;
   onPaid: (paymentId: string, amount: number) => void;
 }) {
-  const [method, setMethod] = useState<Method>("pix");
+  const [method, setMethod] = useState<Method>("card");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 

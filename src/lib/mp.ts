@@ -161,25 +161,26 @@ export function cpfError(cpf: string): string | null {
 export async function lookupCep(cep: string) {
   const d = cep.replace(/\D/g, "");
   if (d.length !== 8) return null;
-  try {
-    const res = await fetch(`https://viacep.com.br/ws/${d}/json/`);
-    const json = (await res.json()) as {
-      erro?: boolean;
-      logradouro?: string;
-      bairro?: string;
-      localidade?: string;
-      uf?: string;
-    };
-    if (!res.ok || json.erro) return null;
-    return {
-      street: json.logradouro || "",
-      neighborhood: json.bairro || "",
-      city: json.localidade || "",
-      state: json.uf || "",
-    };
-  } catch {
-    return null;
+  const urls = [
+    `https://viacep.com.br/ws/${d}/json/`,
+    `https://brasilapi.com.br/api/cep/v2/${d}`,
+  ];
+  for (const url of urls) {
+    try {
+      const res = await fetch(url);
+      const json = (await res.json()) as Record<string, unknown>;
+      if (!res.ok || json.erro || json.type === "service_error") continue;
+      return {
+        street: String(json.logradouro || json.street || ""),
+        neighborhood: String(json.bairro || json.neighborhood || ""),
+        city: String(json.localidade || json.city || ""),
+        state: String(json.uf || json.state || ""),
+      };
+    } catch {
+      /* try next */
+    }
   }
+  return null;
 }
 
 export function saveLead(lead: StoredLead) {

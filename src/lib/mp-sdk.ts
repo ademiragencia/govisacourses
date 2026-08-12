@@ -65,37 +65,59 @@ export async function getMpClient(): Promise<MpClient> {
 }
 
 export async function tokenizeCard(input: CardTokenInput) {
-  const mp = await getMpClient();
-  const year = input.cardExpirationYear.length === 2
-    ? `20${input.cardExpirationYear}`
-    : input.cardExpirationYear;
-  const token = await mp.createCardToken({
-    cardNumber: input.cardNumber.replace(/\D/g, ""),
-    cardholderName: input.cardholderName.trim(),
-    cardExpirationMonth: input.cardExpirationMonth.padStart(2, "0"),
-    cardExpirationYear: year,
-    securityCode: input.securityCode,
-    identificationType: "CPF",
-    identificationNumber: input.identificationNumber.replace(/\D/g, ""),
-  });
-  if (!token?.id) {
-    const msg =
-      token?.cause?.[0]?.description ||
-      token?.error ||
-      "Não foi possível validar o cartão";
-    throw new Error(msg);
+  const cardNumber = input.cardNumber.replace(/\D/g, "");
+  const year =
+    input.cardExpirationYear.length === 2
+      ? `20${input.cardExpirationYear}`
+      : input.cardExpirationYear;
+  const month = input.cardExpirationMonth.padStart(2, "0");
+  const cpf = input.identificationNumber.replace(/\D/g, "");
+
+  const res = await fetch(
+    `https://api.mercadopago.com/v1/card_tokens?public_key=${encodeURIComponent(MP_PUBLIC_KEY)}`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        card_number: cardNumber,
+        expiration_year: year,
+        expiration_month: month,
+        security_code: input.securityCode,
+        cardholder: {
+          name: input.cardholderName.trim(),
+          identification: { type: "CPF", number: cpf },
+        },
+      }),
+    },
+  );
+  const token = (await res.json().catch(() => ({}))) as {
+    id?: string;
+    payment_method_id?: string;
+    issuer_id?: number | string;
+    message?: string;
+    cause?: { description?: string }[];
+  };
+  if (!res.ok || !token.id) {
+    throw new Error(
+      token.cause?.[0]?.description ||
+        token.message ||
+        "Não foi possível validar o cartão",
+    );
   }
-  let paymentMethodId = "";
-  let issuerId = "";
-  try {
-    const methods = await mp.getPaymentMethods({
-      bin: input.cardNumber.replace(/\D/g, "").slice(0, 6),
-    });
-    const first = methods.results?.[0];
-    paymentMethodId = first?.id || "";
-    issuerId = first?.issuer?.id != null ? String(first.issuer.id) : "";
-  } catch {
-    /* optional */
+
+  let paymentMethodId = token.payment_method_id || "";
+  let issuerId = token.issuer_id != null ? String(token.issuer_id) : "";
+  if (!paymentMethodId) {
+    try {
+      const mp = await getMpClient();
+      const methods = await mp.getPaymentMethods({ bin: cardNumber.slice(0, 6) });
+      paymentMethodId = methods.results?.[0]?.id || "";
+      if (!issuerId && methods.results?.[0]?.issuer?.id != null) {
+        issuerId = String(methods.results[0].issuer.id);
+      }
+    } catch {
+      /* optional */
+    }
   }
   return { token: token.id, paymentMethodId, issuerId };
 }
