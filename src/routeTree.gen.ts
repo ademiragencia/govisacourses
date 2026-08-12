@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as MatriculaRouteImport } from './routes/matricula'
+import { Route as PainelRouteImport } from './routes/painel'
 import { Route as QualificacaoRouteImport } from './routes/qualificacao'
 import { Route as MatriculaFalhouRouteImport } from './routes/matricula.falhou'
 import { Route as MatriculaPendenteRouteImport } from './routes/matricula.pendente'
@@ -25,6 +26,11 @@ const IndexRoute = IndexRouteImport.update({
 const MatriculaRoute = MatriculaRouteImport.update({
   id: '/matricula',
   path: '/matricula',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PainelRoute = PainelRouteImport.update({
+  id: '/painel',
+  path: '/painel',
   getParentRoute: () => rootRouteImport,
 } as any)
 const QualificacaoRoute = QualificacaoRouteImport.update({
@@ -56,6 +62,7 @@ const ApiMpWebhookRoute = ApiMpWebhookRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/matricula': typeof MatriculaRouteWithChildren
+  '/painel': typeof PainelRoute
   '/qualificacao': typeof QualificacaoRoute
   '/matricula/falhou': typeof MatriculaFalhouRoute
   '/matricula/pendente': typeof MatriculaPendenteRoute
@@ -65,6 +72,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/matricula': typeof MatriculaRouteWithChildren
+  '/painel': typeof PainelRoute
   '/qualificacao': typeof QualificacaoRoute
   '/matricula/falhou': typeof MatriculaFalhouRoute
   '/matricula/pendente': typeof MatriculaPendenteRoute
@@ -75,6 +83,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/matricula': typeof MatriculaRouteWithChildren
+  '/painel': typeof PainelRoute
   '/qualificacao': typeof QualificacaoRoute
   '/matricula/falhou': typeof MatriculaFalhouRoute
   '/matricula/pendente': typeof MatriculaPendenteRoute
@@ -86,6 +95,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/matricula'
+    | '/painel'
     | '/qualificacao'
     | '/matricula/falhou'
     | '/matricula/pendente'
@@ -95,6 +105,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/matricula'
+    | '/painel'
     | '/qualificacao'
     | '/matricula/falhou'
     | '/matricula/pendente'
@@ -104,6 +115,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/matricula'
+    | '/painel'
     | '/qualificacao'
     | '/matricula/falhou'
     | '/matricula/pendente'
@@ -114,6 +126,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   MatriculaRoute: typeof MatriculaRouteWithChildren
+  PainelRoute: typeof PainelRoute
   QualificacaoRoute: typeof QualificacaoRoute
   ApiMpWebhookRoute: typeof ApiMpWebhookRoute
 }
@@ -132,6 +145,13 @@ declare module '@tanstack/react-router' {
       path: '/matricula'
       fullPath: '/matricula'
       preLoaderRoute: typeof MatriculaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/painel': {
+      id: '/painel'
+      path: '/painel'
+      fullPath: '/painel'
+      preLoaderRoute: typeof PainelRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/qualificacao': {
@@ -191,6 +211,7 @@ const MatriculaRouteWithChildren = MatriculaRoute._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   MatriculaRoute: MatriculaRouteWithChildren,
+  PainelRoute: PainelRoute,
   QualificacaoRoute: QualificacaoRoute,
   ApiMpWebhookRoute: ApiMpWebhookRoute,
 }

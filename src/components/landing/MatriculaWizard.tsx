@@ -23,6 +23,7 @@ import {
   submitPaidEmail,
   type StrictMeta,
 } from "@/lib/strict-qualify";
+import { leadToPayload, saveEnrollment } from "@/lib/enrollments";
 import { cn } from "@/lib/utils";
 
 type Screen = "offer" | "contract" | "pay" | "done";
@@ -171,6 +172,7 @@ export function MatriculaWizard({
     saveLead(next);
     setLead(next);
     setScreen("pay");
+    void saveEnrollment({ data: leadToPayload(next, { status: "started" }) });
   }
 
   const onPaid = useCallback(
@@ -180,6 +182,12 @@ export function MatriculaWizard({
         const payment = { paymentId, amount, status: "approved" };
         void submitPaidEmail(current, payment, current.meta);
         openPaidWhatsApp(current, payment, current.meta);
+        void saveEnrollment({
+          data: leadToPayload(current, {
+            status: "paid",
+            paymentId,
+          }),
+        });
         return current;
       });
       setScreen("done");

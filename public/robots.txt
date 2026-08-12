@@ -3,6 +3,10 @@ User-agent: *
 Allow: /
 Disallow: /api/
 Disallow: /auth/
+Disallow: /painel
+Disallow: /matricula/sucesso
+Disallow: /matricula/falhou
+Disallow: /matricula/pendente
 
 User-agent: Googlebot
 Allow: /
