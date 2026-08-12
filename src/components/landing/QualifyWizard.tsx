@@ -20,7 +20,7 @@ import {
   evaluateLead,
   formatPhoneInput,
   isEmailValid,
-  isPhoneValid,
+  phoneError,
   openWhatsAppWithFicha,
   submitLeadEmail,
   type QualifyAnswers,
@@ -171,8 +171,8 @@ export function QualifyWizard({
     if (i === 0) {
       if (answers.name.trim().length < 2) e.name = "Informe seu nome completo";
       if (!isEmailValid(answers.email)) e.email = "Informe um e-mail válido";
-      if (!isPhoneValid(answers.phone))
-        e.phone = "WhatsApp válido com DDD (mín. 10 dígitos)";
+      const p = phoneError(answers.phone);
+      if (p) e.phone = p;
       if (answers.city.trim().length < 2) e.city = "Informe sua cidade";
       if (!answers.age) e.age = "Selecione sua faixa etária";
     }

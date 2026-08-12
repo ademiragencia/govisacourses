@@ -1,5 +1,5 @@
 import { BRAND, COURSE_LIVE, COURSE_SELF } from "@/lib/config";
-import { WhatsAppCta } from "./WhatsAppCta";
+import { MatriculaCta } from "./MatriculaCta";
 import {
   BadgeDollarSign,
   Building2,
@@ -105,7 +105,7 @@ export function Hero() {
               {COURSE_SELF.hoursLabel}, {COURSE_SELF.hoursDetail}
             </p>
             <div className="mt-6">
-              <WhatsAppCta fullWidth label="Quero no meu ritmo" size="md" />
+              <MatriculaCta fullWidth label="Matricular no meu ritmo" size="md" />
             </div>
           </article>
 
@@ -132,7 +132,7 @@ export function Hero() {
               {COURSE_LIVE.hoursLabel}, {COURSE_LIVE.hoursDetail}
             </p>
             <div className="mt-6">
-              <WhatsAppCta fullWidth label="Quero com aulas ao vivo" size="md" />
+              <MatriculaCta fullWidth label="Matricular com aulas ao vivo" size="md" />
             </div>
           </article>
         </div>

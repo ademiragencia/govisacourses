@@ -150,6 +150,14 @@ export function isCpfValid(cpf: string) {
   return calc(9) === Number(d[9]) && calc(10) === Number(d[10]);
 }
 
+export function cpfError(cpf: string): string | null {
+  const d = cpf.replace(/\D/g, "");
+  if (!d) return "Informe o CPF";
+  if (d.length < 11) return "CPF incompleto";
+  if (!isCpfValid(cpf)) return "CPF inválido. Digite um CPF verdadeiro";
+  return null;
+}
+
 export async function lookupCep(cep: string) {
   const d = cep.replace(/\D/g, "");
   if (d.length !== 8) return null;

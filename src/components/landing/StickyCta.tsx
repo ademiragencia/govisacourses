@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { WhatsAppCta } from "./WhatsAppCta";
+import { MatriculaCta } from "./MatriculaCta";
 
 export function StickyCta() {
   const [visible, setVisible] = useState(false);
@@ -18,7 +18,7 @@ export function StickyCta() {
       className={`sticky-cta md:hidden ${visible ? "visible" : ""}`}
       aria-hidden={!visible}
     >
-      <WhatsAppCta fullWidth label="Garantir minha vaga" size="lg" />
+      <MatriculaCta fullWidth label="Matricular agora" size="lg" />
     </div>
   );
 }

@@ -1,4 +1,4 @@
-import { WhatsAppCta } from "./WhatsAppCta";
+import { MatriculaCta } from "./MatriculaCta";
 
 export function Header() {
   return (
@@ -30,9 +30,9 @@ export function Header() {
           </a>
         </nav>
 
-        <WhatsAppCta
+        <MatriculaCta
           size="md"
-          label="Garantir vaga"
+          label="Matricular"
           className="!h-10 !px-4 !text-xs !tracking-[0.06em]"
         />
       </div>

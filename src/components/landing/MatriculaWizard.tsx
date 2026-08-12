@@ -6,6 +6,7 @@ import {
   emptyContract,
   formatCep,
   formatCpf,
+  cpfError,
   isCpfValid,
   lookupCep,
   newLeadId,
@@ -15,7 +16,7 @@ import {
   type ContractAnswers,
   type StoredLead,
 } from "@/lib/mp";
-import { formatPhoneInput, isEmailValid, isPhoneValid } from "@/lib/qualify";
+import { formatPhoneInput, isEmailValid, phoneError } from "@/lib/qualify";
 import {
   openPaidWhatsApp,
   submitPaidEmail,
@@ -120,11 +121,13 @@ export function MatriculaWizard({
   function goContractNext() {
     const e: Partial<Record<keyof ContractAnswers, string>> = {};
     if (answers.name.trim().length < 5) e.name = "Informe o nome completo";
-    if (!isCpfValid(answers.cpf)) e.cpf = "CPF inválido";
+    const cpfMsg = cpfError(answers.cpf);
+    if (cpfMsg) e.cpf = cpfMsg;
     if (answers.rg.trim().length < 4) e.rg = "Informe o RG";
     if (!answers.birthDate) e.birthDate = "Informe a data de nascimento";
     if (!isEmailValid(answers.email)) e.email = "E-mail inválido";
-    if (!isPhoneValid(answers.phone)) e.phone = "WhatsApp com DDD";
+    const phoneMsg = phoneError(answers.phone);
+    if (phoneMsg) e.phone = phoneMsg;
     if (answers.cep.replace(/\D/g, "").length !== 8) e.cep = "CEP inválido";
     if (answers.street.trim().length < 2) e.street = "Informe o endereço";
     if (!answers.number.trim()) e.number = "Número";
@@ -303,7 +306,19 @@ export function MatriculaWizard({
                   id="m-cpf"
                   className={inputClass}
                   value={answers.cpf}
-                  onChange={(e) => set("cpf")(formatCpf(e.target.value))}
+                  onChange={(e) => {
+                    const v = formatCpf(e.target.value);
+                    set("cpf")(v);
+                    if (v.replace(/\D/g, "").length === 11) {
+                      setErrors((prev) => ({ ...prev, cpf: cpfError(v) || undefined }));
+                    }
+                  }}
+                  onBlur={() =>
+                    setErrors((prev) => ({
+                      ...prev,
+                      cpf: cpfError(answers.cpf) || undefined,
+                    }))
+                  }
                   placeholder="000.000.000-00"
                   inputMode="numeric"
                 />
@@ -342,13 +357,28 @@ export function MatriculaWizard({
                 autoComplete="email"
               />
             </Field>
-            <Field label="WhatsApp" error={errors.phone} htmlFor="m-phone">
+            <Field label="Celular com DDD" error={errors.phone} htmlFor="m-phone">
               <input
                 id="m-phone"
                 className={inputClass}
                 value={answers.phone}
-                onChange={(e) => set("phone")(formatPhoneInput(e.target.value))}
-                placeholder="(71) 99999-9999"
+                onChange={(e) => {
+                  const v = formatPhoneInput(e.target.value);
+                  set("phone")(v);
+                  if (v.replace(/\D/g, "").length >= 11) {
+                    setErrors((prev) => ({
+                      ...prev,
+                      phone: phoneError(v) || undefined,
+                    }));
+                  }
+                }}
+                onBlur={() =>
+                  setErrors((prev) => ({
+                    ...prev,
+                    phone: phoneError(answers.phone) || undefined,
+                  }))
+                }
+                placeholder="(11) 98765-4321"
                 inputMode="tel"
                 autoComplete="tel"
               />

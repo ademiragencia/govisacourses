@@ -1,5 +1,5 @@
 import { BRAND, COURSE_LIVE, COURSE_SELF } from "@/lib/config";
-import { WhatsAppCta } from "./WhatsAppCta";
+import { MatriculaCta } from "./MatriculaCta";
 import { Check, Clock, Monitor, Radio } from "lucide-react";
 
 export function Offer() {
@@ -64,7 +64,7 @@ export function Offer() {
                   </li>
                 ))}
               </ul>
-              <WhatsAppCta fullWidth label="Garantir no meu ritmo" />
+              <MatriculaCta fullWidth label="Matricular no meu ritmo" />
             </div>
           </div>
 
@@ -107,7 +107,7 @@ export function Offer() {
                   </li>
                 ))}
               </ul>
-              <WhatsAppCta fullWidth label="Garantir com aulas ao vivo" />
+              <MatriculaCta fullWidth label="Matricular com aulas ao vivo" />
             </div>
           </div>
         </div>

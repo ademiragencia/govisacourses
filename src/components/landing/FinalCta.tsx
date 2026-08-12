@@ -1,4 +1,5 @@
 import { BRAND } from "@/lib/config";
+import { MatriculaCta } from "./MatriculaCta";
 import { WhatsAppCta } from "./WhatsAppCta";
 
 export function FinalCta() {
@@ -31,7 +32,13 @@ export function FinalCta() {
               faturando em dólar.
             </p>
             <div className="mx-auto mt-8 flex max-w-sm flex-col items-center gap-3">
-              <WhatsAppCta fullWidth label="Quero o maior escritório" />
+              <MatriculaCta fullWidth label="Matricular agora" />
+              <WhatsAppCta
+                fullWidth
+                variant="secondary"
+                size="md"
+                label="Falar com a equipe"
+              />
               <p className="text-xs text-fg-subtle">
                 Online no ritmo livre ou com aulas ao vivo a partir de 30/08/2026
               </p>

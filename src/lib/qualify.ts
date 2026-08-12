@@ -483,18 +483,48 @@ export function openWhatsAppWithFicha(
 }
 
 export function formatPhoneInput(raw: string): string {
-  const digits = raw.replace(/\D/g, "").slice(0, 13);
+  let digits = raw.replace(/\D/g, "");
+  if (digits.startsWith("55") && digits.length > 11) {
+    digits = digits.slice(2);
+  }
+  digits = digits.slice(0, 11);
   if (digits.length <= 2) return digits;
   if (digits.length <= 7) return `(${digits.slice(0, 2)}) ${digits.slice(2)}`;
-  if (digits.length <= 11) {
-    return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
-  }
-  return `+${digits.slice(0, 2)} (${digits.slice(2, 4)}) ${digits.slice(4, 9)}-${digits.slice(9)}`;
+  return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
+}
+
+const VALID_DDD = new Set([
+  11, 12, 13, 14, 15, 16, 17, 18, 19, 21, 22, 24, 27, 28, 31, 32, 33, 34, 35,
+  37, 38, 41, 42, 43, 44, 45, 46, 47, 48, 49, 51, 53, 54, 55, 61, 62, 63, 64,
+  65, 66, 67, 68, 69, 71, 73, 74, 75, 77, 79, 81, 82, 83, 84, 85, 86, 87, 88,
+  89, 91, 92, 93, 94, 95, 96, 97, 98, 99,
+]);
+
+export function phoneDigits(phone: string): string {
+  let d = phone.replace(/\D/g, "");
+  if (d.startsWith("55") && d.length >= 12) d = d.slice(2);
+  return d.slice(0, 11);
 }
 
 export function isPhoneValid(phone: string): boolean {
-  const d = phone.replace(/\D/g, "");
-  return d.length >= 10 && d.length <= 13;
+  const d = phoneDigits(phone);
+  if (d.length !== 11) return false;
+  if (/^(\d)\1+$/.test(d)) return false;
+  const ddd = Number(d.slice(0, 2));
+  if (!VALID_DDD.has(ddd)) return false;
+  if (d[2] !== "9") return false;
+  if (/^(\d)\1+$/.test(d.slice(2))) return false;
+  return true;
+}
+
+export function phoneError(phone: string): string | null {
+  const d = phoneDigits(phone);
+  if (!d) return "Informe um celular com DDD";
+  if (d.length < 11) return "Celular incompleto. Use DDD + 9 dígitos";
+  if (!VALID_DDD.has(Number(d.slice(0, 2)))) return "DDD inválido";
+  if (d[2] !== "9") return "Use um celular (o número deve começar com 9)";
+  if (!isPhoneValid(phone)) return "Número de celular inválido";
+  return null;
 }
 
 /** Lê UTMs da URL (para anúncios Meta/Google) */
