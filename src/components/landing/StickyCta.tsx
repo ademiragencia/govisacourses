@@ -18,7 +18,7 @@ export function StickyCta() {
       className={`sticky-cta md:hidden ${visible ? "visible" : ""}`}
       aria-hidden={!visible}
     >
-      <MatriculaCta fullWidth label="Garantir vaga agora" size="lg" />
+      <MatriculaCta fullWidth label="Garantir o valor de hoje" size="lg" />
     </div>
   );
 }

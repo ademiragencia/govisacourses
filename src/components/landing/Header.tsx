@@ -34,7 +34,7 @@ export function Header() {
 
         <MatriculaCta
           size="md"
-          label="Garantir vaga"
+          label="Garantir hoje"
           className="!h-10 !px-4 !text-xs !tracking-[0.06em]"
         />
       </div>

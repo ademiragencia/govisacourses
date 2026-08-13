@@ -40,7 +40,7 @@ export function FinalCta() {
                 label="Falar com a equipe"
               />
               <p className="text-xs text-fg-subtle">
-                Turma ao vivo em 30/08 · de R$ 14.997 por R$ 3.000 · vagas limitadas
+                Oferta somente hoje · de R$ 14.997 por R$ 3.000 · acaba à meia-noite
               </p>
             </div>
           </div>

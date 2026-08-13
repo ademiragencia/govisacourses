@@ -8,14 +8,15 @@ export function Offer() {
     <section id="investimento" className="border-t border-border py-20 md:py-28">
       <div className="container-lp">
         <div className="mx-auto max-w-2xl text-center">
-          <p className="eyebrow">Oferta da turma</p>
+          <p className="eyebrow">Somente hoje</p>
           <h2 className="display mt-3 text-[clamp(1.85rem,3.5vw,2.75rem)] text-fg">
-            De {COURSE_LIVE.listPriceLabel} por{" "}
+            Este preço vale só hoje. De {COURSE_LIVE.listPriceLabel} por{" "}
             <span className="text-brand-red">{COURSE_LIVE.priceLabel}</span>
           </h2>
           <p className="mx-auto mt-4 max-w-lg text-base text-fg-muted">
-            Só a turma ao vivo. Começa em 30 de agosto. Vagas limitadas.
-            Formação com a {BRAND.firm}, {BRAND.firmRank}.
+            Depois a formação volta para {COURSE_LIVE.listPriceLabel}. Turma
+            ao vivo em 30 de agosto. Formação com a {BRAND.firm},{" "}
+            {BRAND.firmRank}.
           </p>
         </div>
 
@@ -63,7 +64,7 @@ export function Offer() {
                   </li>
                 ))}
               </ul>
-              <MatriculaCta fullWidth label="Garantir vaga da turma" />
+              <MatriculaCta fullWidth label="Garantir o valor de hoje" />
             </div>
           </div>
         </div>

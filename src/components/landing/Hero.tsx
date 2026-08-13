@@ -14,7 +14,7 @@ export function Hero() {
       <div className="container-lp relative">
         <div className="mx-auto max-w-3xl text-center">
           <div className="mb-5 inline-flex flex-wrap items-center justify-center gap-2 rounded-full border border-brand-red/40 bg-brand-red-soft px-3.5 py-1.5 text-[11px] font-bold uppercase tracking-[0.14em] text-brand-red">
-            Turma ao vivo · 30 de agosto · vagas limitadas
+            Oferta somente hoje · de R$ 14.997 por R$ 3.000
           </div>
 
           <p className="eyebrow mb-4">
@@ -42,7 +42,7 @@ export function Hero() {
           <div className="flag-strip" />
           <div className="px-6 py-7 text-center md:px-8">
             <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-brand-red">
-              Oferta da turma
+              Somente hoje
             </p>
             <p className="mt-3 text-sm text-fg-muted line-through decoration-brand-red/70">
               De {COURSE_LIVE.listPriceLabel}
@@ -60,7 +60,7 @@ export function Hero() {
               <Countdown />
             </div>
             <div className="mt-6">
-              <MatriculaCta fullWidth label="Garantir minha vaga agora" />
+              <MatriculaCta fullWidth label="Garantir o valor de hoje" />
             </div>
           </div>
         </div>

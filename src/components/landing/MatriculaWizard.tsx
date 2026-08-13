@@ -261,8 +261,8 @@ export function MatriculaWizard({
         {screen === "offer" && (
           <div className="space-y-5">
             <div className="rounded-[var(--radius-md)] border border-brand-red/35 bg-brand-red-soft px-4 py-3 text-sm text-fg">
-              Turma ao vivo em 30/08. De {COURSE_LIVE.listPriceLabel} por{" "}
-              {COURSE_LIVE.priceLabel}.
+              Somente hoje. De {COURSE_LIVE.listPriceLabel} por{" "}
+              {COURSE_LIVE.priceLabel}. Depois volta o valor cheio.
             </div>
             <Field label="Como você quer pagar?" error={errors.plan}>
               <div className="grid gap-2">

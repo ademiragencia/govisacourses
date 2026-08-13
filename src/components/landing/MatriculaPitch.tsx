@@ -14,7 +14,7 @@ export function MatriculaPitch() {
   return (
     <div className="lg:pt-1">
       <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-brand-red/40 bg-brand-red-soft px-3 py-1 text-[11px] font-bold uppercase tracking-[0.14em] text-brand-red">
-        Turma 30/08 · últimas vagas
+        Somente hoje · de R$ 14.997 por R$ 3.000
       </div>
 
       <h1 className="display text-[clamp(1.85rem,4vw,2.85rem)] text-fg">

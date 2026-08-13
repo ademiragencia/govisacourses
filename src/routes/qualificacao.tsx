@@ -89,9 +89,8 @@ function QualificacaoPage() {
             </h1>
 
             <p className="mt-4 max-w-lg text-base leading-relaxed text-fg-muted">
-              Preencha a ficha em menos de 2 minutos. Turma ao vivo em 30/08,
-              de R$ 14.997 por R$ 3.000. O sistema avalia o perfil e encaminha
-              você para a matrícula.
+              Preencha a ficha em menos de 2 minutos. Oferta somente hoje:
+              de R$ 14.997 por R$ 3.000. Turma ao vivo em 30/08.
             </p>
 
             <ul className="mt-8 space-y-3">
@@ -108,7 +107,7 @@ function QualificacaoPage() {
                 },
                 {
                   icon: ShieldCheck,
-                  t: "Turma ao vivo 30/08",
+                  t: "Oferta somente hoje",
                   d: "De R$ 14.997 por R$ 3.000",
                 },
               ].map(({ icon: Icon, t, d }) => (
