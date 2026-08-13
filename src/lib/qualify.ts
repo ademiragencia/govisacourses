@@ -1,7 +1,6 @@
 import {
   BRAND,
   COURSE_LIVE,
-  COURSE_SELF,
   COURSES,
   WEB3FORMS_ACCESS_KEY,
   WEB3FORMS_ENDPOINT,
@@ -52,11 +51,7 @@ export const AGE_OPTIONS = [
 export const MODALITY_OPTIONS = [
   {
     value: "live",
-    label: `Ao vivo + portal (${COURSE_LIVE.priceLabel}: ${COURSE_LIVE.planLabel})`,
-  },
-  {
-    value: "self",
-    label: `No seu ritmo (${COURSE_SELF.priceLabel}: ${COURSE_SELF.planLabel})`,
+    label: `Turma ao vivo — de ${COURSE_LIVE.listPriceLabel} por ${COURSE_LIVE.planLabel}`,
   },
 ] as const;
 
@@ -107,7 +102,7 @@ export function emptyAnswers(): QualifyAnswers {
     phone: "",
     city: "",
     age: "",
-    modality: "",
+    modality: "live",
     english: "",
     education: "",
     availability: "",
@@ -165,12 +160,9 @@ export function evaluateLead(a: QualifyAnswers): QualifyResult {
   else if (a.age === "18-24" || a.age === "45-54") score += 4;
   else score += 2;
 
-  if (a.modality === "live") {
+  if (a.modality === "live" || a.modality === "self") {
     score += 5;
-    flags.push("Interesse na turma com aulas ao vivo (30/08/2026)");
-  } else if (a.modality === "self") {
-    score += 5;
-    flags.push("Interesse na modalidade no próprio ritmo");
+    flags.push("Interesse na turma ao vivo (30/08/2026)");
   }
 
   if (a.english === "advanced") {

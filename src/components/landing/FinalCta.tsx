@@ -40,7 +40,7 @@ export function FinalCta() {
                 label="Falar com a equipe"
               />
               <p className="text-xs text-fg-subtle">
-                Online no ritmo livre ou com aulas ao vivo a partir de 30/08/2026
+                Turma ao vivo em 30/08 · de R$ 14.997 por R$ 3.000 · vagas limitadas
               </p>
             </div>
           </div>

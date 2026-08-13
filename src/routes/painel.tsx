@@ -314,7 +314,7 @@ function PainelPage() {
                   </td>
                   <td className="px-4 py-3 text-xs text-fg-muted">
                     <p className="font-medium text-fg">{r.plan_label}</p>
-                    <p>{r.modality === "live" ? "Ao vivo" : "No seu ritmo"}</p>
+                    <p>{r.modality === "live" || !r.modality ? "Ao vivo" : "Ao vivo"}</p>
                   </td>
                   <td className="px-4 py-3 font-semibold text-fg">
                     {brl(Number(r.amount))}

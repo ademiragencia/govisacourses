@@ -21,51 +21,20 @@ export const BRAND = {
     "Os melhores alunos são contratados pela Go Visa Law Firm, o maior escritório dos EUA, e já faturam em dólar",
 } as const;
 
-/** Modalidade A: 100% online, no seu ritmo (sem ao vivo) */
-export const COURSE_SELF = {
-  id: "self" as const,
-  name: "Formação Profissional em Processos Imigratórios",
-  shortName: "Online no seu ritmo",
-  badge: "100% online",
-  format:
-    "100% online, sem aulas ao vivo. Conteúdo completo no portal, no seu ritmo.",
-  startLabel: "Início a qualquer momento",
-  startDetail: "Acesso liberado assim que a matrícula é confirmada",
-  hours: 84,
-  hoursLabel: "84h no portal",
-  hoursDetail: "Aulas gravadas, materiais e atividades",
-  price: 2000,
-  priceLabel: "R$ 2.000,00",
-  /** Preço à vista */
-  cashLabel: "R$ 2.000,00 à vista",
-  planLabel: "5× R$ 500 ou R$ 2.000 à vista",
-  installments: 5,
-  installmentValue: 500,
-  entryFee: 0,
-  entryLabel: "sem entrada",
-  totalLabel: "5× R$ 500",
-  includes: [
-    "Formação ligada ao maior escritório dos EUA (Go Visa Law Firm)",
-    "Portal exclusivo com conteúdo gravado",
-    "Suporte para dúvidas pelo portal",
-    "Materiais de apoio e estudos de casos reais",
-    "Exercícios práticos + certificação",
-    "Destaques avaliados para contratação na Go Visa Law Firm (em dólar)",
-  ],
-} as const;
-
-/** Modalidade B: online com aulas ao vivo */
+/** Modalidade única: online com aulas ao vivo */
 export const COURSE_LIVE = {
   id: "live" as const,
   name: "Formação Profissional em Processos Imigratórios",
   shortName: "Online com aulas ao vivo",
-  badge: "Ao vivo + portal",
+  badge: "Turma ao vivo",
   format: "100% online, com aulas ao vivo e acesso ao portal de estudos",
   startLabel: "Início em 30 de agosto de 2026",
-  startDetail: "Turma com cronograma de aulas ao vivo",
+  startDetail: "Turma com cronograma de aulas ao vivo. Vagas limitadas.",
+  startIso: "2026-08-30T00:00:00-03:00",
   hoursLive: 32,
   hoursRecorded: 84,
   hoursTotal: 116,
+  hours: 116,
   hoursLabel: "116h no total",
   hoursDetail: "32h ao vivo + 84h gravadas, materiais e atividades",
   schedule: [
@@ -78,14 +47,17 @@ export const COURSE_LIVE = {
       body: "Das 19h às 21h",
     },
   ],
+  listPrice: 14997,
+  listPriceLabel: "R$ 14.997,00",
   price: 3000,
   priceLabel: "R$ 3.000,00",
-  planLabel: "Entrada de R$ 1.000 + 5× R$ 400",
-  installments: 5,
+  cashLabel: "R$ 3.000,00 à vista",
+  planLabel: "R$ 3.000 à vista ou entrada de R$ 1.000 + 7× R$ 400",
+  installments: 7,
   installmentValue: 400,
   entryFee: 1000,
   entryLabel: "entrada de R$ 1.000",
-  totalLabel: "5× R$ 400",
+  totalLabel: "7× R$ 400",
   includes: [
     "Formação ligada ao maior escritório dos EUA (Go Visa Law Firm)",
     "Aulas ao vivo com acompanhamento do professor",
@@ -96,10 +68,13 @@ export const COURSE_LIVE = {
   ],
 } as const;
 
+/** @deprecated só ao vivo. Mantido para não quebrar imports antigos. */
+export const COURSE_SELF = COURSE_LIVE;
+
 export type CourseId = "self" | "live";
 
 export const COURSES = {
-  self: COURSE_SELF,
+  self: COURSE_LIVE,
   live: COURSE_LIVE,
 } as const;
 

@@ -1,8 +1,10 @@
 import { MatriculaCta } from "./MatriculaCta";
+import { UrgencyBar } from "./UrgencyBar";
 
 export function Header() {
   return (
     <header className="sticky top-0 z-30 border-b border-border bg-bg/80 backdrop-blur-lg">
+      <UrgencyBar />
       <div className="container-lp flex h-16 items-center justify-between gap-4">
         <a href="#topo" aria-label="Go Visa Courses">
           <img
@@ -23,7 +25,7 @@ export function Header() {
             Conteúdo
           </a>
           <a href="#investimento" className="transition-colors hover:text-fg">
-            Modalidades
+            Oferta
           </a>
           <a href="#faq" className="transition-colors hover:text-fg">
             Dúvidas
@@ -32,7 +34,7 @@ export function Header() {
 
         <MatriculaCta
           size="md"
-          label="Matricular"
+          label="Garantir vaga"
           className="!h-10 !px-4 !text-xs !tracking-[0.06em]"
         />
       </div>

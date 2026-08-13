@@ -27,7 +27,7 @@ import {
   type QualifyMeta,
   type QualifyResult,
 } from "@/lib/qualify";
-import { COURSE_LIVE, COURSE_SELF, WHATSAPP_NUMBER } from "@/lib/config";
+import { COURSE_LIVE, WHATSAPP_NUMBER } from "@/lib/config";
 import { cn } from "@/lib/utils";
 
 const STEPS = [
@@ -249,12 +249,7 @@ export function QualifyWizard({
   }
 
   const stepMeta = STEPS[step]!;
-  const investHint =
-    answers.modality === "live"
-      ? `${COURSE_LIVE.planLabel} (total ${COURSE_LIVE.priceLabel})`
-      : answers.modality === "self"
-        ? `${COURSE_SELF.planLabel} (total ${COURSE_SELF.priceLabel})`
-        : "conforme a modalidade escolhida";
+  const investHint = `${COURSE_LIVE.planLabel} (de ${COURSE_LIVE.listPriceLabel} por ${COURSE_LIVE.priceLabel})`;
 
   return (
     <div
@@ -483,11 +478,7 @@ export function QualifyWizard({
                   ["Cidade", answers.city],
                   [
                     "Modalidade",
-                    answers.modality === "live"
-                      ? COURSE_LIVE.shortName
-                      : answers.modality === "self"
-                        ? COURSE_SELF.shortName
-                        : "Não informada",
+                    COURSE_LIVE.shortName,
                   ],
                 ].map(([k, v]) => (
                   <div key={k} className="flex justify-between gap-4">

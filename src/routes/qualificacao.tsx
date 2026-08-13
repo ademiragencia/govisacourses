@@ -89,9 +89,9 @@ function QualificacaoPage() {
             </h1>
 
             <p className="mt-4 max-w-lg text-base leading-relaxed text-fg-muted">
-              Preencha a ficha em menos de 2 minutos. O sistema avalia se o
-              perfil encaixa e encaminha você pro WhatsApp da equipe com a
-              modalidade escolhida.
+              Preencha a ficha em menos de 2 minutos. Turma ao vivo em 30/08,
+              de R$ 14.997 por R$ 3.000. O sistema avalia o perfil e encaminha
+              você para a matrícula.
             </p>
 
             <ul className="mt-8 space-y-3">
@@ -108,8 +108,8 @@ function QualificacaoPage() {
                 },
                 {
                   icon: ShieldCheck,
-                  t: "Inglês não é obrigatório",
-                  d: "100% online, duas modalidades",
+                  t: "Turma ao vivo 30/08",
+                  d: "De R$ 14.997 por R$ 3.000",
                 },
               ].map(({ icon: Icon, t, d }) => (
                 <li

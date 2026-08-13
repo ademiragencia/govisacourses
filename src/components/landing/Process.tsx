@@ -3,8 +3,8 @@ import { BRAND } from "@/lib/config";
 const steps = [
   {
     step: "1",
-    title: "Escolha a modalidade",
-    body: "No seu ritmo (84h no portal) ou com aulas ao vivo (116h total).",
+    title: "Garanta a vaga da turma",
+    body: "Turma ao vivo em 30/08. De R$ 14.997 por R$ 3.000, ou entrada de R$ 1.000 + 7× R$ 400.",
   },
   {
     step: "2",

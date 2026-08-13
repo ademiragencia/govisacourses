@@ -10,8 +10,8 @@ const faqs = [
     a: `Sim. Os alunos que mais se destacam são avaliados para contratação pela ${BRAND.firm}, o maior escritório dos EUA, e já entram faturando em dólar. Não é vaga para todo mundo: é por desempenho.`,
   },
   {
-    q: "Qual a diferença entre as duas modalidades?",
-    a: "A modalidade no seu ritmo é 100% online, sem aulas ao vivo: 84h no portal, início a qualquer momento, 5× R$ 500 ou R$ 2.000 à vista. A modalidade com aulas ao vivo começa em 30 de agosto de 2026, tem 116h (32h ao vivo + 84h gravadas), R$ 3.000 com entrada de R$ 1.000 + 5× R$ 400.",
+    q: "Qual é a formação?",
+    a: "Uma única modalidade: online com aulas ao vivo. Começa em 30 de agosto de 2026, 116h (32h ao vivo + 84h gravadas). De R$ 14.997 por R$ 3.000 à vista, ou entrada de R$ 1.000 + 7× R$ 400.",
   },
   {
     q: "Preciso falar inglês?",
@@ -27,7 +27,7 @@ const faqs = [
   },
   {
     q: "Como faço a matrícula?",
-    a: "Preencha a ficha de qualificação na página. O sistema monta sua ficha com a modalidade escolhida e encaminha pro WhatsApp da equipe para finalizar.",
+    a: "Preencha a matrícula na página. Escolha R$ 3.000 à vista no cartão ou a entrada de R$ 1.000. Depois a equipe libera o acesso da turma.",
   },
 ];
 

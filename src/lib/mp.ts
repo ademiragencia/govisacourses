@@ -1,4 +1,4 @@
-import { COURSE_LIVE, COURSE_SELF, type CourseId } from "./config";
+import { COURSE_LIVE, type CourseId } from "./config";
 import type { StrictMeta } from "./strict-qualify";
 
 export const LEAD_STORAGE_KEY = "gv_matricula_lead";
@@ -43,7 +43,7 @@ export type PaymentOption = {
 
 export function emptyContract(): ContractAnswers {
   return {
-    modality: "",
+    modality: "live",
     plan: "",
     name: "",
     cpf: "",
@@ -65,55 +65,34 @@ function brl(n: number) {
   return n.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 }
 
-export function paymentOptions(modality: CourseId | ""): PaymentOption[] {
-  if (modality === "live") {
-    return [
-      {
-        id: "cash",
-        label: "R$ 3.000,00 à vista",
-        detail: "Cartão de crédito",
-        amount: COURSE_LIVE.price,
-        installments: 1,
-        amountLabel: brl(COURSE_LIVE.price),
-      },
-      {
-        id: "entry",
-        label: "Entrada de R$ 1.000",
-        detail: "Depois 5× R$ 400 com a equipe",
-        amount: COURSE_LIVE.entryFee,
-        installments: 1,
-        amountLabel: brl(COURSE_LIVE.entryFee),
-      },
-    ];
-  }
-  const parcelado = COURSE_SELF.installments * COURSE_SELF.installmentValue;
+export function paymentOptions(_modality?: CourseId | ""): PaymentOption[] {
   return [
     {
       id: "cash",
-      label: "R$ 2.000,00 à vista",
-      detail: "Cartão de crédito",
-      amount: COURSE_SELF.price,
+      label: "R$ 3.000,00 à vista",
+      detail: "De R$ 14.997 por R$ 3.000 no cartão",
+      amount: COURSE_LIVE.price,
       installments: 1,
-      amountLabel: brl(COURSE_SELF.price),
+      amountLabel: brl(COURSE_LIVE.price),
     },
     {
-      id: "installments",
-      label: "5× R$ 500",
-      detail: `Total ${brl(parcelado)} no cartão`,
-      amount: parcelado,
-      installments: COURSE_SELF.installments,
-      amountLabel: brl(parcelado),
+      id: "entry",
+      label: "Entrada de R$ 1.000",
+      detail: "Depois 7× R$ 400 com a equipe",
+      amount: COURSE_LIVE.entryFee,
+      installments: 1,
+      amountLabel: brl(COURSE_LIVE.entryFee),
     },
   ];
 }
 
 export function selectedOffer(a: Pick<ContractAnswers, "modality" | "plan">) {
-  const course = a.modality === "live" ? COURSE_LIVE : COURSE_SELF;
+  const course = COURSE_LIVE;
   const option =
-    paymentOptions(a.modality).find((o) => o.id === a.plan) ??
-    paymentOptions(a.modality)[0];
+    paymentOptions("live").find((o) => o.id === a.plan) ??
+    paymentOptions("live")[0];
   return {
-    modality: (a.modality === "live" ? "live" : "self") as CourseId,
+    modality: "live" as CourseId,
     title: `${course.name} — ${course.shortName}`,
     shortName: course.shortName,
     amount: option.amount,

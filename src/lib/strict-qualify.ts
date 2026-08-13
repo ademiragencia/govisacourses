@@ -1,7 +1,6 @@
 import {
   BRAND,
   COURSE_LIVE,
-  COURSE_SELF,
   COURSES,
   WEB3FORMS_ACCESS_KEY,
   WEB3FORMS_ENDPOINT,
@@ -62,12 +61,8 @@ export const MONEY_OPTIONS = [
 
 export const STRICT_MODALITY_OPTIONS = [
   {
-    value: "self",
-    label: `${COURSE_SELF.shortName} — ${COURSE_SELF.planLabel}`,
-  },
-  {
     value: "live",
-    label: `${COURSE_LIVE.shortName} — ${COURSE_LIVE.planLabel}`,
+    label: `${COURSE_LIVE.shortName} — de ${COURSE_LIVE.listPriceLabel} por ${COURSE_LIVE.planLabel}`,
   },
 ] as const;
 
@@ -101,7 +96,7 @@ export const STRICT_MOTIVATION_OPTIONS = [
 export function emptyStrictAnswers(): StrictAnswers {
   return {
     money: "",
-    modality: "",
+    modality: "live",
     decision: "",
     availability: "",
     motivation: "",

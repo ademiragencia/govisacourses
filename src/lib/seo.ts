@@ -1,4 +1,4 @@
-import { BRAND, COURSE_LIVE, COURSE_SELF } from "./config";
+import { BRAND, COURSE_LIVE } from "./config";
 
 /** Domínio canônico de produção */
 export const SITE_URL = "https://www.govisacourses.com.br";
@@ -33,7 +33,7 @@ export const SEO = {
     "Formação em Processos Imigratórios Online | Go Visa Law Firm | Contratação em Dólar",
   titleTemplate: "%s | Go Visa Courses",
   description:
-    "Formação profissional 100% online em Processos Imigratórios com a Go Visa Law Firm, o maior escritório dos EUA. Os melhores alunos são contratados e já faturam em dólar. Duas modalidades: no seu ritmo (5× R$ 500 ou R$ 2.000 à vista) ou com aulas ao vivo (R$ 3.000).",
+    "Formação profissional ao vivo em Processos Imigratórios com a Go Visa Law Firm, o maior escritório dos EUA. Turma 30/08. De R$ 14.997 por R$ 3.000 à vista ou entrada de R$ 1.000 + 7× R$ 400. Os melhores alunos são contratados e já faturam em dólar.",
   ogTitle:
     "Go Visa Law Firm: o maior escritório dos EUA forma e contrata em dólar",
   ogDescription:
@@ -89,31 +89,6 @@ export function buildJsonLd() {
     primaryImageOfPage: {
       "@type": "ImageObject",
       url: SEO.image,
-    },
-  };
-
-  const courseSelf = {
-    "@type": "Course",
-    "@id": `${SITE_URL}/#course-self`,
-    name: `${COURSE_SELF.name} (${COURSE_SELF.shortName})`,
-    description: COURSE_SELF.format,
-    provider: { "@id": `${SITE_URL}/#organization` },
-    educationalLevel: "Professional",
-    inLanguage: SEO.language,
-    isAccessibleForFree: false,
-    offers: {
-      "@type": "Offer",
-      url: SITE_URL,
-      price: COURSE_SELF.price,
-      priceCurrency: "BRL",
-      availability: "https://schema.org/InStock",
-      category: "Online",
-      description: COURSE_SELF.planLabel,
-    },
-    hasCourseInstance: {
-      "@type": "CourseInstance",
-      courseMode: "online",
-      courseWorkload: `PT${COURSE_SELF.hours}H`,
     },
   };
 
@@ -173,10 +148,10 @@ export function buildJsonLd() {
       },
       {
         "@type": "Question",
-        name: "Qual a diferença entre as duas modalidades?",
+        name: "Qual é a formação?",
         acceptedAnswer: {
           "@type": "Answer",
-          text: "No seu ritmo: 84h, 5× R$ 500 ou R$ 2.000 à vista. Ao vivo: 116h a partir de 30/08/2026, R$ 3.000 com entrada de R$ 1.000 + 5× R$ 400.",
+          text: "Turma ao vivo a partir de 30/08/2026, 116h. De R$ 14.997 por R$ 3.000 à vista ou entrada de R$ 1.000 + 7× R$ 400.",
         },
       },
       {
@@ -192,6 +167,6 @@ export function buildJsonLd() {
 
   return {
     "@context": "https://schema.org",
-    "@graph": [org, website, webpage, courseSelf, courseLive, faq],
+    "@graph": [org, website, webpage, courseLive, faq],
   };
 }

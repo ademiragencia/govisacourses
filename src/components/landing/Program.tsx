@@ -41,9 +41,8 @@ export function Program() {
         </div>
 
         <p className="mx-auto mt-10 max-w-2xl text-center text-sm leading-relaxed text-fg-subtle">
-          Na modalidade ao vivo, estude o conteúdo do portal antes dos
-          encontros. Nas aulas, o foco é teoria aplicada e prática profissional.
-          No ritmo livre, o conteúdo é liberado em blocos no portal.
+          Na turma ao vivo, estude o conteúdo do portal antes dos encontros.
+          Nas aulas, o foco é teoria aplicada e prática profissional.
         </p>
       </div>
     </section>

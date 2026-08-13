@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useState, type ReactNode } from "react";
 import { ArrowLeft, ArrowRight, CheckCircle2, MessageCircle } from "lucide-react";
-import { COURSE_LIVE, COURSE_SELF } from "@/lib/config";
+import { COURSE_LIVE } from "@/lib/config";
 import { CheckoutPay } from "@/components/landing/CheckoutPay";
 import {
   emptyContract,
@@ -113,8 +113,7 @@ export function MatriculaWizard({
 
   function goOfferNext() {
     const e: Partial<Record<keyof ContractAnswers, string>> = {};
-    if (!answers.modality) e.modality = "Escolha a formação";
-    if (!answers.plan) e.plan = "Escolha à vista ou parcelado";
+    if (!answers.plan) e.plan = "Escolha à vista ou a entrada";
     setErrors(e);
     if (Object.keys(e).length) return;
     setScreen("contract");
@@ -261,39 +260,19 @@ export function MatriculaWizard({
       <div className="flex-1 px-5 py-5 sm:px-6">
         {screen === "offer" && (
           <div className="space-y-5">
-            <Field label="Qual formação você quer?" error={errors.modality}>
+            <div className="rounded-[var(--radius-md)] border border-brand-red/35 bg-brand-red-soft px-4 py-3 text-sm text-fg">
+              Turma ao vivo em 30/08. De {COURSE_LIVE.listPriceLabel} por{" "}
+              {COURSE_LIVE.priceLabel}.
+            </div>
+            <Field label="Como você quer pagar?" error={errors.plan}>
               <div className="grid gap-2">
-                {(
-                  [
-                    {
-                      id: "self" as const,
-                      t: COURSE_SELF.shortName,
-                      d: COURSE_SELF.planLabel,
-                    },
-                    {
-                      id: "live" as const,
-                      t: COURSE_LIVE.shortName,
-                      d: COURSE_LIVE.planLabel,
-                    },
-                  ] as const
-                ).map((c) => {
-                  const active = answers.modality === c.id;
+                {plans.map((p) => {
+                  const active = answers.plan === p.id;
                   return (
                     <button
-                      key={c.id}
+                      key={p.id}
                       type="button"
-                      onClick={() => {
-                        setAnswers((prev) => ({
-                          ...prev,
-                          modality: c.id,
-                          plan: "",
-                        }));
-                        setErrors((prev) => ({
-                          ...prev,
-                          modality: undefined,
-                          plan: undefined,
-                        }));
-                      }}
+                      onClick={() => set("plan")(p.id)}
                       className={cn(
                         "rounded-[var(--radius-md)] border px-4 py-3.5 text-left transition-all",
                         active
@@ -301,42 +280,16 @@ export function MatriculaWizard({
                           : "border-border bg-bg-elevated/50 text-fg-muted hover:text-fg",
                       )}
                     >
-                      <p className="text-sm font-bold">{c.t}</p>
-                      <p className="mt-0.5 text-xs opacity-80">{c.d}</p>
+                      <div className="flex items-baseline justify-between gap-3">
+                        <p className="text-sm font-bold">{p.label}</p>
+                        <p className="text-xs font-semibold">{p.amountLabel}</p>
+                      </div>
+                      <p className="mt-0.5 text-xs opacity-80">{p.detail}</p>
                     </button>
                   );
                 })}
               </div>
             </Field>
-
-            {answers.modality && (
-              <Field label="Como você quer pagar?" error={errors.plan}>
-                <div className="grid gap-2">
-                  {plans.map((p) => {
-                    const active = answers.plan === p.id;
-                    return (
-                      <button
-                        key={p.id}
-                        type="button"
-                        onClick={() => set("plan")(p.id)}
-                        className={cn(
-                          "rounded-[var(--radius-md)] border px-4 py-3.5 text-left transition-all",
-                          active
-                            ? "border-brand-red bg-brand-red-soft text-fg"
-                            : "border-border bg-bg-elevated/50 text-fg-muted hover:text-fg",
-                        )}
-                      >
-                        <div className="flex items-baseline justify-between gap-3">
-                          <p className="text-sm font-bold">{p.label}</p>
-                          <p className="text-xs font-semibold">{p.amountLabel}</p>
-                        </div>
-                        <p className="mt-0.5 text-xs opacity-80">{p.detail}</p>
-                      </button>
-                    );
-                  })}
-                </div>
-              </Field>
-            )}
           </div>
         )}
 
