@@ -8,6 +8,7 @@ import {
 import appCss from "../styles.css?url";
 import { SEO, SITE_URL } from "@/lib/seo";
 import { SeoJsonLd } from "@/components/SeoJsonLd";
+import { VisitTracker } from "@/components/VisitTracker";
 
 export const Route = createRootRoute({
   head: () => ({
@@ -115,6 +116,7 @@ function RootDocument({ children }: Readonly<{ children: ReactNode }>) {
         <SeoJsonLd />
       </head>
       <body className="page-wash antialiased">
+        <VisitTracker />
         {children}
         <Scripts />
       </body>
