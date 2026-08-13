@@ -172,8 +172,28 @@ export function MatriculaWizard({
     saveLead(next);
     setLead(next);
     setScreen("pay");
-    void saveEnrollment({ data: leadToPayload(next, { status: "started" }) });
+    void saveEnrollment({ data: leadToPayload(next, { status: "started", method: "card" }) });
   }
+
+  const onAttempt = useCallback((attempt: {
+    status: string;
+    paymentId?: string;
+    method?: string;
+    note?: string;
+  }) => {
+    setLead((current) => {
+      if (!current) return current;
+      void saveEnrollment({
+        data: leadToPayload(current, {
+          status: attempt.status,
+          paymentId: attempt.paymentId,
+          method: attempt.method,
+          note: attempt.note,
+        }),
+      });
+      return current;
+    });
+  }, []);
 
   const onPaid = useCallback(
     (paymentId: string, amount: number) => {
@@ -186,6 +206,8 @@ export function MatriculaWizard({
           data: leadToPayload(current, {
             status: "paid",
             paymentId,
+            method: "card",
+            note: "Cartão aprovado",
           }),
         });
         return current;
@@ -516,7 +538,7 @@ export function MatriculaWizard({
             <p className="text-xs text-fg-muted">
               {answers.name} · {answers.cpf}
             </p>
-            <CheckoutPay lead={lead} onPaid={onPaid} />
+            <CheckoutPay lead={lead} onPaid={onPaid} onAttempt={onAttempt} />
           </div>
         )}
 

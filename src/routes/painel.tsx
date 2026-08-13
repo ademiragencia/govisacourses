@@ -32,6 +32,23 @@ function when(iso: string | null) {
   return new Date(iso).toLocaleString("pt-BR");
 }
 
+function statusLabel(status: string) {
+  if (status === "paid") return "Paga";
+  if (status === "refused" || status === "failed") return "Recusada";
+  if (status === "pix_seller") return "Pix vendedor";
+  if (status === "pending") return "Em análise";
+  return "Iniciada";
+}
+
+function statusClass(status: string) {
+  if (status === "paid") return "rounded-full bg-wa/15 px-2 py-0.5 text-[11px] font-bold uppercase text-wa";
+  if (status === "refused" || status === "failed")
+    return "rounded-full bg-brand-red/15 px-2 py-0.5 text-[11px] font-bold uppercase text-brand-red";
+  if (status === "pix_seller")
+    return "rounded-full bg-gold-line/15 px-2 py-0.5 text-[11px] font-bold uppercase text-gold-line";
+  return "rounded-full bg-fg-subtle/15 px-2 py-0.5 text-[11px] font-bold uppercase text-fg-muted";
+}
+
 function PainelPage() {
   const [authed, setAuthed] = useState(false);
   const [password, setPassword] = useState("");
@@ -73,7 +90,9 @@ function PainelPage() {
   const filtered = useMemo(() => {
     const term = q.trim().toLowerCase();
     return rows.filter((r) => {
-      if (status !== "all" && r.status !== status) return false;
+      if (status === "refused") {
+        if (r.status !== "refused" && r.status !== "failed") return false;
+      } else if (status !== "all" && r.status !== status) return false;
       if (!term) return true;
       return [
         r.name,
@@ -84,6 +103,8 @@ function PainelPage() {
         r.course_title,
         r.plan_label,
         r.payment_id,
+        r.method,
+        r.note,
       ]
         .join(" ")
         .toLowerCase()
@@ -92,6 +113,8 @@ function PainelPage() {
   }, [rows, q, status]);
 
   const paid = rows.filter((r) => r.status === "paid").length;
+  const refused = rows.filter((r) => r.status === "refused" || r.status === "failed").length;
+  const pix = rows.filter((r) => r.status === "pix_seller").length;
   const total = rows.reduce(
     (acc, r) => acc + (r.status === "paid" ? Number(r.amount) : 0),
     0,
@@ -170,10 +193,12 @@ function PainelPage() {
       </header>
 
       <div className="container-lp py-8">
-        <div className="grid gap-3 sm:grid-cols-3">
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
           {[
-            ["Total", String(rows.length)],
+            ["Tentativas", String(rows.length)],
             ["Pagas", String(paid)],
+            ["Recusadas", String(refused)],
+            ["Pix vendedor", String(pix)],
             ["Faturado", brl(total)],
           ].map(([k, v]) => (
             <div
@@ -208,7 +233,9 @@ function PainelPage() {
             <option value="all">Todos os status</option>
             <option value="paid">Pagas</option>
             <option value="started">Iniciadas</option>
-            <option value="failed">Falhou</option>
+            <option value="refused">Recusadas</option>
+            <option value="pix_seller">Pix vendedor</option>
+            <option value="pending">Em análise</option>
           </select>
         </div>
 
@@ -245,14 +272,8 @@ function PainelPage() {
                     {when(r.created_at)}
                   </td>
                   <td className="px-4 py-3">
-                    <span
-                      className={
-                        r.status === "paid"
-                          ? "rounded-full bg-wa/15 px-2 py-0.5 text-[11px] font-bold uppercase text-wa"
-                          : "rounded-full bg-fg-subtle/15 px-2 py-0.5 text-[11px] font-bold uppercase text-fg-muted"
-                      }
-                    >
-                      {r.status === "paid" ? "Paga" : r.status === "failed" ? "Falhou" : "Iniciada"}
+                    <span className={statusClass(r.status)}>
+                      {statusLabel(r.status)}
                     </span>
                   </td>
                   <td className="px-4 py-3">
@@ -273,7 +294,8 @@ function PainelPage() {
                     {brl(Number(r.amount))}
                   </td>
                   <td className="px-4 py-3 text-xs text-fg-muted">
-                    {r.payment_id || "—"}
+                    <p>{r.method === "pix_seller" ? "Pix vendedor" : r.method === "card" ? "Cartão" : r.method || "—"}</p>
+                    <p>{r.payment_id || r.note || "—"}</p>
                   </td>
                 </tr>
               ))}

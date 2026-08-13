@@ -29,6 +29,8 @@ export type EnrollmentRow = {
   plan_label: string;
   payment_id: string;
   source: string;
+  method: string;
+  note: string;
   created_at: string;
   updated_at: string;
   paid_at: string | null;
@@ -36,7 +38,12 @@ export type EnrollmentRow = {
 
 export function leadToPayload(
   lead: StoredLead,
-  extra?: { status?: string; paymentId?: string },
+  extra?: {
+    status?: string;
+    paymentId?: string;
+    method?: string;
+    note?: string;
+  },
 ) {
   return {
     lead_id: lead.id,
@@ -62,6 +69,8 @@ export function leadToPayload(
     plan_label: lead.planLabel,
     payment_id: extra?.paymentId || "",
     source: lead.meta?.source || "",
+    method: extra?.method || "",
+    note: extra?.note || "",
   };
 }
 

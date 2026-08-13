@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { CreditCard, Loader2 } from "lucide-react";
+import { CreditCard, Loader2, MessageCircle } from "lucide-react";
 import { createSitePayment } from "@/lib/mp-server";
 import {
   formatCardNumber,
@@ -7,13 +7,23 @@ import {
   tokenizeCard,
 } from "@/lib/mp-sdk";
 import type { StoredLead } from "@/lib/mp";
+import { getWhatsAppUrl } from "@/lib/config";
+
+export type PayAttempt = {
+  status: "paid" | "refused" | "pending" | "pix_seller";
+  paymentId?: string;
+  method: "card" | "pix_seller";
+  note?: string;
+};
 
 export function CheckoutPay({
   lead,
   onPaid,
+  onAttempt,
 }: {
   lead: StoredLead;
   onPaid: (paymentId: string, amount: number) => void;
+  onAttempt?: (attempt: PayAttempt) => void;
 }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -57,19 +67,56 @@ export function CheckoutPay({
         },
       });
       if (!res.ok) {
-        setError(res.error);
+        const note = res.error || "Pagamento recusado";
+        setError(note);
+        onAttempt?.({ status: "refused", method: "card", note });
         return;
       }
       if (res.status === "approved") {
         onPaid(res.paymentId, lead.amount);
         return;
       }
+      onAttempt?.({
+        status: "pending",
+        method: "card",
+        paymentId: res.paymentId,
+        note: "Cartão em análise",
+      });
       setError("Pagamento em análise. Aguarde a confirmação no cartão.");
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Não foi possível pagar com o cartão");
+      const note =
+        e instanceof Error ? e.message : "Não foi possível pagar com o cartão";
+      setError(note);
+      onAttempt?.({ status: "refused", method: "card", note });
     } finally {
       setBusy(false);
     }
+  }
+
+  function payPixSeller() {
+    onAttempt?.({
+      status: "pix_seller",
+      method: "pix_seller",
+      note: "Pix com o vendedor",
+    });
+    const valor = lead.amount.toLocaleString("pt-BR", {
+      style: "currency",
+      currency: "BRL",
+    });
+    const url = getWhatsAppUrl(
+      [
+        "PIX COM VENDEDOR",
+        `Nome: ${lead.name}`,
+        `CPF: ${lead.cpf}`,
+        `WhatsApp: ${lead.phone}`,
+        `E-mail: ${lead.email}`,
+        `Curso: ${lead.courseTitle}`,
+        `Plano: ${lead.planLabel}`,
+        `Valor: ${valor}`,
+        "Quero pagar no Pix com o vendedor.",
+      ].join("\n"),
+    );
+    if (url) window.open(url, "_blank", "noopener,noreferrer");
   }
 
   const inputClass =
@@ -131,6 +178,15 @@ export function CheckoutPay({
       >
         {busy ? <Loader2 className="size-4 animate-spin" /> : <CreditCard className="size-4" />}
         Pagar {lead.planLabel}
+      </button>
+      <button
+        type="button"
+        disabled={busy}
+        onClick={payPixSeller}
+        className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-[var(--radius-md)] border border-border text-sm font-semibold text-fg hover:bg-bg"
+      >
+        <MessageCircle className="size-4 text-wa" />
+        Pagar no Pix com o vendedor
       </button>
       {error && (
         <div className="rounded-[var(--radius-md)] border border-brand-red/40 bg-brand-red-soft px-4 py-3 text-sm text-fg">
