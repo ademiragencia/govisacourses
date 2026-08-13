@@ -22,16 +22,19 @@ function Cell({ n, label }: { n: number; label: string }) {
 }
 
 export function UrgencyBar() {
-  const [t, setT] = useState(() =>
-    parts(new Date(COURSE_LIVE.startIso).getTime() - Date.now()),
+  const [t, setT] = useState<{ d: number; h: number; m: number; s: number } | null>(
+    null,
   );
 
   useEffect(() => {
-    const id = window.setInterval(() => {
+    const tick = () =>
       setT(parts(new Date(COURSE_LIVE.startIso).getTime() - Date.now()));
-    }, 1000);
+    tick();
+    const id = window.setInterval(tick, 1000);
     return () => window.clearInterval(id);
   }, []);
+
+  const view = t ?? { d: 0, h: 0, m: 0, s: 0 };
 
   return (
     <div className="bg-brand-red px-3 py-2 text-center text-[11px] font-bold uppercase tracking-[0.08em] text-white sm:text-xs">
@@ -39,12 +42,14 @@ export function UrgencyBar() {
       <span className="mr-2 hidden sm:inline">
         De {COURSE_LIVE.listPriceLabel} por {COURSE_LIVE.priceLabel}
       </span>
-      <span className="inline-flex items-center gap-2 tabular-nums">
-        <Cell n={t.d} label="d" />
-        <Cell n={t.h} label="h" />
-        <Cell n={t.m} label="m" />
-        <Cell n={t.s} label="s" />
-      </span>
+      {t && (
+        <span className="inline-flex items-center gap-2 tabular-nums">
+          <Cell n={view.d} label="d" />
+          <Cell n={view.h} label="h" />
+          <Cell n={view.m} label="m" />
+          <Cell n={view.s} label="s" />
+        </span>
+      )}
     </div>
   );
 }
