@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { Lock, LogOut, RefreshCw, Search, Trash2 } from "lucide-react";
 import {
   clearEnrollments,
+  deleteEnrollment,
   listEnrollments,
   type EnrollmentRow,
 } from "@/lib/enrollments";
@@ -93,11 +94,21 @@ function PainelPage() {
     setClearing(false);
     if (!res.ok) {
       setError(res.error);
-      setConfirmClear(false);
       return;
     }
     setRows([]);
     setConfirmClear(false);
+  }
+
+  async function onDeleteOne(id: string) {
+    const pass = sessionStorage.getItem(SESSION_KEY) || "";
+    setError(null);
+    const res = await deleteEnrollment({ data: { password: pass, id } });
+    if (!res.ok) {
+      setError(res.error);
+      return;
+    }
+    setRows((prev) => prev.filter((r) => r.id !== id));
   }
 
   async function onLogin(e: FormEvent) {
@@ -219,6 +230,11 @@ function PainelPage() {
       </header>
 
       <div className="container-lp py-8">
+        {error && authed && (
+          <p className="mb-4 rounded-[var(--radius-md)] border border-brand-red/40 bg-brand-red-soft px-4 py-2 text-sm text-brand-red">
+            {error}
+          </p>
+        )}
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
           {[
             ["Tentativas", String(rows.length)],
@@ -277,6 +293,7 @@ function PainelPage() {
                   "Curso",
                   "Valor",
                   "Pagamento",
+                  "",
                 ].map((h) => (
                   <th key={h} className="px-4 py-3 font-bold">
                     {h}
@@ -287,7 +304,7 @@ function PainelPage() {
             <tbody>
               {filtered.length === 0 && (
                 <tr>
-                  <td colSpan={7} className="px-4 py-10 text-center text-fg-muted">
+                  <td colSpan={8} className="px-4 py-10 text-center text-fg-muted">
                     {loading ? "Carregando…" : "Nenhuma matrícula ainda."}
                   </td>
                 </tr>
@@ -322,6 +339,20 @@ function PainelPage() {
                   <td className="px-4 py-3 text-xs text-fg-muted">
                     <p>{r.method === "pix_seller" ? "Pix vendedor" : r.method === "card" ? "Cartão" : r.method || "—"}</p>
                     <p>{r.payment_id || r.note || "—"}</p>
+                  </td>
+                  <td className="px-4 py-3">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (window.confirm(`Apagar ${r.name || "este registro"}?`)) {
+                          void onDeleteOne(r.id);
+                        }
+                      }}
+                      className="inline-flex h-8 items-center gap-1 rounded-[var(--radius-md)] border border-brand-red/40 px-2 text-[11px] font-semibold text-brand-red hover:bg-brand-red-soft"
+                    >
+                      <Trash2 className="size-3.5" />
+                      Apagar
+                    </button>
                   </td>
                 </tr>
               ))}

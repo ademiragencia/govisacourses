@@ -122,14 +122,41 @@ export const clearEnrollments = createServerFn({ method: "POST" })
       return { ok: false as const, error: "Senha incorreta" };
     }
     try {
-      const n = await supabaseRpc<number>("admin_clear_enrollments", {
-        p_password: data.password,
-      });
-      return { ok: true as const, deleted: n ?? 0 };
+      const res = await supabaseRpc<{ deleted?: number }>(
+        "admin_clear_enrollments",
+        { p_password: data.password },
+      );
+      return { ok: true as const, deleted: Number(res?.deleted ?? 0) };
     } catch (err) {
       return {
         ok: false as const,
         error: err instanceof Error ? err.message : "Falha ao limpar",
+      };
+    }
+  });
+
+export const deleteEnrollment = createServerFn({ method: "POST" })
+  .validator((data: unknown) => {
+    const d = data as { password?: string; id?: string };
+    return { password: String(d?.password || ""), id: String(d?.id || "") };
+  })
+  .handler(async ({ data }) => {
+    if (data.password !== PANEL_PASSWORD) {
+      return { ok: false as const, error: "Senha incorreta" };
+    }
+    if (!data.id) {
+      return { ok: false as const, error: "Registro inválido" };
+    }
+    try {
+      const res = await supabaseRpc<{ deleted?: number }>(
+        "admin_delete_enrollment",
+        { p_password: data.password, p_id: data.id },
+      );
+      return { ok: true as const, deleted: Number(res?.deleted ?? 0) };
+    } catch (err) {
+      return {
+        ok: false as const,
+        error: err instanceof Error ? err.message : "Falha ao apagar",
       };
     }
   });

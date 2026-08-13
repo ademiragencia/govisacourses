@@ -12,7 +12,10 @@ export async function supabaseRpc<T>(fn: string, args: Record<string, unknown>) 
     },
     body: JSON.stringify(args),
   });
-  const json = (await res.json().catch(() => null)) as T | { message?: string } | null;
+  const json = (await res.json().catch(() => null)) as
+    | T
+    | { message?: string; hint?: string }
+    | null;
   if (!res.ok) {
     const msg =
       json && typeof json === "object" && "message" in json
