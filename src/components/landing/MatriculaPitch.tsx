@@ -8,7 +8,7 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import { BRAND, COURSE_LIVE, PROGRAM_MODULES } from "@/lib/config";
-import { Countdown } from "./Countdown";
+import { Countdown } from "@/components/landing/Countdown";
 
 export function MatriculaPitch() {
   return (

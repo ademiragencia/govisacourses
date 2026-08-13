@@ -1,6 +1,6 @@
 import { BRAND, COURSE_LIVE } from "@/lib/config";
 import { MatriculaCta } from "./MatriculaCta";
-import { Countdown } from "./Countdown";
+import { Countdown } from "@/components/landing/Countdown";
 import {
   BadgeDollarSign,
   Building2,

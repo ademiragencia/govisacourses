@@ -1,5 +1,5 @@
 import { MatriculaCta } from "./MatriculaCta";
-import { UrgencyBar } from "./UrgencyBar";
+import { UrgencyBar } from "@/components/landing/UrgencyBar";
 
 export function Header() {
   return (
