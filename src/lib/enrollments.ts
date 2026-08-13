@@ -111,3 +111,25 @@ export const listEnrollments = createServerFn({ method: "POST" })
       };
     }
   });
+
+export const clearEnrollments = createServerFn({ method: "POST" })
+  .validator((data: unknown) => {
+    const d = data as { password?: string };
+    return { password: String(d?.password || "") };
+  })
+  .handler(async ({ data }) => {
+    if (data.password !== PANEL_PASSWORD) {
+      return { ok: false as const, error: "Senha incorreta" };
+    }
+    try {
+      const n = await supabaseRpc<number>("admin_clear_enrollments", {
+        p_password: data.password,
+      });
+      return { ok: true as const, deleted: n ?? 0 };
+    } catch (err) {
+      return {
+        ok: false as const,
+        error: err instanceof Error ? err.message : "Falha ao limpar",
+      };
+    }
+  });

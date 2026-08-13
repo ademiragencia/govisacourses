@@ -1,7 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState, type FormEvent } from "react";
-import { Lock, LogOut, RefreshCw, Search } from "lucide-react";
+import { Lock, LogOut, RefreshCw, Search, Trash2 } from "lucide-react";
 import {
+  clearEnrollments,
   listEnrollments,
   type EnrollmentRow,
 } from "@/lib/enrollments";
@@ -57,6 +58,8 @@ function PainelPage() {
   const [rows, setRows] = useState<EnrollmentRow[]>([]);
   const [q, setQ] = useState("");
   const [status, setStatus] = useState("all");
+  const [confirmClear, setConfirmClear] = useState(false);
+  const [clearing, setClearing] = useState(false);
 
   useEffect(() => {
     const saved = sessionStorage.getItem(SESSION_KEY);
@@ -80,6 +83,21 @@ function PainelPage() {
     setRows(res.rows);
     setAuthed(true);
     sessionStorage.setItem(SESSION_KEY, pass);
+  }
+
+  async function onClear() {
+    const pass = sessionStorage.getItem(SESSION_KEY) || "";
+    setClearing(true);
+    setError(null);
+    const res = await clearEnrollments({ data: { password: pass } });
+    setClearing(false);
+    if (!res.ok) {
+      setError(res.error);
+      setConfirmClear(false);
+      return;
+    }
+    setRows([]);
+    setConfirmClear(false);
   }
 
   async function onLogin(e: FormEvent) {
@@ -175,6 +193,14 @@ function PainelPage() {
             >
               <RefreshCw className="size-3.5" />
               Atualizar
+            </button>
+            <button
+              type="button"
+              onClick={() => setConfirmClear(true)}
+              className="inline-flex h-9 items-center gap-1.5 rounded-[var(--radius-md)] border border-brand-red/40 px-3 text-xs font-semibold text-brand-red hover:bg-brand-red-soft"
+            >
+              <Trash2 className="size-3.5" />
+              Limpar
             </button>
             <button
               type="button"
@@ -303,6 +329,39 @@ function PainelPage() {
           </table>
         </div>
       </div>
+
+      {confirmClear && (
+        <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/60 px-4">
+          <div className="w-full max-w-md rounded-[var(--radius-2xl)] border border-border bg-bg-elevated p-6 shadow-[var(--shadow-soft)]">
+            <h2 className="font-display text-xl font-extrabold text-fg">
+              Limpar o painel?
+            </h2>
+            <p className="mt-2 text-sm leading-relaxed text-fg-muted">
+              Isso apaga todas as tentativas e matrículas. Não dá para
+              desfazer.
+            </p>
+            {error && <p className="mt-3 text-xs text-brand-red">{error}</p>}
+            <div className="mt-6 flex gap-2">
+              <button
+                type="button"
+                onClick={() => setConfirmClear(false)}
+                className="inline-flex h-11 flex-1 items-center justify-center rounded-[var(--radius-md)] border border-border text-sm font-semibold text-fg"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                disabled={clearing}
+                onClick={() => void onClear()}
+                className="inline-flex h-11 flex-1 items-center justify-center gap-2 rounded-[var(--radius-md)] bg-brand-red text-sm font-bold uppercase tracking-[0.04em] text-white disabled:opacity-70"
+              >
+                <Trash2 className="size-4" />
+                {clearing ? "Limpando…" : "Limpar tudo"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   );
 }
