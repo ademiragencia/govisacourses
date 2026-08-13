@@ -152,11 +152,6 @@ function VisitsBlock({
     </>
   );
 }
-  return Number(n || 0).toLocaleString("pt-BR", {
-    style: "currency",
-    currency: "BRL",
-  });
-}
 
 function when(iso: string | null) {
   if (!iso) return "—";
