@@ -8,6 +8,7 @@ import {
   type EnrollmentRow,
 } from "@/lib/enrollments";
 import { listVisits, type VisitRow } from "@/lib/visits";
+import { SITE_URL } from "@/lib/seo";
 
 const SESSION_KEY = "gv_painel_pass";
 
