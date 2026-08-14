@@ -120,8 +120,20 @@ export function Vsl() {
   }, [frameId]);
 
   return (
-    <section id="vsl" className="bg-bg pt-4 pb-8 md:pt-6 md:pb-10">
+    <section id="vsl" className="bg-bg pt-8 pb-8 md:pt-12 md:pb-10">
       <div className="container-lp">
+        <div className="mx-auto mb-6 max-w-2xl text-center md:mb-8">
+          <p className="eyebrow">Go Visa Law Firm · o maior escritório dos EUA</p>
+          <h1 className="display mt-3 text-[clamp(1.9rem,4.4vw,3.1rem)] text-fg">
+            Essa formação nasceu dentro do escritório.
+            <br />
+            <span className="text-gold-line">Não de uma escola.</span>
+          </h1>
+          <p className="mx-auto mt-4 max-w-xl text-base leading-relaxed text-fg-muted">
+            O vídeo é a apresentação oficial. Assista até o fim. Em seguida
+            você vê a condição de hoje e se matricula.
+          </p>
+        </div>
         <div className="mx-auto max-w-4xl overflow-hidden rounded-[var(--radius-2xl)] border border-border bg-black shadow-[var(--shadow-soft)]">
           <div className="relative aspect-video w-full overflow-hidden">
             <iframe
@@ -141,7 +153,7 @@ export function Vsl() {
           </div>
         </div>
         <div className="mx-auto mt-5 max-w-sm">
-          <MatriculaCta fullWidth label="Quero conhecer a formação" />
+          <MatriculaCta fullWidth label="Quero me matricular" />
         </div>
       </div>
     </section>

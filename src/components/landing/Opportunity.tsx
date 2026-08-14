@@ -1,25 +1,26 @@
-import { BadgeDollarSign, Briefcase, GraduationCap, Users } from "lucide-react";
+import { CalendarDays, GraduationCap, MonitorPlay, Trophy } from "lucide-react";
+import { BRAND, COURSE_LIVE } from "@/lib/config";
 
 const points = [
   {
-    icon: Users,
-    title: "Mais de 40 profissionais no remoto",
-    body: "A Go Visa já opera com um time no Brasil: atendimento, vendas, preparação de processo, administrativo, marketing e paralegal. Muita gente começou do zero.",
+    icon: MonitorPlay,
+    title: "Turma ao vivo, não gravada solta",
+    body: `${COURSE_LIVE.format}. Você acompanha o professor e usa o portal com o material da formação.`,
   },
   {
-    icon: BadgeDollarSign,
-    title: "De R$ 3.500 a mais de R$ 28 mil",
-    body: "A faixa atual depende da função e da evolução. Um profissional do time, que nunca tinha ouvido falar de imigração, hoje fatura cerca de R$ 18 mil por mês.",
+    icon: CalendarDays,
+    title: COURSE_LIVE.startLabel,
+    body: `${COURSE_LIVE.hoursDetail}. ${COURSE_LIVE.startDetail}`,
+  },
+  {
+    icon: Trophy,
+    title: "Destaques avaliados pelo escritório",
+    body: `Quem mais se destaca pode ser chamado para o time da ${BRAND.firm}. Isso acontece depois da formação, não no anúncio.`,
   },
   {
     icon: GraduationCap,
-    title: "Do básico ao avançado",
-    body: "Sistema americano, Green Card, cidadania, família, trabalho, casos humanitários, montagem de pedido, organização de documentos e formulários.",
-  },
-  {
-    icon: Briefcase,
-    title: "Feito por quem vive o escritório",
-    body: "A metodologia nasceu da prática da Go Visa: Flórida, Texas, Massachusetts, Washington DC e Go Visa Rio. Você aprende como o mercado funciona de verdade.",
+    title: "Matrícula hoje, neste valor",
+    body: `De ${COURSE_LIVE.listPriceLabel} por ${COURSE_LIVE.priceLabel}. À vista no cartão ou entrada de R$ 1.000 + 7× R$ 400.`,
   },
 ];
 
@@ -28,16 +29,13 @@ export function Opportunity() {
     <section id="autoridade" className="border-t border-border py-20 md:py-28">
       <div className="container-lp">
         <div className="mx-auto max-w-2xl text-center">
-          <p className="eyebrow">O que o vídeo mostra</p>
+          <p className="eyebrow">Depois do vídeo</p>
           <h2 className="display mt-3 text-[clamp(1.85rem,3.5vw,2.85rem)] text-fg">
-            Você não precisa ser advogado.
-            <br />
-            <span className="text-gold-line">Nem falar inglês.</span>
+            A condição, a turma e o próximo passo.
           </h2>
           <p className="mt-4 text-base leading-relaxed text-fg-muted">
-            Enquanto milhares de brasileiros buscam visto e cidadania, o
-            escritório precisa de gente preparada para atender essa demanda.
-            A formação existe para formar esse profissional.
+            O vídeo apresenta a formação. Aqui está o que você precisa para
+            entrar: data, formato e o valor de hoje.
           </p>
         </div>
 

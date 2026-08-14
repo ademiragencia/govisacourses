@@ -1,45 +1,16 @@
 import { COURSE_LIVE } from "@/lib/config";
 import { MatriculaCta } from "./MatriculaCta";
 import { Countdown } from "@/components/landing/Countdown";
-import {
-  BadgeDollarSign,
-  Building2,
-  MapPin,
-  ShieldCheck,
-} from "lucide-react";
 
 export function Hero() {
   return (
-    <section id="topo" className="relative overflow-hidden pb-16 pt-4 md:pb-24 md:pt-8">
+    <section id="topo" className="relative overflow-hidden pb-16 pt-4 md:pb-20 md:pt-6">
       <div className="container-lp relative">
-        <div className="mx-auto max-w-3xl text-center">
-          <div className="mb-5 inline-flex flex-wrap items-center justify-center gap-2 rounded-full border border-brand-red/40 bg-brand-red-soft px-3.5 py-1.5 text-[11px] font-bold uppercase tracking-[0.14em] text-brand-red">
-            Oferta somente hoje · de R$ 14.997 por R$ 3.000
-          </div>
-
-          <p className="eyebrow mb-4">Go Visa Courses | Especialista em imigração americana</p>
-
-          <h1 className="display text-[clamp(2.1rem,5.3vw,3.65rem)] text-fg">
-            Há poucos meses, ele nunca tinha ouvido falar de imigração americana.
-            <br />
-            <span className="text-brand-red">
-              Hoje trabalha na Go Visa, do Brasil, ganhando cerca de R$ 18 mil por mês.
-            </span>
-          </h1>
-
-          <p className="mx-auto mt-5 max-w-2xl text-base leading-relaxed text-fg-muted md:text-[1.1rem]">
-            Não era advogado. Não falava inglês. Não trabalhava com visto. Recebeu a
-            formação e entrou no time. A Go Visa já tem mais de 40 profissionais
-            remotos no Brasil, com remunerações de cerca de R$ 3.500 a mais de
-            R$ 28.000 por mês.
-          </p>
-        </div>
-
-        <div className="mx-auto mt-8 max-w-xl overflow-hidden rounded-[var(--radius-2xl)] border border-brand-red/40 bg-surface shadow-[var(--shadow-soft)]">
+        <div className="mx-auto max-w-xl overflow-hidden rounded-[var(--radius-2xl)] border border-brand-red/40 bg-surface shadow-[var(--shadow-soft)]">
           <div className="flag-strip" />
           <div className="px-6 py-7 text-center md:px-8">
             <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-brand-red">
-              Somente hoje
+              Condição de hoje
             </p>
             <p className="mt-3 text-sm text-fg-muted line-through decoration-brand-red/70">
               De {COURSE_LIVE.listPriceLabel}
@@ -57,29 +28,9 @@ export function Hero() {
               <Countdown />
             </div>
             <div className="mt-6">
-              <MatriculaCta fullWidth label="Quero dar o primeiro passo" />
+              <MatriculaCta fullWidth label="Garantir o valor de hoje" />
             </div>
           </div>
-        </div>
-
-        <div className="mx-auto mt-10 grid max-w-3xl gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          {[
-            { icon: ShieldCheck, t: "Sem inglês", d: "A maioria dos clientes é brasileira" },
-            { icon: Building2, t: "Sem ser advogado", d: "Atendimento, vendas, processo, paralegal" },
-            { icon: BadgeDollarSign, t: "R$ 3.500 a R$ 28 mil", d: "Faixa atual do time remoto" },
-            { icon: MapPin, t: "EUA + Rio", d: "Flórida, Texas, MA, DC e Go Visa Rio" },
-          ].map(({ icon: Icon, t, d }) => (
-            <div
-              key={t}
-              className="surface-card flex flex-col items-center gap-2 rounded-[var(--radius-xl)] px-4 py-5 text-center"
-            >
-              <span className="flex size-10 items-center justify-center rounded-[var(--radius-md)] bg-brand-red-soft text-brand-red">
-                <Icon className="size-5" strokeWidth={1.75} />
-              </span>
-              <p className="text-sm font-bold text-fg">{t}</p>
-              <p className="text-xs text-fg-subtle">{d}</p>
-            </div>
-          ))}
         </div>
       </div>
     </section>
