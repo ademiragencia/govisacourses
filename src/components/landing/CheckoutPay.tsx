@@ -1,11 +1,7 @@
 import { useState } from "react";
 import { CreditCard, Loader2, MessageCircle } from "lucide-react";
-import { createSitePayment } from "@/lib/mp-server";
-import {
-  formatCardNumber,
-  formatExpiry,
-  tokenizeCard,
-} from "@/lib/mp-sdk";
+import { createSitePayment } from "@/lib/asaas-server";
+import { formatCardNumber, formatExpiry } from "@/lib/card";
 import type { StoredLead } from "@/lib/mp";
 import { getWhatsAppUrl } from "@/lib/config";
 
@@ -42,14 +38,6 @@ export function CheckoutPay({
     setBusy(true);
     setError(null);
     try {
-      const tok = await tokenizeCard({
-        cardNumber: digits,
-        cardholderName: holder,
-        cardExpirationMonth: mm,
-        cardExpirationYear: yy,
-        securityCode: cvv,
-        identificationNumber: lead.cpf,
-      });
       const res = await createSitePayment({
         data: {
           method: "card",
@@ -60,9 +48,16 @@ export function CheckoutPay({
           name: lead.name,
           cpf: lead.cpf,
           phone: lead.phone,
-          cardToken: tok.token,
-          paymentMethodId: tok.paymentMethodId,
-          issuerId: tok.issuerId,
+          cardNumber: digits,
+          cardHolder: holder,
+          cardMonth: mm,
+          cardYear: yy,
+          cardCvv: cvv,
+          street: lead.street,
+          number: lead.number,
+          complement: lead.complement,
+          city: lead.city,
+          zip: lead.cep,
           leadId: lead.id,
         },
       });

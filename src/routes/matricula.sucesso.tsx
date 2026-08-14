@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { CheckCircle2, Loader2, MessageCircle } from "lucide-react";
 import { loadLead } from "@/lib/mp";
-import { verifyMpPayment } from "@/lib/mp-server";
+import { verifyAsaasPayment } from "@/lib/asaas-server";
 import { openPaidWhatsApp, submitPaidEmail } from "@/lib/strict-qualify";
 import { SITE_URL } from "@/lib/seo";
 
@@ -50,7 +50,7 @@ function SucessoPage() {
       let pid = id || "";
 
       if (id) {
-        const verified = await verifyMpPayment({ data: { paymentId: id } });
+        const verified = await verifyAsaasPayment({ data: { paymentId: id } });
         if (verified.ok) {
           approved = verified.status === "approved";
           amount = verified.amount || amount;
@@ -69,7 +69,7 @@ function SucessoPage() {
       setState("ok");
       if (lead) {
         const payment = {
-          paymentId: pid || "mercadopago",
+          paymentId: pid || "cartao",
           amount,
           status: "approved",
         };
@@ -119,7 +119,7 @@ function SucessoPage() {
                 openPaidWhatsApp(
                   lead,
                   {
-                    paymentId: paymentId || "mercadopago",
+                    paymentId: paymentId || "cartao",
                     amount: lead.amount,
                     status: "approved",
                   },
