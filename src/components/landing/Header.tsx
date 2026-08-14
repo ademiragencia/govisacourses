@@ -15,9 +15,6 @@ export function Header() {
         </a>
 
         <nav className="hidden items-center gap-6 text-sm font-medium text-fg-muted md:flex">
-          <a href="#vsl" className="transition-colors hover:text-fg">
-            Vídeo
-          </a>
           <a href="#autoridade" className="transition-colors hover:text-fg">
             A formação
           </a>

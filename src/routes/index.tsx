@@ -31,8 +31,8 @@ function LandingPage() {
     <div className="relative min-h-dvh">
       <Header />
       <main id="conteudo">
-        <Hero />
         <Vsl />
+        <Hero />
         <Opportunity />
         <SocialProof />
         <Program />
