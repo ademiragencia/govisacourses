@@ -4,6 +4,7 @@ import {
   Download,
   Lock,
   LogOut,
+  MessageCircle,
   RefreshCw,
   Search,
   Trash2,
@@ -16,6 +17,7 @@ import {
   type EnrollmentRow,
 } from "@/lib/enrollments";
 import { clearVisits, listVisits, type VisitRow } from "@/lib/visits";
+import { getWhatsAppUrl } from "@/lib/config";
 import { SITE_URL } from "@/lib/seo";
 
 const SESSION_KEY = "gv_painel_pass";
@@ -78,8 +80,50 @@ function statusClass(status: string) {
 
 function methodLabel(r: EnrollmentRow) {
   if (r.method === "pix_seller") return "Pix vendedor";
+  if (r.method === "pix") return "Pix";
   if (r.method === "card") return "Cartão";
   return r.method || "—";
+}
+
+function shareEnrollment(row: EnrollmentRow) {
+  const address = [
+    row.street,
+    row.number,
+    row.complement,
+    row.neighborhood,
+    row.city,
+    row.state,
+    row.cep,
+  ]
+    .filter(Boolean)
+    .join(", ");
+  const text = [
+    "*FICHA PARA CONTRATO*",
+    `Status: ${statusLabel(row.status)}`,
+    `Quando: ${when(row.created_at)}`,
+    "",
+    `*Nome:* ${row.name}`,
+    `*CPF:* ${row.cpf || "—"}`,
+    `*RG:* ${row.rg || "—"}`,
+    `*Nascimento:* ${row.birth_date || "—"}`,
+    `*E-mail:* ${row.email || "—"}`,
+    `*WhatsApp do aluno:* ${row.phone || "—"}`,
+    `*Endereço:* ${address || "—"}`,
+    "",
+    `*Curso:* ${row.course_title || "Formação em Processos Imigratórios"}`,
+    `*Plano:* ${row.plan_label || "—"}`,
+    `*Valor:* ${brl(Number(row.amount))}`,
+    `*Parcelas:* ${row.installments || "—"}`,
+    `*Pagamento:* ${methodLabel(row)}`,
+    `*ID:* ${row.payment_id || "—"}`,
+    row.note ? `*Obs:* ${row.note}` : "",
+    "",
+    "Time: formalizar o contrato deste aluno.",
+  ]
+    .filter(Boolean)
+    .join("\n");
+  const url = getWhatsAppUrl(text);
+  if (url) window.open(url, "_blank", "noopener,noreferrer");
 }
 
 function exportCsv(rows: EnrollmentRow[]) {
@@ -255,7 +299,15 @@ function LeadDetail({
             </div>
           ))}
         </dl>
-        <div className="mt-5 flex gap-2">
+        <div className="mt-5 flex flex-col gap-2 sm:flex-row">
+          <button
+            type="button"
+            onClick={() => shareEnrollment(row)}
+            className="inline-flex h-11 flex-1 items-center justify-center gap-2 rounded-[var(--radius-md)] bg-wa text-sm font-bold text-white"
+          >
+            <MessageCircle className="size-4" />
+            Enviar no WhatsApp
+          </button>
           <button
             type="button"
             onClick={onClose}
@@ -590,20 +642,28 @@ function PainelPage() {
                     <li className="text-fg-muted">Nenhuma ficha ainda.</li>
                   )}
                   {rows.slice(0, 8).map((r) => (
-                    <li key={r.id}>
+                    <li key={r.id} className="flex items-start justify-between gap-3">
                       <button
                         type="button"
                         onClick={() => setOpen(r)}
-                        className="flex w-full items-start justify-between gap-3 text-left"
+                        className="min-w-0 flex-1 text-left"
                       >
-                        <span>
-                          <span className="font-semibold text-fg">{r.name || "Sem nome"}</span>
-                          <span className="mt-0.5 block text-xs text-fg-muted">
-                            {r.phone || r.email} · {r.plan_label}
-                          </span>
+                        <span className="font-semibold text-fg">{r.name || "Sem nome"}</span>
+                        <span className="mt-0.5 block text-xs text-fg-muted">
+                          {r.phone || r.email} · {r.plan_label}
                         </span>
-                        <span className={statusClass(r.status)}>{statusLabel(r.status)}</span>
                       </button>
+                      <span className="flex shrink-0 items-center gap-2">
+                        <span className={statusClass(r.status)}>{statusLabel(r.status)}</span>
+                        <button
+                          type="button"
+                          onClick={() => shareEnrollment(r)}
+                          className="inline-flex size-8 items-center justify-center rounded-full bg-wa text-white"
+                          aria-label="Enviar no WhatsApp"
+                        >
+                          <MessageCircle className="size-3.5" />
+                        </button>
+                      </span>
                     </li>
                   ))}
                 </ul>
@@ -680,9 +740,9 @@ function PainelPage() {
               <table className="min-w-[1100px] w-full text-left text-sm">
                 <thead className="bg-bg-elevated text-[11px] uppercase tracking-[0.1em] text-fg-subtle">
                   <tr>
-                    {["Quando", "Status", "Aluno", "Contato", "Endereço", "Plano", "Valor", "Pagamento"].map(
-                      (h) => (
-                        <th key={h} className="px-4 py-3 font-bold">
+                    {["Quando", "Status", "Aluno", "Contato", "Endereço", "Plano", "Valor", "Pagamento", ""].map(
+                      (h, i) => (
+                        <th key={`${h}-${i}`} className="px-4 py-3 font-bold">
                           {h}
                         </th>
                       ),
@@ -692,7 +752,7 @@ function PainelPage() {
                 <tbody>
                   {filtered.length === 0 && (
                     <tr>
-                      <td colSpan={8} className="px-4 py-10 text-center text-fg-muted">
+                      <td colSpan={9} className="px-4 py-10 text-center text-fg-muted">
                         {loading ? "Carregando…" : "Nenhuma matrícula ainda."}
                       </td>
                     </tr>
@@ -723,6 +783,19 @@ function PainelPage() {
                       <td className="px-4 py-3 text-xs text-fg-muted">
                         <p>{methodLabel(r)}</p>
                         <p>{r.payment_id || r.note || "—"}</p>
+                      </td>
+                      <td className="px-4 py-3">
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            shareEnrollment(r);
+                          }}
+                          className="inline-flex h-9 items-center gap-1.5 rounded-[var(--radius-md)] bg-wa px-3 text-[11px] font-bold text-white"
+                        >
+                          <MessageCircle className="size-3.5" />
+                          WhatsApp
+                        </button>
                       </td>
                     </tr>
                   ))}

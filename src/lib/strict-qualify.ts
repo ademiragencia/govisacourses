@@ -184,7 +184,7 @@ export function buildPaidWhatsApp(
 
   return [
     `✅ *PAGAMENTO APROVADO — Contrato / Matrícula*`,
-    `Status MP: *${payment.status}*`,
+    `Status: *${payment.status}*`,
     `ID do pagamento: ${payment.paymentId}`,
     `Valor: R$ ${payment.amount.toFixed(2).replace(".", ",")}`,
     `Plano: ${a.planLabel || "-"}`,
@@ -237,7 +237,7 @@ export function buildPaidEmail(
   return [
     "PAGAMENTO APROVADO — Contrato / Matrícula",
     "========================================",
-    `Status MP: ${payment.status}`,
+    `Status: ${payment.status}`,
     `Payment ID: ${payment.paymentId}`,
     `Valor: R$ ${payment.amount.toFixed(2)}`,
     `Plano: ${a.planLabel || "-"}`,
@@ -296,7 +296,7 @@ export function openPaidWhatsApp(
 ): { ok: boolean } {
   const url = getWhatsAppUrl(buildPaidWhatsApp(a, payment, meta));
   if (!url) return { ok: false };
-  window.open(url, "_blank", "noopener,noreferrer");
+  window.location.href = url;
   return { ok: true };
 }
 
