@@ -1,6 +1,7 @@
 import { BRAND } from "@/lib/config";
 import { MatriculaCta } from "./MatriculaCta";
 import { WhatsAppCta } from "./WhatsAppCta";
+import { Reveal } from "./Reveal";
 
 export function FinalCta() {
   return (
@@ -16,6 +17,7 @@ export function FinalCta() {
             aria-hidden
           />
           <div className="relative mx-auto max-w-2xl">
+            <Reveal>
             <p className="eyebrow">
               {BRAND.firm} | O maior escritório dos EUA
             </p>
@@ -43,6 +45,7 @@ export function FinalCta() {
                 Oferta somente hoje · de R$ 14.997 por R$ 3.000 · acaba à meia-noite
               </p>
             </div>
+            </Reveal>
           </div>
         </div>
       </div>

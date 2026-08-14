@@ -122,7 +122,7 @@ export function Vsl() {
   return (
     <section id="vsl" className="bg-bg pt-8 pb-8 md:pt-12 md:pb-10">
       <div className="container-lp">
-        <div className="mx-auto mb-6 max-w-2xl text-center md:mb-8">
+        <div className="mx-auto mb-6 max-w-2xl text-center hook-in md:mb-8">
           <p className="eyebrow">Go Visa Law Firm · o maior escritório dos EUA</p>
           <h1 className="display mt-3 text-[clamp(1.9rem,4.4vw,3.1rem)] text-fg">
             Essa formação nasceu dentro do escritório.
@@ -134,7 +134,7 @@ export function Vsl() {
             você vê a condição de hoje e se matricula.
           </p>
         </div>
-        <div className="mx-auto max-w-4xl overflow-hidden rounded-[var(--radius-2xl)] border border-border bg-black shadow-[var(--shadow-soft)]">
+        <div className="vsl-glow mx-auto max-w-4xl overflow-hidden rounded-[var(--radius-2xl)] border border-border bg-bg">
           <div className="relative aspect-video w-full overflow-hidden">
             <iframe
               id={frameId}

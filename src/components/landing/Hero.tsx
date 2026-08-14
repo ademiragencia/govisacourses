@@ -1,11 +1,13 @@
 import { COURSE_LIVE } from "@/lib/config";
 import { MatriculaCta } from "./MatriculaCta";
 import { Countdown } from "@/components/landing/Countdown";
+import { Reveal } from "./Reveal";
 
 export function Hero() {
   return (
     <section id="topo" className="relative overflow-hidden pb-16 pt-4 md:pb-20 md:pt-6">
       <div className="container-lp relative">
+        <Reveal>
         <div className="mx-auto max-w-xl overflow-hidden rounded-[var(--radius-2xl)] border border-brand-red/40 bg-surface shadow-[var(--shadow-soft)]">
           <div className="flag-strip" />
           <div className="px-6 py-7 text-center md:px-8">
@@ -32,6 +34,7 @@ export function Hero() {
             </div>
           </div>
         </div>
+        </Reveal>
       </div>
     </section>
   );

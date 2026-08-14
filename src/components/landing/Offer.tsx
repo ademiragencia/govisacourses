@@ -1,12 +1,14 @@
 import { BRAND, COURSE_LIVE } from "@/lib/config";
 import { MatriculaCta } from "./MatriculaCta";
 import { Countdown } from "@/components/landing/Countdown";
+import { Reveal } from "./Reveal";
 import { Check, Clock, Radio } from "lucide-react";
 
 export function Offer() {
   return (
     <section id="investimento" className="border-t border-border py-20 md:py-28">
       <div className="container-lp">
+        <Reveal>
         <div className="mx-auto max-w-2xl text-center">
           <p className="eyebrow">Somente hoje</p>
           <h2 className="display mt-3 text-[clamp(1.85rem,3.5vw,2.75rem)] text-fg">
@@ -19,6 +21,7 @@ export function Offer() {
             {BRAND.firmRank}.
           </p>
         </div>
+        </Reveal>
 
         <div id="contato" className="mx-auto mt-12 max-w-xl">
           <div className="overflow-hidden rounded-[var(--radius-2xl)] border border-brand-red/40 bg-surface shadow-[var(--shadow-soft)]">

@@ -116,6 +116,15 @@ function RootDocument({ children }: Readonly<{ children: ReactNode }>) {
         <SeoJsonLd />
       </head>
       <body className="page-wash antialiased">
+        <div
+          className="orb pointer-events-none fixed -left-24 top-24 size-72 bg-navy/50"
+          aria-hidden
+        />
+        <div
+          className="orb pointer-events-none fixed -right-16 top-[40%] size-80 bg-brand-red/20"
+          style={{ animationDelay: "2.4s" }}
+          aria-hidden
+        />
         <VisitTracker />
         {children}
         <Scripts />
