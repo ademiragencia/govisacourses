@@ -86,6 +86,17 @@ async function findOrCreateCustomer(input: {
   return created.id;
 }
 
+function nextMonthBr() {
+  const now = new Date(
+    new Date().toLocaleString("en-US", { timeZone: "America/Sao_Paulo" }),
+  );
+  now.setMonth(now.getMonth() + 1);
+  const y = now.getFullYear();
+  const m = String(now.getMonth() + 1).padStart(2, "0");
+  const d = String(now.getDate()).padStart(2, "0");
+  return `${y}-${m}-${d}`;
+}
+
 function isPaid(status?: string) {
   return status === "CONFIRMED" || status === "RECEIVED" || status === "RECEIVED_IN_CASH";
 }
@@ -114,20 +125,28 @@ export const createSitePayment = createServerFn({ method: "POST" })
       state?: string;
       zip?: string;
       leadId?: string;
+      plan?: string;
     };
-    if (d.method !== "card") throw new Error("Forma de pagamento inválida");
+    if (d.method !== "card" && d.method !== "pix") {
+      throw new Error("Forma de pagamento inválida");
+    }
     const amount = Number(d.amount);
     if (!Number.isFinite(amount) || amount < 1) throw new Error("Valor inválido");
     if (!d.email || !d.name || !d.cpf) throw new Error("Dados incompletos");
+    const method = d.method as "card" | "pix";
     const cardNumber = String(d.cardNumber || "").replace(/\D/g, "");
-    if (cardNumber.length < 13) throw new Error("Número do cartão inválido");
     const month = String(d.cardMonth || "").padStart(2, "0");
     let year = String(d.cardYear || "").replace(/\D/g, "");
     if (year.length === 2) year = `20${year}`;
-    if (!month || !year || String(d.cardCvv || "").length < 3) {
-      throw new Error("Validade ou CVV inválido");
+    if (method === "card") {
+      if (cardNumber.length < 13) throw new Error("Número do cartão inválido");
+      if (!month || !year || String(d.cardCvv || "").length < 3) {
+        throw new Error("Validade ou CVV inválido");
+      }
     }
     return {
+      method,
+      plan: String(d.plan || ""),
       amount,
       installments: Math.max(1, Number(d.installments) || 1),
       title: String(d.title || "Formação Go Visa Courses"),
@@ -162,6 +181,60 @@ export const createSitePayment = createServerFn({ method: "POST" })
         number: data.number,
         complement: data.complement,
       });
+
+      if (data.method === "pix") {
+        const pay = await asaas<{ id?: string; status?: string }>("/payments", {
+          method: "POST",
+          body: JSON.stringify({
+            customer,
+            billingType: "PIX",
+            value: Number(data.amount.toFixed(2)),
+            dueDate: todayBr(),
+            description: data.title.slice(0, 480),
+            externalReference: data.leadId,
+          }),
+        });
+        if (!pay.id) {
+          return { ok: false as const, error: "Não foi possível gerar o Pix." };
+        }
+        const qr = await asaas<{
+          encodedImage?: string;
+          payload?: string;
+          expirationDate?: string;
+        }>(`/payments/${encodeURIComponent(pay.id)}/pixQrCode`);
+
+        let subscriptionId = "";
+        if (data.plan === "entry") {
+          try {
+            const sub = await asaas<{ id?: string }>("/subscriptions", {
+              method: "POST",
+              body: JSON.stringify({
+                customer,
+                billingType: "PIX",
+                value: 400,
+                nextDueDate: nextMonthBr(),
+                cycle: "MONTHLY",
+                maxPayments: 7,
+                description: "7 parcelas da Formação Go Visa Courses",
+                externalReference: data.leadId,
+              }),
+            });
+            subscriptionId = sub.id || "";
+          } catch {
+            /* primeira parcela no Pix; parcelas ficam no painel se a assinatura falhar */
+          }
+        }
+
+        return {
+          ok: true as const,
+          paymentId: pay.id,
+          status: isPaid(pay.status) ? "approved" : "pending",
+          statusDetail: pay.status || "PENDING",
+          qrImage: qr.encodedImage || "",
+          qrPayload: qr.payload || "",
+          subscriptionId,
+        };
+      }
 
       const payload: Record<string, unknown> = {
         customer,
@@ -217,6 +290,8 @@ export const createSitePayment = createServerFn({ method: "POST" })
           paymentId: pay.id,
           status: "pending",
           statusDetail: pay.status,
+          qrImage: "",
+          qrPayload: "",
         };
       }
 
@@ -233,6 +308,8 @@ export const createSitePayment = createServerFn({ method: "POST" })
         paymentId: pay.id,
         status: "approved",
         statusDetail: pay.status || "",
+        qrImage: "",
+        qrPayload: "",
       };
     } catch (err) {
       return {

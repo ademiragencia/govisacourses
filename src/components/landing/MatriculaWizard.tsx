@@ -195,7 +195,7 @@ export function MatriculaWizard({
   }, []);
 
   const onPaid = useCallback(
-    (paymentId: string, amount: number) => {
+    (paymentId: string, amount: number, method: "card" | "pix" = "card") => {
       setLead((current) => {
         if (!current) return current;
         const payment = { paymentId, amount, status: "approved" };
@@ -205,8 +205,8 @@ export function MatriculaWizard({
           data: leadToPayload(current, {
             status: "paid",
             paymentId,
-            method: "card",
-            note: "Cartão aprovado",
+            method,
+            note: method === "pix" ? "Pix confirmado" : "Cartão aprovado",
           }),
         });
         return current;
