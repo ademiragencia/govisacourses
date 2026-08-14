@@ -1,40 +1,37 @@
-import { BRAND, COURSE_LIVE } from "@/lib/config";
+import { COURSE_LIVE } from "@/lib/config";
 import { MatriculaCta } from "./MatriculaCta";
 import { Countdown } from "@/components/landing/Countdown";
 import {
   BadgeDollarSign,
   Building2,
-  Crown,
+  MapPin,
   ShieldCheck,
 } from "lucide-react";
 
 export function Hero() {
   return (
-    <section id="topo" className="relative overflow-hidden pb-16 pt-10 md:pb-24 md:pt-16">
+    <section id="topo" className="relative overflow-hidden pb-16 pt-4 md:pb-24 md:pt-8">
       <div className="container-lp relative">
         <div className="mx-auto max-w-3xl text-center">
           <div className="mb-5 inline-flex flex-wrap items-center justify-center gap-2 rounded-full border border-brand-red/40 bg-brand-red-soft px-3.5 py-1.5 text-[11px] font-bold uppercase tracking-[0.14em] text-brand-red">
             Oferta somente hoje · de R$ 14.997 por R$ 3.000
           </div>
 
-          <p className="eyebrow mb-4">
-            Go Visa Courses | Formação com o maior escritório
-          </p>
+          <p className="eyebrow mb-4">Go Visa Courses | Especialista em imigração americana</p>
 
           <h1 className="display text-[clamp(2.1rem,5.3vw,3.65rem)] text-fg">
-            Formação com o{" "}
-            <span className="text-gold-line">maior escritório</span> dos
-            Estados Unidos.
+            Há poucos meses, ele nunca tinha ouvido falar de imigração americana.
             <br />
             <span className="text-brand-red">
-              {BRAND.firm} contrata os melhores alunos, já faturando em dólar.
+              Hoje trabalha na Go Visa, do Brasil, ganhando cerca de R$ 18 mil por mês.
             </span>
           </h1>
 
           <p className="mx-auto mt-5 max-w-2xl text-base leading-relaxed text-fg-muted md:text-[1.1rem]">
-            Turma 100% online com aulas ao vivo. Ligada à{" "}
-            <strong className="font-semibold text-fg">{BRAND.firm}</strong>,{" "}
-            {BRAND.firmRank}. Inglês não é obrigatório.
+            Não era advogado. Não falava inglês. Não trabalhava com visto. Recebeu a
+            formação e entrou no time. A Go Visa já tem mais de 40 profissionais
+            remotos no Brasil, com remunerações de cerca de R$ 3.500 a mais de
+            R$ 28.000 por mês.
           </p>
         </div>
 
@@ -60,17 +57,17 @@ export function Hero() {
               <Countdown />
             </div>
             <div className="mt-6">
-              <MatriculaCta fullWidth label="Garantir o valor de hoje" />
+              <MatriculaCta fullWidth label="Quero dar o primeiro passo" />
             </div>
           </div>
         </div>
 
         <div className="mx-auto mt-10 grid max-w-3xl gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {[
-            { icon: Crown, t: "Maior escritório", d: "dos Estados Unidos" },
-            { icon: Building2, t: BRAND.firm, d: "Quem forma e contrata" },
-            { icon: BadgeDollarSign, t: "Melhores alunos", d: "Já faturam em dólar" },
-            { icon: ShieldCheck, t: "Sem inglês obrigatório", d: "Diferencial, não barreira" },
+            { icon: ShieldCheck, t: "Sem inglês", d: "A maioria dos clientes é brasileira" },
+            { icon: Building2, t: "Sem ser advogado", d: "Atendimento, vendas, processo, paralegal" },
+            { icon: BadgeDollarSign, t: "R$ 3.500 a R$ 28 mil", d: "Faixa atual do time remoto" },
+            { icon: MapPin, t: "EUA + Rio", d: "Flórida, Texas, MA, DC e Go Visa Rio" },
           ].map(({ icon: Icon, t, d }) => (
             <div
               key={t}

@@ -1,26 +1,25 @@
-import { BRAND } from "@/lib/config";
-import { BadgeDollarSign, Briefcase, Crown, Trophy } from "lucide-react";
+import { BadgeDollarSign, Briefcase, GraduationCap, Users } from "lucide-react";
 
 const points = [
   {
-    icon: Crown,
-    title: "O maior escritório dos Estados Unidos",
-    body: `A ${BRAND.firm} é o maior escritório dos EUA por trás desta formação. Você treina no padrão de quem opera imigração em escala real.`,
-  },
-  {
-    icon: Trophy,
-    title: "Os melhores alunos são contratados",
-    body: `Quem mais se destaca na formação é avaliado para entrar no time da ${BRAND.firm}, o maior escritório dos EUA.`,
+    icon: Users,
+    title: "Mais de 40 profissionais no remoto",
+    body: "A Go Visa já opera com um time no Brasil: atendimento, vendas, preparação de processo, administrativo, marketing e paralegal. Muita gente começou do zero.",
   },
   {
     icon: BadgeDollarSign,
-    title: "Já faturando em dólar",
-    body: "A contratação dos destaques já nasce em moeda forte. Você não espera “anos depois” para pensar em dólar.",
+    title: "De R$ 3.500 a mais de R$ 28 mil",
+    body: "A faixa atual depende da função e da evolução. Um profissional do time, que nunca tinha ouvido falar de imigração, hoje fatura cerca de R$ 18 mil por mês.",
+  },
+  {
+    icon: GraduationCap,
+    title: "Do básico ao avançado",
+    body: "Sistema americano, Green Card, cidadania, família, trabalho, casos humanitários, montagem de pedido, organização de documentos e formulários.",
   },
   {
     icon: Briefcase,
-    title: "Padrão de escritório de verdade",
-    body: "Documentação, petition packages, ética e rotina profissional: o que o maior escritório exige no dia a dia.",
+    title: "Feito por quem vive o escritório",
+    body: "A metodologia nasceu da prática da Go Visa: Flórida, Texas, Massachusetts, Washington DC e Go Visa Rio. Você aprende como o mercado funciona de verdade.",
   },
 ];
 
@@ -29,16 +28,16 @@ export function Opportunity() {
     <section id="autoridade" className="border-t border-border py-20 md:py-28">
       <div className="container-lp">
         <div className="mx-auto max-w-2xl text-center">
-          <p className="eyebrow">O maior escritório dos EUA</p>
+          <p className="eyebrow">O que o vídeo mostra</p>
           <h2 className="display mt-3 text-[clamp(1.85rem,3.5vw,2.85rem)] text-fg">
-            {BRAND.firm}.
+            Você não precisa ser advogado.
             <br />
-            <span className="text-gold-line">O maior escritório</span>
-            <span className="text-fg"> forma. Contrata. Em dólar.</span>
+            <span className="text-gold-line">Nem falar inglês.</span>
           </h2>
           <p className="mt-4 text-base leading-relaxed text-fg-muted">
-            {BRAND.hiringPromise}. A formação prepara você para o padrão do
-            maior escritório dos Estados Unidos.
+            Enquanto milhares de brasileiros buscam visto e cidadania, o
+            escritório precisa de gente preparada para atender essa demanda.
+            A formação existe para formar esse profissional.
           </p>
         </div>
 

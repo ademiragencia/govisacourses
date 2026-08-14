@@ -1,5 +1,6 @@
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { Volume2 } from "lucide-react";
+import { MatriculaCta } from "./MatriculaCta";
 
 const VSL_ID = "3hq7TpBYhsU";
 
@@ -118,13 +119,14 @@ export function Vsl() {
     <section id="vsl" className="bg-bg pt-4 pb-8 md:pt-6 md:pb-10">
       <div className="container-lp">
         <div className="mx-auto max-w-4xl overflow-hidden rounded-[var(--radius-2xl)] border border-border bg-black shadow-[var(--shadow-soft)]">
-          <div className="relative aspect-video w-full">
+          <div className="relative aspect-video w-full overflow-hidden">
             <iframe
               key={key}
               id={frameId}
               src={src}
               title="Apresentação da formação"
-              className="absolute inset-0 h-full w-full border-0"
+              className="absolute left-0 top-0 w-full border-0"
+              style={{ height: "calc(100% + 3.5rem)" }}
               allow="autoplay; encrypted-media"
               referrerPolicy="strict-origin-when-cross-origin"
               tabIndex={-1}
@@ -137,13 +139,16 @@ export function Vsl() {
               <button
                 type="button"
                 onClick={unmute}
-                className="absolute bottom-4 left-1/2 z-20 flex h-12 -translate-x-1/2 items-center gap-2 rounded-full bg-brand-red px-5 text-sm font-bold text-white shadow-[0_10px_28px_rgba(225,29,46,0.35)]"
+                className="absolute bottom-16 left-1/2 z-20 flex h-12 -translate-x-1/2 items-center gap-2 rounded-full bg-brand-red px-5 text-sm font-bold text-white shadow-[0_10px_28px_rgba(225,29,46,0.35)] md:bottom-20"
               >
                 <Volume2 className="size-4" />
                 Ativar som
               </button>
             )}
           </div>
+        </div>
+        <div className="mx-auto mt-5 max-w-sm">
+          <MatriculaCta fullWidth label="Quero conhecer a formação" />
         </div>
       </div>
     </section>
