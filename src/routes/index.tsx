@@ -12,6 +12,7 @@ import { Faq } from "@/components/landing/Faq";
 import { FinalCta } from "@/components/landing/FinalCta";
 import { Footer } from "@/components/landing/Footer";
 import { StickyCta } from "@/components/landing/StickyCta";
+import { WhatsAppFloat } from "@/components/landing/WhatsAppFloat";
 import { QualifyForm } from "@/components/landing/QualifyForm";
 import { SEO, SITE_URL } from "@/lib/seo";
 
@@ -45,6 +46,7 @@ function LandingPage() {
       </main>
       <Footer />
       <StickyCta />
+      <WhatsAppFloat />
       <QualifyForm />
     </div>
   );

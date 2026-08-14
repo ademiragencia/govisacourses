@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { MatriculaWizard } from "@/components/landing/MatriculaWizard";
+import { WhatsAppFloat } from "@/components/landing/WhatsAppFloat";
 import { MatriculaPitch } from "@/components/landing/MatriculaPitch";
 import { BRAND } from "@/lib/config";
 import { SITE_URL } from "@/lib/seo";
@@ -93,6 +94,7 @@ function MatriculaPage() {
           </Link>
         </div>
       </footer>
+      <WhatsAppFloat />
     </div>
   );
 }
