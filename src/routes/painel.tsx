@@ -7,7 +7,7 @@ import {
   listEnrollments,
   type EnrollmentRow,
 } from "@/lib/enrollments";
-import { listVisits, type VisitRow } from "@/lib/visits";
+import { clearVisits, listVisits, type VisitRow } from "@/lib/visits";
 import { SITE_URL } from "@/lib/seo";
 
 const SESSION_KEY = "gv_painel_pass";
@@ -222,6 +222,17 @@ function PainelPage() {
     const pass = sessionStorage.getItem(SESSION_KEY) || "";
     setClearing(true);
     setError(null);
+    if (tab === "acessos") {
+      const res = await clearVisits({ data: { password: pass } });
+      setClearing(false);
+      if (!res.ok) {
+        setError(res.error);
+        return;
+      }
+      setVisits([]);
+      setConfirmClear(false);
+      return;
+    }
     const res = await clearEnrollments({ data: { password: pass } });
     setClearing(false);
     if (!res.ok) {
@@ -526,11 +537,12 @@ function PainelPage() {
         <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/60 px-4">
           <div className="w-full max-w-md rounded-[var(--radius-2xl)] border border-border bg-bg-elevated p-6 shadow-[var(--shadow-soft)]">
             <h2 className="font-display text-xl font-extrabold text-fg">
-              Limpar o painel?
+              {tab === "acessos" ? "Zerar os acessos?" : "Limpar o painel?"}
             </h2>
             <p className="mt-2 text-sm leading-relaxed text-fg-muted">
-              Isso apaga todas as tentativas e matrículas. Não dá para
-              desfazer.
+              {tab === "acessos"
+                ? "Isso apaga todos os acessos rastreados. Não dá para desfazer."
+                : "Isso apaga todas as tentativas e matrículas. Não dá para desfazer."}
             </p>
             {error && <p className="mt-3 text-xs text-brand-red">{error}</p>}
             <div className="mt-6 flex gap-2">

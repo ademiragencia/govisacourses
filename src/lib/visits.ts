@@ -21,12 +21,32 @@ export type VisitRow = {
 const SID = "gv_sid";
 const LANDING = "gv_landing";
 
+const TRACK_HOSTS = new Set([
+  "govisacourses.com.br",
+  "www.govisacourses.com.br",
+  "govisacoursesonline.vercel.app",
+]);
+
 function hostOf(url: string) {
   try {
     return new URL(url).hostname.replace(/^www\./, "");
   } catch {
     return "";
   }
+}
+
+function shouldSkipTracking() {
+  if (typeof window === "undefined") return true;
+  const host = window.location.hostname.toLowerCase();
+  if (!TRACK_HOSTS.has(host)) return true;
+  const ua = navigator.userAgent.toLowerCase();
+  if (
+    /headless|playwright|puppeteer|phantom|grok|xai|bot|crawler|spider/.test(ua)
+  ) {
+    return true;
+  }
+  if (navigator.webdriver) return true;
+  return false;
 }
 
 export function resolveSource(input: {
@@ -37,7 +57,12 @@ export function resolveSource(input: {
   const utm = (input.utm || "").trim().toLowerCase();
   if (utm) return utm;
   const q = input.search || "";
-  if (/fbclid=/.test(q) || /instagram\.com|facebook\.com|l\.facebook|lm\.facebook/.test(input.referrer || ""))
+  if (
+    /fbclid=/.test(q) ||
+    /instagram\.com|facebook\.com|l\.facebook|lm\.facebook/.test(
+      input.referrer || "",
+    )
+  )
     return "meta";
   if (/gclid=|gbraid=|wbraid=/.test(q) || /google\./.test(input.referrer || ""))
     return "google";
@@ -48,7 +73,7 @@ export function resolveSource(input: {
 }
 
 export async function trackVisit(path: string, search = "") {
-  if (typeof window === "undefined") return;
+  if (shouldSkipTracking()) return;
   if (path.startsWith("/painel")) return;
   let sid = sessionStorage.getItem(SID);
   if (!sid) {
@@ -60,7 +85,9 @@ export async function trackVisit(path: string, search = "") {
     landing = `${path}${search || ""}`;
     sessionStorage.setItem(LANDING, landing);
   }
-  const params = new URLSearchParams(search.startsWith("?") ? search.slice(1) : search);
+  const params = new URLSearchParams(
+    search.startsWith("?") ? search.slice(1) : search,
+  );
   const referrer = document.referrer || "";
   const payload = {
     session_id: sid,
@@ -104,6 +131,28 @@ export const listVisits = createServerFn({ method: "POST" })
       return {
         ok: false as const,
         error: err instanceof Error ? err.message : "Falha ao carregar acessos",
+      };
+    }
+  });
+
+export const clearVisits = createServerFn({ method: "POST" })
+  .validator((data: unknown) => {
+    const d = data as { password?: string };
+    return { password: String(d?.password || "") };
+  })
+  .handler(async ({ data }) => {
+    if (data.password !== PANEL_PASSWORD) {
+      return { ok: false as const, error: "Senha incorreta" };
+    }
+    try {
+      const res = await supabaseRpc<{ deleted?: number }>("admin_clear_visits", {
+        p_password: data.password,
+      });
+      return { ok: true as const, deleted: Number(res?.deleted ?? 0) };
+    } catch (err) {
+      return {
+        ok: false as const,
+        error: err instanceof Error ? err.message : "Falha ao limpar acessos",
       };
     }
   });
