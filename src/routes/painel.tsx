@@ -104,7 +104,6 @@ function shareEnrollment(row: EnrollmentRow) {
     "",
     `*Nome:* ${row.name}`,
     `*CPF:* ${row.cpf || "—"}`,
-    `*RG:* ${row.rg || "—"}`,
     `*Nascimento:* ${row.birth_date || "—"}`,
     `*E-mail:* ${row.email || "—"}`,
     `*WhatsApp do aluno:* ${row.phone || "—"}`,

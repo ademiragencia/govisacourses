@@ -1,8 +1,10 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Check, Copy, CreditCard, Loader2, QrCode } from "lucide-react";
+import { COURSE_LIVE } from "@/lib/config";
 import { createSitePayment, verifyAsaasPayment } from "@/lib/asaas-server";
 import { formatCardNumber, formatExpiry } from "@/lib/card";
 import type { StoredLead } from "@/lib/mp";
+import { brl, cardInstallment, cardInstallmentOptions } from "@/lib/pricing";
 
 export type PayAttempt = {
   status: "paid" | "refused" | "pending" | "pix_seller";
@@ -20,19 +22,26 @@ export function CheckoutPay({
   onPaid: (paymentId: string, amount: number, method?: "card" | "pix") => void;
   onAttempt?: (attempt: PayAttempt) => void;
 }) {
-  const [tab, setTab] = useState<"card" | "pix">("card");
+  const [tab, setTab] = useState<"card" | "pix">(
+    lead.plan === "card" ? "card" : "pix",
+  );
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [holder, setHolder] = useState(lead.name);
   const [number, setNumber] = useState("");
   const [expiry, setExpiry] = useState("");
   const [cvv, setCvv] = useState("");
+  const [parcels, setParcels] = useState(Math.max(1, lead.installments || 1));
   const [pix, setPix] = useState<{
     paymentId: string;
     qrImage: string;
     qrPayload: string;
   } | null>(null);
   const [copied, setCopied] = useState(false);
+
+  const options = useMemo(() => cardInstallmentOptions(), []);
+  const chosen = cardInstallment(parcels);
+  const pixAmount = COURSE_LIVE.price;
 
   useEffect(() => {
     if (!pix?.paymentId) return;
@@ -41,7 +50,7 @@ export function CheckoutPay({
       const res = await verifyAsaasPayment({ data: { paymentId: pix.paymentId } });
       if (stop) return;
       if (res.ok && res.status === "approved") {
-        onPaid(res.paymentId, lead.amount, "pix");
+        onPaid(res.paymentId, pixAmount, "pix");
       }
     };
     const id = window.setInterval(() => void tick(), 3000);
@@ -50,7 +59,7 @@ export function CheckoutPay({
       stop = true;
       window.clearInterval(id);
     };
-  }, [pix?.paymentId, lead.amount, onPaid]);
+  }, [pix?.paymentId, pixAmount, onPaid]);
 
   async function payCard() {
     const digits = number.replace(/\D/g, "");
@@ -65,9 +74,9 @@ export function CheckoutPay({
       const res = await createSitePayment({
         data: {
           method: "card",
-          plan: lead.plan,
-          amount: lead.amount,
-          installments: lead.installments || 1,
+          plan: "card",
+          amount: chosen.total,
+          installments: chosen.count,
           title: lead.courseTitle,
           email: lead.email,
           name: lead.name,
@@ -93,7 +102,7 @@ export function CheckoutPay({
         return;
       }
       if (res.status === "approved") {
-        onPaid(res.paymentId, lead.amount, "card");
+        onPaid(res.paymentId, chosen.total, "card");
         return;
       }
       onAttempt?.({
@@ -120,8 +129,8 @@ export function CheckoutPay({
       const res = await createSitePayment({
         data: {
           method: "pix",
-          plan: lead.plan,
-          amount: lead.amount,
+          plan: "pix",
+          amount: pixAmount,
           installments: 1,
           title: lead.courseTitle,
           email: lead.email,
@@ -151,7 +160,7 @@ export function CheckoutPay({
         status: "pending",
         method: "pix",
         paymentId: res.paymentId,
-        note: lead.plan === "entry" ? "Pix da entrada + 7 parcelas" : "Pix gerado",
+        note: "Pix à vista gerado",
       });
     } catch (e) {
       const note = e instanceof Error ? e.message : "Não foi possível gerar o Pix";
@@ -181,8 +190,8 @@ export function CheckoutPay({
       <div className="grid grid-cols-2 gap-2">
         {(
           [
+            ["pix", "Pix à vista"],
             ["card", "Cartão"],
-            ["pix", "Pix"],
           ] as const
         ).map(([id, label]) => (
           <button
@@ -205,6 +214,27 @@ export function CheckoutPay({
 
       {tab === "card" && (
         <>
+          <label className="block">
+            <span className="mb-1.5 block text-xs font-bold uppercase tracking-[0.12em] text-fg-subtle">
+              Parcelas no cartão
+            </span>
+            <select
+              className={inputClass}
+              value={parcels}
+              onChange={(e) => setParcels(Number(e.target.value))}
+            >
+              {options.map((opt) => (
+                <option key={opt.count} value={opt.count}>
+                  {opt.label}
+                </option>
+              ))}
+            </select>
+          </label>
+          <p className="text-xs text-fg-muted">
+            {chosen.interest
+              ? `Com juros de ${COURSE_LIVE.cardInterestLabel}. Total ${brl(chosen.total)}.`
+              : "1× sem juros. Pix continua sendo R$ 3.000 à vista."}
+          </p>
           <input
             className={inputClass}
             value={holder}
@@ -238,16 +268,6 @@ export function CheckoutPay({
               autoComplete="cc-csc"
             />
           </div>
-          {lead.installments > 1 && (
-            <p className="text-xs text-fg-muted">
-              Será cobrado em {lead.installments}x de{" "}
-              {(lead.amount / lead.installments).toLocaleString("pt-BR", {
-                style: "currency",
-                currency: "BRL",
-              })}
-              .
-            </p>
-          )}
           <button
             type="button"
             disabled={busy}
@@ -255,7 +275,7 @@ export function CheckoutPay({
             className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-[var(--radius-md)] bg-brand-red text-sm font-bold uppercase tracking-[0.04em] text-white hover:brightness-110 disabled:opacity-70"
           >
             {busy ? <Loader2 className="size-4 animate-spin" /> : <CreditCard className="size-4" />}
-            Pagar {lead.planLabel}
+            Pagar {chosen.label}
           </button>
         </>
       )}
@@ -263,9 +283,7 @@ export function CheckoutPay({
       {tab === "pix" && !pix && (
         <>
           <p className="text-sm text-fg-muted">
-            {lead.plan === "entry"
-              ? "Pague R$ 1.000 agora no Pix. As 7× R$ 400 entram automaticamente todo mês."
-              : "Pague R$ 3.000 à vista no Pix. O QR aparece na hora."}
+            Pix é somente à vista: {brl(pixAmount)}. Sem juros e sem parcela.
           </p>
           <button
             type="button"
@@ -274,7 +292,7 @@ export function CheckoutPay({
             className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-[var(--radius-md)] bg-brand-red text-sm font-bold uppercase tracking-[0.04em] text-white hover:brightness-110 disabled:opacity-70"
           >
             {busy ? <Loader2 className="size-4 animate-spin" /> : <QrCode className="size-4" />}
-            Gerar Pix
+            Gerar Pix de {brl(pixAmount)}
           </button>
         </>
       )}
@@ -292,7 +310,7 @@ export function CheckoutPay({
             />
           )}
           <p className="mt-3 text-sm text-fg-muted">
-            Depois de pagar, a confirmação entra sozinha.
+            {brl(pixAmount)} à vista. Depois de pagar, a confirmação entra sozinha.
           </p>
           <button
             type="button"

@@ -86,17 +86,6 @@ async function findOrCreateCustomer(input: {
   return created.id;
 }
 
-function nextMonthBr() {
-  const now = new Date(
-    new Date().toLocaleString("en-US", { timeZone: "America/Sao_Paulo" }),
-  );
-  now.setMonth(now.getMonth() + 1);
-  const y = now.getFullYear();
-  const m = String(now.getMonth() + 1).padStart(2, "0");
-  const d = String(now.getDate()).padStart(2, "0");
-  return `${y}-${m}-${d}`;
-}
-
 function isPaid(status?: string) {
   return status === "CONFIRMED" || status === "RECEIVED" || status === "RECEIVED_IN_CASH";
 }
@@ -203,28 +192,6 @@ export const createSitePayment = createServerFn({ method: "POST" })
           expirationDate?: string;
         }>(`/payments/${encodeURIComponent(pay.id)}/pixQrCode`);
 
-        let subscriptionId = "";
-        if (data.plan === "entry") {
-          try {
-            const sub = await asaas<{ id?: string }>("/subscriptions", {
-              method: "POST",
-              body: JSON.stringify({
-                customer,
-                billingType: "PIX",
-                value: 400,
-                nextDueDate: nextMonthBr(),
-                cycle: "MONTHLY",
-                maxPayments: 7,
-                description: "7 parcelas da Formação Go Visa Courses",
-                externalReference: data.leadId,
-              }),
-            });
-            subscriptionId = sub.id || "";
-          } catch {
-            /* primeira parcela no Pix; parcelas ficam no painel se a assinatura falhar */
-          }
-        }
-
         return {
           ok: true as const,
           paymentId: pay.id,
@@ -232,7 +199,7 @@ export const createSitePayment = createServerFn({ method: "POST" })
           statusDetail: pay.status || "PENDING",
           qrImage: qr.encodedImage || "",
           qrPayload: qr.payload || "",
-          subscriptionId,
+          subscriptionId: "",
         };
       }
 

@@ -113,7 +113,7 @@ export function MatriculaWizard({
 
   function goOfferNext() {
     const e: Partial<Record<keyof ContractAnswers, string>> = {};
-    if (!answers.plan) e.plan = "Escolha à vista ou a entrada";
+    if (!answers.plan) e.plan = "Escolha Pix ou cartão";
     if (answers.name.trim().length < 5) e.name = "Informe o nome completo";
     const phoneMsg = phoneError(answers.phone);
     if (phoneMsg) e.phone = phoneMsg;
@@ -145,7 +145,6 @@ export function MatriculaWizard({
     if (answers.name.trim().length < 5) e.name = "Informe o nome completo";
     const cpfMsg = cpfError(answers.cpf);
     if (cpfMsg) e.cpf = cpfMsg;
-    if (answers.rg.trim().length < 4) e.rg = "Informe o RG";
     const birthMsg = birthError(answers.birthDate);
     if (birthMsg) e.birthDate = birthMsg;
     if (!isEmailValid(answers.email)) e.email = "E-mail inválido";
@@ -162,7 +161,6 @@ export function MatriculaWizard({
       const ids: Record<string, string> = {
         name: "m-name",
         cpf: "m-cpf",
-        rg: "m-rg",
         birthDate: "m-birth",
         email: "m-email",
         phone: "m-phone",
@@ -289,7 +287,7 @@ export function MatriculaWizard({
               <div className="grid gap-2">
                 {plans.map((p) => {
                   const active = answers.plan === p.id;
-                  const recommended = p.id === "entry";
+                  const recommended = p.id === "pix";
                   return (
                     <button
                       key={p.id}
@@ -373,21 +371,11 @@ export function MatriculaWizard({
                   autoFocus
                 />
               </Field>
-              <Field label="RG" error={errors.rg} htmlFor="m-rg">
-                <input
-                  id="m-rg"
-                  className={inputClass}
-                  value={answers.rg}
-                  onChange={(e) => set("rg")(e.target.value)}
-                  placeholder="Documento de identidade"
-                />
-              </Field>
-            </div>
-            <Field
-              label="Data de nascimento"
-              error={errors.birthDate}
-              htmlFor="m-birth"
-            >
+              <Field
+                label="Data de nascimento"
+                error={errors.birthDate}
+                htmlFor="m-birth"
+              >
               <input
                 id="m-birth"
                 className={inputClass}
@@ -398,6 +386,7 @@ export function MatriculaWizard({
                 autoComplete="bday"
               />
             </Field>
+            </div>
             <Field label="E-mail" error={errors.email} htmlFor="m-email">
               <input
                 id="m-email"

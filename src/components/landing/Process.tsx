@@ -4,7 +4,7 @@ const steps = [
   {
     step: "1",
     title: "Garanta a vaga da turma",
-    body: "Oferta somente hoje: de R$ 14.997 por R$ 3.000, ou entrada de R$ 1.000 + 7× R$ 400.",
+    body: "Oferta somente hoje: de R$ 14.997 por R$ 3.000 no Pix, ou em até 10× no cartão com juros.",
   },
   {
     step: "2",

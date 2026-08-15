@@ -1,9 +1,10 @@
 import { COURSE_LIVE, type CourseId } from "./config";
+import { brl } from "./pricing";
 import type { StrictMeta } from "./strict-qualify";
 
 export const LEAD_STORAGE_KEY = "gv_matricula_lead";
 
-export type PayPlan = "cash" | "installments" | "entry";
+export type PayPlan = "pix" | "card";
 
 export type ContractAnswers = {
   modality: CourseId | "";
@@ -44,7 +45,7 @@ export type PaymentOption = {
 export function emptyContract(): ContractAnswers {
   return {
     modality: "live",
-    plan: "entry",
+    plan: "pix",
     name: "",
     cpf: "",
     rg: "",
@@ -61,27 +62,23 @@ export function emptyContract(): ContractAnswers {
   };
 }
 
-function brl(n: number) {
-  return n.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
-}
-
 export function paymentOptions(_modality?: CourseId | ""): PaymentOption[] {
   return [
     {
-      id: "cash",
-      label: "R$ 3.000,00 à vista",
-      detail: "Pix ou cartão. De R$ 14.997 por R$ 3.000",
+      id: "pix",
+      label: "Pix à vista",
+      detail: "R$ 3.000 agora. Sem juros e sem parcela.",
       amount: COURSE_LIVE.price,
       installments: 1,
       amountLabel: brl(COURSE_LIVE.price),
     },
     {
-      id: "entry",
-      label: "Entrada de R$ 1.000 + 7× R$ 400",
-      detail: "Começa com R$ 1.000. O resto no Pix todo mês",
-      amount: COURSE_LIVE.entryFee,
+      id: "card",
+      label: "Cartão em até 10×",
+      detail: "Você escolhe de 1× a 10×. A partir de 2× tem juros.",
+      amount: COURSE_LIVE.price,
       installments: 1,
-      amountLabel: brl(COURSE_LIVE.entryFee),
+      amountLabel: "até 10×",
     },
   ];
 }

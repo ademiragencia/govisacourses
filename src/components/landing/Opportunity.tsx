@@ -21,7 +21,7 @@ const points = [
   {
     icon: GraduationCap,
     title: "Matrícula hoje, neste valor",
-    body: `De ${COURSE_LIVE.listPriceLabel} por ${COURSE_LIVE.priceLabel}. À vista no cartão ou entrada de R$ 1.000 + 7× R$ 400.`,
+    body: `De ${COURSE_LIVE.listPriceLabel} por ${COURSE_LIVE.priceLabel}. Pix à vista ou em até 10× no cartão com juros.`,
   },
 ];
 

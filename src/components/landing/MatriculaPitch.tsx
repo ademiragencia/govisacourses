@@ -17,7 +17,7 @@ const OBJECTIONS = [
   },
   {
     q: "Vou conseguir pagar?",
-    a: "Pode começar com R$ 1.000 e o resto em 7× R$ 400. Ou R$ 3.000 à vista. Pix ou cartão.",
+    a: "Pix é R$ 3.000 à vista, sem juros. No cartão você escolhe de 1× a 10×. A partir de 2× tem juros.",
   },
   {
     q: "Isso vira emprego de verdade?",
@@ -53,7 +53,7 @@ export function MatriculaPitch() {
           {COURSE_LIVE.priceLabel}
         </p>
         <p className="mt-1 text-sm text-fg-muted">
-          À vista ou entrada de R$ 1.000 + 7× R$ 400. Pix ou cartão.
+          R$ 3.000 no Pix à vista ou em até 10× no cartão com juros.
         </p>
         <p className="mt-2 text-xs text-fg-subtle">
           {COURSE_LIVE.startLabel} · {COURSE_LIVE.hoursLabel}
