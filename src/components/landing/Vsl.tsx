@@ -140,7 +140,7 @@ export function Vsl() {
               id={frameId}
               src={embedSrc()}
               title="Apresentação da formação"
-              className="absolute inset-0 h-full w-full border-0"
+              className="absolute inset-0 h-full w-full max-w-full border-0"
               allow="autoplay; encrypted-media"
               referrerPolicy="strict-origin-when-cross-origin"
               tabIndex={-1}

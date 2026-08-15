@@ -22,7 +22,7 @@ export function Program() {
           {PROGRAM_MODULES.map((mod, i) => (
             <Reveal key={mod.title} delay={i * 60}>
             <article
-              className="surface-card rounded-[var(--radius-xl)] p-5 md:p-6"
+              className="surface-card min-w-0 rounded-[var(--radius-xl)] p-5 md:p-6"
             >
               <span className="font-display text-sm font-extrabold text-brand-red/50">
                 {String(i + 1).padStart(2, "0")}

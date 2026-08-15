@@ -117,11 +117,11 @@ function RootDocument({ children }: Readonly<{ children: ReactNode }>) {
       </head>
       <body className="page-wash antialiased">
         <div
-          className="orb pointer-events-none fixed -left-24 top-24 size-72 bg-navy/50"
+          className="orb pointer-events-none fixed -left-24 top-24 hidden size-72 bg-navy/50 md:block"
           aria-hidden
         />
         <div
-          className="orb pointer-events-none fixed -right-16 top-[40%] size-80 bg-brand-red/20"
+          className="orb pointer-events-none fixed -right-16 top-[40%] hidden size-80 bg-brand-red/20 md:block"
           style={{ animationDelay: "2.4s" }}
           aria-hidden
         />

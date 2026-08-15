@@ -5,12 +5,12 @@ export function Header() {
   return (
     <header className="sticky top-0 z-30 border-b border-border bg-bg/80 backdrop-blur-lg">
       <UrgencyBar />
-      <div className="container-lp flex h-16 items-center justify-between gap-4">
-        <a href="#topo" aria-label="Go Visa Courses">
+      <div className="container-lp flex h-16 min-w-0 items-center justify-between gap-3">
+        <a href="#topo" aria-label="Go Visa Courses" className="min-w-0 shrink">
           <img
             src="/assets/logo-dark.png"
             alt="Go Visa Courses"
-            className="h-7 w-auto md:h-8"
+            className="h-7 w-auto max-w-[148px] object-contain md:h-8 md:max-w-none"
           />
         </a>
 
