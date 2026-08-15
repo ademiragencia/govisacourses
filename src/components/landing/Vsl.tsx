@@ -134,21 +134,16 @@ export function Vsl() {
             você vê a condição de hoje e se matricula.
           </p>
         </div>
-        <div className="vsl-glow mx-auto max-w-4xl overflow-hidden rounded-[var(--radius-2xl)] border border-border bg-bg">
+        <div className="vsl-glow mx-auto max-w-4xl overflow-hidden rounded-[var(--radius-2xl)] border border-border bg-black">
           <div className="relative aspect-video w-full overflow-hidden">
             <iframe
               id={frameId}
               src={embedSrc()}
               title="Apresentação da formação"
-              className="absolute left-0 top-0 w-full border-0"
-              style={{ height: "calc(100% + 3.5rem)" }}
+              className="absolute inset-0 h-full w-full border-0"
               allow="autoplay; encrypted-media"
               referrerPolicy="strict-origin-when-cross-origin"
               tabIndex={-1}
-            />
-            <div
-              className="pointer-events-auto absolute inset-x-0 top-0 z-10 h-12 bg-bg md:h-14"
-              aria-hidden
             />
           </div>
         </div>
