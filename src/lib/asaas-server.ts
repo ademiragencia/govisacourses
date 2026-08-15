@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { getRequest } from "@tanstack/react-start/server";
 import { ASAAS_ACCESS_TOKEN, ASAAS_API } from "./asaas-credentials";
+import { COURSE_LIVE } from "./config";
 
 function token() {
   return ASAAS_ACCESS_TOKEN.trim();
@@ -84,6 +85,17 @@ async function findOrCreateCustomer(input: {
   });
   if (!created.id) throw new Error("Não foi possível cadastrar o pagador.");
   return created.id;
+}
+
+function nextMonthBr() {
+  const now = new Date(
+    new Date().toLocaleString("en-US", { timeZone: "America/Sao_Paulo" }),
+  );
+  now.setMonth(now.getMonth() + 1);
+  const y = now.getFullYear();
+  const m = String(now.getMonth() + 1).padStart(2, "0");
+  const d = String(now.getDate()).padStart(2, "0");
+  return `${y}-${m}-${d}`;
 }
 
 function isPaid(status?: string) {
@@ -192,6 +204,28 @@ export const createSitePayment = createServerFn({ method: "POST" })
           expirationDate?: string;
         }>(`/payments/${encodeURIComponent(pay.id)}/pixQrCode`);
 
+        let subscriptionId = "";
+        if (data.plan === "entry") {
+          try {
+            const sub = await asaas<{ id?: string }>("/subscriptions", {
+              method: "POST",
+              body: JSON.stringify({
+                customer,
+                billingType: "PIX",
+                value: COURSE_LIVE.installmentValue,
+                nextDueDate: nextMonthBr(),
+                cycle: "MONTHLY",
+                maxPayments: COURSE_LIVE.installments,
+                description: "5 parcelas da Formação Go Visa Courses",
+                externalReference: data.leadId,
+              }),
+            });
+            subscriptionId = sub.id || "";
+          } catch {
+            /* entrada no Pix; parcelas ficam para a equipe se a assinatura falhar */
+          }
+        }
+
         return {
           ok: true as const,
           paymentId: pay.id,
@@ -199,7 +233,7 @@ export const createSitePayment = createServerFn({ method: "POST" })
           statusDetail: pay.status || "PENDING",
           qrImage: qr.encodedImage || "",
           qrPayload: qr.payload || "",
-          subscriptionId: "",
+          subscriptionId,
         };
       }
 

@@ -4,7 +4,7 @@ import type { StrictMeta } from "./strict-qualify";
 
 export const LEAD_STORAGE_KEY = "gv_matricula_lead";
 
-export type PayPlan = "pix" | "card";
+export type PayPlan = "pix" | "card" | "entry";
 
 export type ContractAnswers = {
   modality: CourseId | "";
@@ -45,7 +45,7 @@ export type PaymentOption = {
 export function emptyContract(): ContractAnswers {
   return {
     modality: "live",
-    plan: "pix",
+    plan: "entry",
     name: "",
     cpf: "",
     rg: "",
@@ -67,15 +67,23 @@ export function paymentOptions(_modality?: CourseId | ""): PaymentOption[] {
     {
       id: "pix",
       label: "Pix à vista",
-      detail: "R$ 3.000 agora. Sem juros e sem parcela.",
+      detail: "R$ 3.000 agora, em um único Pix.",
       amount: COURSE_LIVE.price,
       installments: 1,
       amountLabel: brl(COURSE_LIVE.price),
     },
     {
+      id: "entry",
+      label: "Entrada de R$ 1.000 + 5× R$ 400",
+      detail: "Paga R$ 1.000 hoje. O resto em 5 Pix mensais de R$ 400.",
+      amount: COURSE_LIVE.entryFee,
+      installments: 1,
+      amountLabel: brl(COURSE_LIVE.entryFee),
+    },
+    {
       id: "card",
       label: "Cartão em até 10×",
-      detail: "Você escolhe de 1× a 10×. A partir de 2× tem juros.",
+      detail: "Você escolhe de 1× a 10× na hora do pagamento.",
       amount: COURSE_LIVE.price,
       installments: 1,
       amountLabel: "até 10×",

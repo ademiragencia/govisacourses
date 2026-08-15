@@ -11,7 +11,7 @@ const faqs = [
   },
   {
     q: "Qual é a formação?",
-    a: "Uma única modalidade: online com aulas ao vivo. Começa em 30 de agosto de 2026, 116h (32h ao vivo + 84h gravadas). De R$ 14.997 por R$ 3.000 no Pix à vista, ou em até 10× no cartão com juros.",
+    a: "Uma única modalidade: online com aulas ao vivo. Começa em 30 de agosto de 2026, 116h (32h ao vivo + 84h gravadas). De R$ 14.997 por R$ 3.000 no Pix, entrada de R$ 1.000 + 5× R$ 400, ou em até 10× no cartão.",
   },
   {
     q: "Preciso falar inglês?",
@@ -27,7 +27,7 @@ const faqs = [
   },
   {
     q: "Como faço a matrícula?",
-    a: "Preencha a matrícula na página. No Pix é R$ 3.000 à vista. No cartão você escolhe de 1× a 10×, com juros a partir da 2ª parcela. Depois a equipe libera o acesso da turma.",
+    a: "Preencha a matrícula na página. No Pix é R$ 3.000 à vista, ou entrada de R$ 1.000 + 5× R$ 400. No cartão você escolhe de 1× a 10×. Depois a equipe libera o acesso da turma.",
   },
 ];
 

@@ -21,7 +21,7 @@ export function Hero() {
               {COURSE_LIVE.priceLabel}
             </p>
             <p className="mt-2 text-sm text-fg-muted">
-              no Pix à vista ou em até 10× no cartão com juros
+              no Pix, entrada de R$ 1.000 + 5× R$ 400, ou em até 10× no cartão
             </p>
             <p className="mt-4 text-xs font-semibold uppercase tracking-[0.12em] text-fg-subtle">
               {COURSE_LIVE.startLabel} · {COURSE_LIVE.hoursLabel}

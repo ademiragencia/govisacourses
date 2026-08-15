@@ -33,7 +33,7 @@ export const SEO = {
     "Formação em Processos Imigratórios Online | Go Visa Law Firm | Contratação em Dólar",
   titleTemplate: "%s | Go Visa Courses",
   description:
-    "Formação profissional ao vivo em Processos Imigratórios com a Go Visa Law Firm, o maior escritório dos EUA. Turma 30/08. De R$ 14.997 por R$ 3.000 no Pix à vista ou em até 10× no cartão com juros. Os melhores alunos são contratados e já faturam em dólar.",
+    "Formação profissional ao vivo em Processos Imigratórios com a Go Visa Law Firm, o maior escritório dos EUA. Turma 30/08. De R$ 14.997 por R$ 3.000 no Pix, entrada de R$ 1.000 + 5× R$ 400, ou em até 10× no cartão. Os melhores alunos são contratados e já faturam em dólar.",
   ogTitle:
     "Go Visa Law Firm: o maior escritório dos EUA forma e contrata em dólar",
   ogDescription:
@@ -151,7 +151,7 @@ export function buildJsonLd() {
         name: "Qual é a formação?",
         acceptedAnswer: {
           "@type": "Answer",
-          text: "Turma ao vivo a partir de 30/08/2026, 116h. De R$ 14.997 por R$ 3.000 no Pix à vista ou em até 10× no cartão com juros.",
+          text: "Turma ao vivo a partir de 30/08/2026, 116h. De R$ 14.997 por R$ 3.000 no Pix, entrada de R$ 1.000 + 5× R$ 400, ou em até 10× no cartão.",
         },
       },
       {

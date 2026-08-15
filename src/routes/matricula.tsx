@@ -9,7 +9,7 @@ import type { StrictMeta } from "@/lib/strict-qualify";
 const PAGE_TITLE =
   "Matrícula | Formação em Processos Imigratórios | Go Visa Courses";
 const PAGE_DESC =
-  "Formação Profissional em Processos Imigratórios com aulas ao vivo. Go Visa Law Firm. Turma 30/08. De R$ 14.997 por R$ 3.000 no Pix à vista ou em até 10× no cartão com juros.";
+  "Formação Profissional em Processos Imigratórios com aulas ao vivo. Go Visa Law Firm. Turma 30/08. De R$ 14.997 por R$ 3.000 no Pix, entrada de R$ 1.000 + 5× R$ 400, ou em até 10× no cartão.";
 
 export const Route = createFileRoute("/matricula")({
   head: () => ({

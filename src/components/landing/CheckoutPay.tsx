@@ -41,7 +41,8 @@ export function CheckoutPay({
 
   const options = useMemo(() => cardInstallmentOptions(), []);
   const chosen = cardInstallment(parcels);
-  const pixAmount = COURSE_LIVE.price;
+  const isEntry = lead.plan === "entry";
+  const pixAmount = isEntry ? COURSE_LIVE.entryFee : COURSE_LIVE.price;
 
   useEffect(() => {
     if (!pix?.paymentId) return;
@@ -129,7 +130,7 @@ export function CheckoutPay({
       const res = await createSitePayment({
         data: {
           method: "pix",
-          plan: "pix",
+          plan: isEntry ? "entry" : "pix",
           amount: pixAmount,
           installments: 1,
           title: lead.courseTitle,
@@ -160,7 +161,7 @@ export function CheckoutPay({
         status: "pending",
         method: "pix",
         paymentId: res.paymentId,
-        note: "Pix à vista gerado",
+        note: isEntry ? "Pix da entrada + 5 parcelas" : "Pix à vista gerado",
       });
     } catch (e) {
       const note = e instanceof Error ? e.message : "Não foi possível gerar o Pix";
@@ -231,9 +232,9 @@ export function CheckoutPay({
             </select>
           </label>
           <p className="text-xs text-fg-muted">
-            {chosen.interest
-              ? `Com juros de ${COURSE_LIVE.cardInterestLabel}. Total ${brl(chosen.total)}.`
-              : "1× sem juros. Pix continua sendo R$ 3.000 à vista."}
+            {chosen.count > 1
+              ? `${chosen.count}× de ${brl(chosen.value)} · total ${brl(chosen.total)}`
+              : `1× de ${brl(chosen.total)}`}
           </p>
           <input
             className={inputClass}
@@ -283,7 +284,9 @@ export function CheckoutPay({
       {tab === "pix" && !pix && (
         <>
           <p className="text-sm text-fg-muted">
-            Pix é somente à vista: {brl(pixAmount)}. Sem juros e sem parcela.
+            {isEntry
+              ? "Pague R$ 1.000 agora. As 5× R$ 400 entram no Pix todo mês."
+              : `Pix à vista: ${brl(pixAmount)}.`}
           </p>
           <button
             type="button"
@@ -310,7 +313,9 @@ export function CheckoutPay({
             />
           )}
           <p className="mt-3 text-sm text-fg-muted">
-            {brl(pixAmount)} à vista. Depois de pagar, a confirmação entra sozinha.
+            {isEntry
+              ? `${brl(pixAmount)} de entrada. Depois 5× R$ 400 no Pix.`
+              : `${brl(pixAmount)} à vista. Depois de pagar, a confirmação entra sozinha.`}
           </p>
           <button
             type="button"

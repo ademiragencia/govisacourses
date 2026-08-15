@@ -287,7 +287,7 @@ export function MatriculaWizard({
               <div className="grid gap-2">
                 {plans.map((p) => {
                   const active = answers.plan === p.id;
-                  const recommended = p.id === "pix";
+                  const recommended = p.id === "entry";
                   return (
                     <button
                       key={p.id}

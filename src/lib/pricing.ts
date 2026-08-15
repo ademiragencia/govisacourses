@@ -29,7 +29,7 @@ export function cardInstallment(
       value: principal,
       total: principal,
       interest: false,
-      label: `1× de ${brl(principal)} sem juros`,
+      label: `1× de ${brl(principal)}`,
     };
   }
   const factor = (1 + rate) ** n;
@@ -40,7 +40,7 @@ export function cardInstallment(
     value,
     total,
     interest: true,
-    label: `${n}× de ${brl(value)} (total ${brl(total)})`,
+    label: `${n}× de ${brl(value)}`,
   };
 }
 
