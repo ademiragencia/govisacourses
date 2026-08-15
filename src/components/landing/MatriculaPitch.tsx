@@ -4,43 +4,57 @@ import {
   Check,
   Clock,
   GraduationCap,
-  Radio,
   ShieldCheck,
 } from "lucide-react";
-import { BRAND, COURSE_LIVE, PROGRAM_MODULES } from "@/lib/config";
+import { BRAND, COURSE_LIVE } from "@/lib/config";
 import { Countdown } from "@/components/landing/Countdown";
+import { CompactProof } from "@/components/landing/SocialProof";
+
+const OBJECTIONS = [
+  {
+    q: "E se eu não falar inglês?",
+    a: "Não precisa. A formação é em português. Inglês não trava a vaga nem a aula.",
+  },
+  {
+    q: "Vou conseguir pagar?",
+    a: "Pode começar com R$ 1.000 e o resto em 7× R$ 400. Ou R$ 3.000 à vista. Pix ou cartão.",
+  },
+  {
+    q: "Isso vira emprego de verdade?",
+    a: `Os melhores alunos são avaliados pela ${BRAND.firm} e já entram ganhando em dólar. Não é promessa de diploma. É porta de entrada no maior escritório.`,
+  },
+  {
+    q: "E se eu travar no meio?",
+    a: "Aula ao vivo com professor. Portal com 116h. Time no WhatsApp depois da matrícula. Você não fica sozinho.",
+  },
+];
 
 export function MatriculaPitch() {
   return (
     <div className="lg:pt-1">
       <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-brand-red/40 bg-brand-red-soft px-3 py-1 text-[11px] font-bold uppercase tracking-[0.14em] text-brand-red">
-        Somente hoje · de R$ 14.997 por R$ 3.000
+        Turma {COURSE_LIVE.startLabel.replace("Início em ", "")} · vagas desta condição
       </div>
 
       <h1 className="display text-[clamp(1.85rem,4vw,2.85rem)] text-fg">
-        Formação Profissional em{" "}
-        <span className="text-gold-line">Processos Imigratórios</span>
+        Entra na formação que o maior escritório dos EUA usa pra contratar
       </h1>
       <p className="mt-4 max-w-xl text-base leading-relaxed text-fg-muted">
-        Turma ao vivo, 100% online. Ligada à {BRAND.firm}. Os melhores alunos
-        são avaliados para contratação e já faturam em dólar. Inglês não é
-        obrigatório.
+        Você não está comprando um curso solto. Está entrando no método da{" "}
+        {BRAND.firm}. Quem se destaca é avaliado pro time e já fatura em dólar.
+        Sem inglês obrigatório.
       </p>
 
       <div className="mt-6 rounded-[var(--radius-xl)] border border-brand-red/35 bg-bg-elevated p-5">
-        <div className="flex items-center gap-2 text-brand-red">
-          <Radio className="size-4" />
-          <span className="text-[11px] font-bold uppercase tracking-[0.14em]">
-            {COURSE_LIVE.badge}
-          </span>
-        </div>
-        <p className="mt-3 text-sm text-fg-muted line-through">
+        <p className="text-sm text-fg-muted line-through">
           De {COURSE_LIVE.listPriceLabel}
         </p>
         <p className="font-display text-3xl font-extrabold text-fg">
           {COURSE_LIVE.priceLabel}
         </p>
-        <p className="mt-1 text-sm text-fg-muted">{COURSE_LIVE.planLabel}</p>
+        <p className="mt-1 text-sm text-fg-muted">
+          À vista ou entrada de R$ 1.000 + 7× R$ 400. Pix ou cartão.
+        </p>
         <p className="mt-2 text-xs text-fg-subtle">
           {COURSE_LIVE.startLabel} · {COURSE_LIVE.hoursLabel}
         </p>
@@ -73,19 +87,14 @@ export function MatriculaPitch() {
 
       <div className="mt-8">
         <h3 className="font-display text-lg font-extrabold text-fg">
-          O que você vai dominar
+          Quem já está dentro
         </h3>
-        <ul className="mt-3 space-y-2">
-          {PROGRAM_MODULES.slice(0, 5).map((m) => (
-            <li key={m.title} className="flex items-start gap-2.5 text-sm text-fg-muted">
-              <Check className="mt-0.5 size-4 shrink-0 text-wa" strokeWidth={2.5} />
-              <span>
-                <strong className="font-semibold text-fg">{m.title}.</strong>{" "}
-                {m.items.slice(0, 3).join(", ")}.
-              </span>
-            </li>
-          ))}
-        </ul>
+        <p className="mt-1 text-sm text-fg-muted">
+          Assista antes de preencher. Isso não é teoria de YouTube.
+        </p>
+        <div className="mt-4">
+          <CompactProof />
+        </div>
       </div>
 
       <div className="mt-8">
@@ -102,9 +111,27 @@ export function MatriculaPitch() {
         </ul>
       </div>
 
+      <div className="mt-8">
+        <h3 className="font-display text-lg font-extrabold text-fg">
+          O que costuma travar a decisão
+        </h3>
+        <ul className="mt-3 space-y-3">
+          {OBJECTIONS.map((item) => (
+            <li
+              key={item.q}
+              className="rounded-[var(--radius-lg)] border border-border px-4 py-3"
+            >
+              <p className="text-sm font-bold text-fg">{item.q}</p>
+              <p className="mt-1 text-sm leading-relaxed text-fg-muted">{item.a}</p>
+            </li>
+          ))}
+        </ul>
+      </div>
+
       <p className="mt-8 flex items-start gap-2 text-xs leading-relaxed text-fg-subtle">
         <Clock className="mt-0.5 size-3.5 shrink-0" />
-        Acesso liberado após a confirmação do pagamento no cartão de crédito.
+        Acesso liberado depois da confirmação. Pix ou cartão. Os dados do
+        formulário servem só para emitir o contrato.
       </p>
     </div>
   );

@@ -44,7 +44,7 @@ export type PaymentOption = {
 export function emptyContract(): ContractAnswers {
   return {
     modality: "live",
-    plan: "",
+    plan: "entry",
     name: "",
     cpf: "",
     rg: "",
@@ -70,15 +70,15 @@ export function paymentOptions(_modality?: CourseId | ""): PaymentOption[] {
     {
       id: "cash",
       label: "R$ 3.000,00 à vista",
-      detail: "De R$ 14.997 por R$ 3.000 no cartão",
+      detail: "Pix ou cartão. De R$ 14.997 por R$ 3.000",
       amount: COURSE_LIVE.price,
       installments: 1,
       amountLabel: brl(COURSE_LIVE.price),
     },
     {
       id: "entry",
-      label: "Entrada de R$ 1.000",
-      detail: "Depois 7× R$ 400 com a equipe",
+      label: "Entrada de R$ 1.000 + 7× R$ 400",
+      detail: "Começa com R$ 1.000. O resto no Pix todo mês",
       amount: COURSE_LIVE.entryFee,
       installments: 1,
       amountLabel: brl(COURSE_LIVE.entryFee),

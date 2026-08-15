@@ -74,10 +74,12 @@ function MatriculaPage() {
 
       <main className="container-lp py-10 md:py-14">
         <div className="mx-auto grid max-w-6xl gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,440px)] lg:items-start">
-          <MatriculaPitch />
+          <div className="order-2 lg:order-1">
+            <MatriculaPitch />
+          </div>
           <div
             id="formulario"
-            className="w-full lg:sticky lg:top-6 lg:self-start"
+            className="order-1 w-full lg:sticky lg:top-6 lg:order-2 lg:self-start"
           >
             <MatriculaWizard meta={meta} />
           </div>

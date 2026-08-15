@@ -80,6 +80,16 @@ function ProofVideo({
   );
 }
 
+export function CompactProof() {
+  const proof = PROOFS[0];
+  if (!proof) return null;
+  return (
+    <div className="mx-auto max-w-[280px] overflow-hidden rounded-[var(--radius-xl)] border border-border bg-bg-elevated">
+      <ProofVideo {...proof} />
+    </div>
+  );
+}
+
 export function SocialProof() {
   return (
     <section id="provas" className="border-t border-border py-20 md:py-28">

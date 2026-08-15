@@ -114,8 +114,29 @@ export function MatriculaWizard({
   function goOfferNext() {
     const e: Partial<Record<keyof ContractAnswers, string>> = {};
     if (!answers.plan) e.plan = "Escolha à vista ou a entrada";
+    if (answers.name.trim().length < 5) e.name = "Informe o nome completo";
+    const phoneMsg = phoneError(answers.phone);
+    if (phoneMsg) e.phone = phoneMsg;
     setErrors(e);
     if (Object.keys(e).length) return;
+    const next: StoredLead = {
+      ...answers,
+      id: lead?.id || newLeadId(),
+      meta: fichaMeta,
+      amount: offer.amount,
+      installments: offer.installments,
+      courseTitle: offer.title,
+      planLabel: offer.planLabel,
+    };
+    saveLead(next);
+    setLead(next);
+    void saveEnrollment({
+      data: leadToPayload(next, {
+        status: "started",
+        method: "",
+        note: "Parou no início. Ainda não preencheu o contrato.",
+      }),
+    });
     setScreen("contract");
   }
 
@@ -161,7 +182,7 @@ export function MatriculaWizard({
     }
     const next: StoredLead = {
       ...answers,
-      id: newLeadId(),
+      id: lead?.id || newLeadId(),
       meta: fichaMeta,
       amount: offer.amount,
       installments: offer.installments,
@@ -218,7 +239,7 @@ export function MatriculaWizard({
 
   const title =
     screen === "offer"
-      ? "Curso e pagamento"
+      ? "Garante sua vaga agora"
       : screen === "contract"
         ? "Dados para o contrato"
         : screen === "pay"
@@ -227,11 +248,11 @@ export function MatriculaWizard({
 
   const hint =
     screen === "offer"
-      ? "À vista ou parcelado, como no anúncio"
+      ? "Começa com nome e WhatsApp. O resto é rápido."
       : screen === "contract"
-        ? "Esses dados entram no contrato de matrícula"
+        ? "Só para emitir o contrato. Não compartilhamos."
         : screen === "pay"
-          ? "Cartão de crédito"
+          ? "Pix ou cartão. Confirmação na hora."
           : "Acesso em liberação";
 
   return (
@@ -261,13 +282,14 @@ export function MatriculaWizard({
         {screen === "offer" && (
           <div className="space-y-5">
             <div className="rounded-[var(--radius-md)] border border-brand-red/35 bg-brand-red-soft px-4 py-3 text-sm text-fg">
-              Somente hoje. De {COURSE_LIVE.listPriceLabel} por{" "}
-              {COURSE_LIVE.priceLabel}. Depois volta o valor cheio.
+              Turma em {COURSE_LIVE.startLabel.replace("Início em ", "")}. De{" "}
+              {COURSE_LIVE.listPriceLabel} por {COURSE_LIVE.priceLabel}.
             </div>
-            <Field label="Como você quer pagar?" error={errors.plan}>
+            <Field label="Como você quer começar?" error={errors.plan}>
               <div className="grid gap-2">
                 {plans.map((p) => {
                   const active = answers.plan === p.id;
+                  const recommended = p.id === "entry";
                   return (
                     <button
                       key={p.id}
@@ -285,27 +307,48 @@ export function MatriculaWizard({
                         <p className="text-xs font-semibold">{p.amountLabel}</p>
                       </div>
                       <p className="mt-0.5 text-xs opacity-80">{p.detail}</p>
+                      {recommended && (
+                        <p className="mt-1 text-[11px] font-bold uppercase tracking-[0.12em] text-gold-line">
+                          Mais escolhido
+                        </p>
+                      )}
                     </button>
                   );
                 })}
               </div>
+            </Field>
+            <Field label="Seu nome completo" error={errors.name} htmlFor="m-offer-name">
+              <input
+                id="m-offer-name"
+                className={inputClass}
+                value={answers.name}
+                onChange={(e) => set("name")(e.target.value)}
+                placeholder="Como no documento"
+                autoComplete="name"
+              />
+            </Field>
+            <Field label="WhatsApp com DDD" error={errors.phone} htmlFor="m-offer-phone">
+              <input
+                id="m-offer-phone"
+                className={inputClass}
+                value={answers.phone}
+                onChange={(e) => {
+                  const v = formatPhoneInput(e.target.value);
+                  set("phone")(v);
+                }}
+                placeholder="(11) 98765-4321"
+                inputMode="tel"
+                autoComplete="tel"
+              />
             </Field>
           </div>
         )}
 
         {screen === "contract" && (
           <div className="space-y-4">
-            <Field label="Nome completo" error={errors.name} htmlFor="m-name">
-              <input
-                id="m-name"
-                className={inputClass}
-                value={answers.name}
-                onChange={(e) => set("name")(e.target.value)}
-                placeholder="Como no documento"
-                autoComplete="name"
-                autoFocus
-              />
-            </Field>
+            <p className="rounded-[var(--radius-md)] border border-border px-3 py-2 text-xs text-fg-muted">
+              {answers.name} · {answers.phone}
+            </p>
             <div className="grid gap-4 sm:grid-cols-2">
               <Field label="CPF" error={errors.cpf} htmlFor="m-cpf">
                 <input
@@ -327,6 +370,7 @@ export function MatriculaWizard({
                   }
                   placeholder="000.000.000-00"
                   inputMode="numeric"
+                  autoFocus
                 />
               </Field>
               <Field label="RG" error={errors.rg} htmlFor="m-rg">
@@ -363,32 +407,6 @@ export function MatriculaWizard({
                 onChange={(e) => set("email")(e.target.value)}
                 placeholder="seu@email.com"
                 autoComplete="email"
-              />
-            </Field>
-            <Field label="Celular com DDD" error={errors.phone} htmlFor="m-phone">
-              <input
-                id="m-phone"
-                className={inputClass}
-                value={answers.phone}
-                onChange={(e) => {
-                  const v = formatPhoneInput(e.target.value);
-                  set("phone")(v);
-                  if (v.replace(/\D/g, "").length >= 11) {
-                    setErrors((prev) => ({
-                      ...prev,
-                      phone: phoneError(v) || undefined,
-                    }));
-                  }
-                }}
-                onBlur={() =>
-                  setErrors((prev) => ({
-                    ...prev,
-                    phone: phoneError(answers.phone) || undefined,
-                  }))
-                }
-                placeholder="(11) 98765-4321"
-                inputMode="tel"
-                autoComplete="tel"
               />
             </Field>
             <Field label="CEP" error={errors.cep} htmlFor="m-cep">
@@ -547,7 +565,7 @@ export function MatriculaWizard({
               onClick={goOfferNext}
               className="inline-flex h-12 flex-1 items-center justify-center gap-2 rounded-[var(--radius-md)] bg-brand-red px-5 text-sm font-bold uppercase tracking-[0.04em] text-white shadow-[0_10px_28px_rgba(225,29,46,0.3)] hover:brightness-110"
             >
-              Continuar
+              Quero essa vaga
               <ArrowRight className="size-4" />
             </button>
           )}
