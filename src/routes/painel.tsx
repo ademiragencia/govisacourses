@@ -342,7 +342,6 @@ function PainelPage() {
   const [loading, setLoading] = useState(false);
   const [rows, setRows] = useState<EnrollmentRow[]>([]);
   const [q, setQ] = useState("");
-  const [status, setStatus] = useState("all");
   const [confirmClear, setConfirmClear] = useState(false);
   const [clearing, setClearing] = useState(false);
   const [tab, setTab] = useState<Tab>("geral");
@@ -508,9 +507,7 @@ function PainelPage() {
   const filtered = useMemo(() => {
     const term = q.trim().toLowerCase();
     return rows.filter((r) => {
-      if (status === "refused") {
-        if (r.status !== "refused" && r.status !== "failed") return false;
-      } else if (status !== "all" && r.status !== status) return false;
+      if (r.status !== "paid") return false;
       if (!term) return true;
       return [
         r.name,
@@ -529,7 +526,7 @@ function PainelPage() {
         .toLowerCase()
         .includes(term);
     });
-  }, [rows, q, status]);
+  }, [rows, q]);
 
   const visitRows = useMemo(() => {
     const term = vq.trim().toLowerCase();
@@ -770,11 +767,8 @@ function PainelPage() {
 
         {tab === "matriculas" && (
           <>
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
-              <Stat k="Tentativas" v={String(rows.length)} />
+            <div className="grid gap-3 sm:grid-cols-2">
               <Stat k="Pagas" v={String(paid.length)} />
-              <Stat k="Recusadas" v={String(refused.length)} />
-              <Stat k="Iniciadas" v={String(started.length)} />
               <Stat k="Faturado" v={brl(revenue)} />
             </div>
 
@@ -788,18 +782,6 @@ function PainelPage() {
                   className="h-11 w-full rounded-[var(--radius-md)] border border-border bg-bg-elevated pl-10 pr-4 text-sm text-fg outline-none"
                 />
               </div>
-              <select
-                value={status}
-                onChange={(e) => setStatus(e.target.value)}
-                className="h-11 rounded-[var(--radius-md)] border border-border bg-bg-elevated px-3 text-sm text-fg"
-              >
-                <option value="all">Todos os status</option>
-                <option value="paid">Pagas</option>
-                <option value="started">Iniciadas</option>
-                <option value="refused">Recusadas</option>
-                <option value="pix_seller">Pix vendedor</option>
-                <option value="pending">Em análise</option>
-              </select>
               <button
                 type="button"
                 onClick={() => exportCsv(filtered)}
@@ -827,7 +809,7 @@ function PainelPage() {
                   {filtered.length === 0 && (
                     <tr>
                       <td colSpan={9} className="px-4 py-10 text-center text-fg-muted">
-                        {loading ? "Carregando…" : "Nenhuma matrícula ainda."}
+                        {loading ? "Carregando…" : "Nenhuma matrícula paga ainda."}
                       </td>
                     </tr>
                   )}
