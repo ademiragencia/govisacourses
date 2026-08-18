@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { MP_ACCESS_TOKEN } from "./mp-credentials";
+import { supabaseRpc } from "./supabase";
 
 function token() {
   return MP_ACCESS_TOKEN.trim();
@@ -29,12 +30,9 @@ const REJECT: Record<string, string> = {
   cc_rejected_other_reason: "Pagamento não autorizado pelo banco.",
 };
 
-export type PayMethod = "pix" | "card" | "boleto";
-
-export const createSitePayment = createServerFn({ method: "POST" })
+export const createMpCardPayment = createServerFn({ method: "POST" })
   .validator((data: unknown) => {
     const d = data as {
-      method?: PayMethod;
       amount?: number;
       installments?: number;
       title?: string;
@@ -47,21 +45,16 @@ export const createSitePayment = createServerFn({ method: "POST" })
       issuerId?: string;
       street?: string;
       number?: string;
-      neighborhood?: string;
       city?: string;
-      state?: string;
       zip?: string;
       leadId?: string;
+      coupon?: string;
     };
-    if (d.method !== "pix" && d.method !== "card" && d.method !== "boleto") {
-      throw new Error("Forma de pagamento inválida");
-    }
     const amount = Number(d.amount);
     if (!Number.isFinite(amount) || amount < 1) throw new Error("Valor inválido");
     if (!d.email || !d.name || !d.cpf) throw new Error("Dados incompletos");
-    if (d.method === "card" && !d.cardToken) throw new Error("Cartão inválido");
+    if (!d.cardToken) throw new Error("Cartão inválido");
     return {
-      method: d.method,
       amount,
       installments: Math.max(1, Number(d.installments) || 1),
       title: String(d.title || "Formação Go Visa Courses"),
@@ -69,16 +62,15 @@ export const createSitePayment = createServerFn({ method: "POST" })
       name: d.name.trim(),
       cpf: String(d.cpf).replace(/\D/g, ""),
       phone: String(d.phone || "").replace(/\D/g, ""),
-      cardToken: d.cardToken || "",
+      cardToken: d.cardToken,
       paymentMethodId: d.paymentMethodId || "",
       issuerId: d.issuerId || "",
       street: String(d.street || "").trim(),
       number: String(d.number || "").trim(),
-      neighborhood: String(d.neighborhood || "").trim(),
       city: String(d.city || "").trim(),
-      state: String(d.state || "").trim(),
       zip: String(d.zip || "").replace(/\D/g, ""),
       leadId: String(d.leadId || ""),
+      coupon: String(d.coupon || "").trim().toUpperCase(),
     };
   })
   .handler(async ({ data }) => {
@@ -87,118 +79,125 @@ export const createSitePayment = createServerFn({ method: "POST" })
       return { ok: false as const, error: "Pagamento ainda não configurado." };
     }
 
-    const { first, last } = splitName(data.name);
-    const payerBase = {
-      email: data.email,
-      first_name: first,
-      last_name: last,
-      identification: { type: "CPF", number: data.cpf },
-    };
-
-    let body: Record<string, unknown> = {
-      transaction_amount: Number(data.amount.toFixed(2)),
-      description: data.title,
-      external_reference: data.leadId,
-      metadata: { lead_id: data.leadId, method: data.method },
-    };
-
-    if (data.method === "pix") {
-      body = {
-        ...body,
-        payment_method_id: "pix",
-        payer: payerBase,
-      };
-    } else if (data.method === "card") {
-      body = {
-        ...body,
-        token: data.cardToken,
-        installments: data.installments,
-        payment_method_id: data.paymentMethodId || undefined,
-        issuer_id: data.issuerId || undefined,
-        payer: payerBase,
-      };
-    } else {
-      body = {
-        ...body,
-        payment_method_id: "bolbradesco",
-        payer: {
-          ...payerBase,
-          address: {
-            zip_code: data.zip,
-            street_name: data.street,
-            street_number: data.number,
-            neighborhood: data.neighborhood,
-            city: data.city,
-            federal_unit: data.state,
-          },
-        },
-      };
-    }
-
-    const res = await fetch("https://api.mercadopago.com/v1/payments", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${access}`,
-        "Content-Type": "application/json",
-        "X-Idempotency-Key": `${data.leadId}-${data.method}-${Date.now()}`,
-      },
-      body: JSON.stringify(body),
-    });
-
-    const json = (await res.json().catch(() => ({}))) as {
-      id?: number;
-      status?: string;
-      status_detail?: string;
-      message?: string;
-      error?: string;
-      cause?: { description?: string }[];
-      point_of_interaction?: {
-        transaction_data?: {
-          qr_code?: string;
-          qr_code_base64?: string;
+    let amount = data.amount;
+    let couponCode = "";
+    if (data.coupon) {
+      try {
+        const preview = await supabaseRpc<{
+          code?: string;
+          total?: number;
+        }>("redeem_coupon", {
+          p_code: data.coupon,
+          p_method: "card",
+          p_plan: "card",
+          p_amount: amount,
+        });
+        if (preview?.total && Number(preview.total) >= 1) {
+          amount = Number(preview.total);
+          couponCode = String(preview.code || data.coupon);
+        }
+      } catch (err) {
+        return {
+          ok: false as const,
+          error: err instanceof Error ? err.message : "Cupom inválido",
         };
-      };
-      barcode?: { content?: string };
-      transaction_details?: {
-        digitable_line?: string;
-        external_resource_url?: string;
-      };
-    };
-
-    if (!res.ok || !json.id) {
-      const raw =
-        json.cause?.[0]?.description ||
-        json.message ||
-        json.error ||
-        "";
-      return {
-        ok: false as const,
-        error: raw || "Não foi possível processar o pagamento.",
-      };
+      }
     }
 
-    if (json.status === "rejected") {
+    const { first, last } = splitName(data.name);
+    const body: Record<string, unknown> = {
+      transaction_amount: Number(amount.toFixed(2)),
+      token: data.cardToken,
+      installments: data.installments,
+      payment_method_id: data.paymentMethodId || undefined,
+      issuer_id: data.issuerId || undefined,
+      description: `${data.title}${couponCode ? ` · cupom ${couponCode}` : ""}`.slice(0, 250),
+      external_reference: data.leadId,
+      binary_mode: true,
+      notification_url: "https://www.govisacourses.com.br/api/mp/webhook",
+      metadata: { lead_id: data.leadId, method: "card", coupon: couponCode },
+      payer: {
+        email: data.email,
+        first_name: first,
+        last_name: last,
+        identification: { type: "CPF", number: data.cpf },
+      },
+      additional_info: {
+        items: [
+          {
+            id: "govisa-formacao",
+            title: data.title.slice(0, 250),
+            quantity: 1,
+            unit_price: Number(amount.toFixed(2)),
+          },
+        ],
+        payer: {
+          first_name: first,
+          last_name: last,
+        },
+      },
+    };
+
+    try {
+      const res = await fetch("https://api.mercadopago.com/v1/payments", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${access}`,
+          "Content-Type": "application/json",
+          "X-Idempotency-Key": `${data.leadId}-card-${Date.now()}`,
+        },
+        body: JSON.stringify(body),
+      });
+      const json = (await res.json().catch(() => ({}))) as {
+        id?: number;
+        status?: string;
+        status_detail?: string;
+        message?: string;
+        error?: string;
+        cause?: { description?: string }[];
+      };
+
+      if (!res.ok || !json.id) {
+        const raw =
+          json.cause?.[0]?.description || json.message || json.error || "";
+        return {
+          ok: false as const,
+          error: raw || "Não foi possível processar o pagamento.",
+        };
+      }
+
+      if (json.status === "rejected") {
+        return {
+          ok: false as const,
+          error:
+            REJECT[json.status_detail || ""] ||
+            "Pagamento não autorizado. Tente outro cartão de crédito.",
+          paymentId: String(json.id),
+        };
+      }
+
+      if (couponCode) {
+        await supabaseRpc("bump_coupon_use", { p_code: couponCode }).catch(() => null);
+      }
+
+      const approved = json.status === "approved";
+      return {
+        ok: true as const,
+        paymentId: String(json.id),
+        status: approved ? "approved" : "pending",
+        statusDetail: json.status_detail || json.status || "",
+        amount,
+        coupon: couponCode,
+      };
+    } catch (err) {
       return {
         ok: false as const,
         error:
-          REJECT[json.status_detail || ""] ||
-          "Pagamento não autorizado. Tente outro cartão de crédito.",
+          err instanceof Error
+            ? err.message
+            : "Não foi possível processar o pagamento.",
       };
     }
-
-    return {
-      ok: true as const,
-      paymentId: String(json.id),
-      status: json.status || "pending",
-      statusDetail: json.status_detail || "",
-      qrCode: json.point_of_interaction?.transaction_data?.qr_code || "",
-      qrBase64:
-        json.point_of_interaction?.transaction_data?.qr_code_base64 || "",
-      barcode:
-        json.barcode?.content ||
-        json.transaction_details?.digitable_line ||
-        "",
-    };
   });
 
 export const verifyMpPayment = createServerFn({ method: "GET" })
@@ -226,9 +225,10 @@ export const verifyMpPayment = createServerFn({ method: "GET" })
     if (!res.ok) {
       return { ok: false as const, status: "unknown", error: "falha ao consultar" };
     }
+    const approved = json.status === "approved";
     return {
       ok: true as const,
-      status: json.status || "unknown",
+      status: approved ? "approved" : json.status || "unknown",
       statusDetail: json.status_detail || "",
       amount: json.transaction_amount || 0,
       externalReference: json.external_reference || "",

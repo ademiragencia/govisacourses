@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { ASAAS_ACCESS_TOKEN, ASAAS_API } from "./asaas-credentials";
+import { MP_ACCESS_TOKEN } from "./mp-credentials";
 import { resolvePanelUser } from "./panel-auth";
 
 export type FinancePayment = {
@@ -135,6 +136,57 @@ export const listFinance = createServerFn({ method: "POST" })
       const payments = (payJson.data || []).map((p) =>
         mapPay(p, names.get(String(p.customer || "")) || ""),
       );
+
+      const mpToken = MP_ACCESS_TOKEN.trim();
+      if (mpToken) {
+        try {
+          const mpRes = await fetch(
+            "https://api.mercadopago.com/v1/payments/search?sort=date_created&criteria=desc&limit=30",
+            { headers: { Authorization: `Bearer ${mpToken}` } },
+          );
+          const mpJson = (await mpRes.json().catch(() => ({}))) as {
+            results?: Record<string, unknown>[];
+          };
+          for (const p of mpJson.results || []) {
+            const statusRaw = String(p.status || "");
+            const status =
+              statusRaw === "approved"
+                ? "RECEIVED"
+                : statusRaw === "rejected"
+                  ? "OVERDUE"
+                  : "PENDING";
+            payments.push({
+              id: String(p.id || ""),
+              status,
+              value: Number(p.transaction_amount || 0),
+              netValue: Number(
+                (p.transaction_details as { net_received_amount?: number } | undefined)
+                  ?.net_received_amount || p.transaction_amount || 0,
+              ),
+              billingType: "CREDIT_CARD",
+              description: String(p.description || "Cartão"),
+              dateCreated: String(p.date_created || "").slice(0, 10),
+              dueDate: String(p.date_created || "").slice(0, 10),
+              clientPaymentDate: String(p.date_approved || ""),
+              externalReference: String(p.external_reference || ""),
+              installment: String(p.installments || ""),
+              subscription: "",
+              customer: "",
+              customerName:
+                String(
+                  (p.payer as { first_name?: string; last_name?: string } | undefined)
+                    ?.first_name || "",
+                ) +
+                " " +
+                String(
+                  (p.payer as { last_name?: string } | undefined)?.last_name || "",
+                ),
+            });
+          }
+        } catch {
+          /* Asaas continua mesmo se o cartão falhar */
+        }
+      }
       const received = payments.filter(
         (p) => p.status === "CONFIRMED" || p.status === "RECEIVED",
       );

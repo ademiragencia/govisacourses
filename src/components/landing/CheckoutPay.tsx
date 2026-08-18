@@ -2,6 +2,8 @@ import { useEffect, useMemo, useState } from "react";
 import { Check, Copy, CreditCard, Loader2, QrCode, Tag } from "lucide-react";
 import { COURSE_LIVE } from "@/lib/config";
 import { createSitePayment, verifyAsaasPayment } from "@/lib/asaas-server";
+import { createMpCardPayment } from "@/lib/mp-server";
+import { tokenizeCard } from "@/lib/mp-sdk";
 import { formatCardNumber, formatExpiry } from "@/lib/card";
 import { previewCoupon, type CouponPreview } from "@/lib/coupons";
 import type { StoredLead } from "@/lib/mp";
@@ -104,10 +106,16 @@ export function CheckoutPay({
     setBusy(true);
     setError(null);
     try {
-      const res = await createSitePayment({
+      const tok = await tokenizeCard({
+        cardNumber: digits,
+        cardholderName: holder,
+        cardExpirationMonth: mm,
+        cardExpirationYear: yy,
+        securityCode: cvv,
+        identificationNumber: lead.cpf,
+      });
+      const res = await createMpCardPayment({
         data: {
-          method: "card",
-          plan: "card",
           amount: chosen.total,
           installments: chosen.count,
           coupon: coupon?.code || "",
@@ -116,14 +124,11 @@ export function CheckoutPay({
           name: lead.name,
           cpf: lead.cpf,
           phone: lead.phone,
-          cardNumber: digits,
-          cardHolder: holder,
-          cardMonth: mm,
-          cardYear: yy,
-          cardCvv: cvv,
+          cardToken: tok.token,
+          paymentMethodId: tok.paymentMethodId,
+          issuerId: tok.issuerId,
           street: lead.street,
           number: lead.number,
-          complement: lead.complement,
           city: lead.city,
           zip: lead.cep,
           leadId: lead.id,

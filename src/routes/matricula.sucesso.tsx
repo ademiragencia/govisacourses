@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { CheckCircle2, Loader2, MessageCircle } from "lucide-react";
 import { loadLead } from "@/lib/mp";
 import { verifyAsaasPayment } from "@/lib/asaas-server";
+import { verifyMpPayment } from "@/lib/mp-server";
 import { openPaidWhatsApp, submitPaidEmail } from "@/lib/strict-qualify";
 import { SITE_URL } from "@/lib/seo";
 
@@ -50,7 +51,10 @@ function SucessoPage() {
       let pid = id || "";
 
       if (id) {
-        const verified = await verifyAsaasPayment({ data: { paymentId: id } });
+        const asaasId = id.startsWith("pay_");
+        const verified = asaasId
+          ? await verifyAsaasPayment({ data: { paymentId: id } })
+          : await verifyMpPayment({ data: { paymentId: id } });
         if (verified.ok) {
           approved = verified.status === "approved";
           amount = verified.amount || amount;
