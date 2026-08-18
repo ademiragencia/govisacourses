@@ -201,9 +201,14 @@ export const listFinance = createServerFn({ method: "POST" })
       const received = coursePays.filter(
         (p) => p.status === "CONFIRMED" || p.status === "RECEIVED",
       );
-      const pending = coursePays.filter(
-        (p) => p.status === "PENDING" || p.status === "AWAITING_RISK_ANALYSIS",
-      );
+      const pending = coursePays.filter((p) => {
+        if (p.status !== "PENDING" && p.status !== "AWAITING_RISK_ANALYSIS") {
+          return false;
+        }
+        const type = p.billingType.toUpperCase();
+        if (type === "BOLETO" || type === "TICKET") return false;
+        return Boolean(p.subscription) || type === "PIX";
+      });
       const overdue = coursePays.filter((p) => p.status === "OVERDUE");
 
       const subscriptions: SubscriptionRow[] = [];
@@ -280,6 +285,8 @@ export const listFinance = createServerFn({ method: "POST" })
         ),
       ].sort((a, b) => a.date.localeCompare(b.date));
 
+      const toReceive = subscriptions.reduce((a, s) => a + s.remainingValue, 0);
+
       const summary: FinanceSummary = {
         received: received.reduce((a, p) => a + p.netValue, 0),
         pending: pending.reduce((a, p) => a + p.value, 0),
@@ -292,7 +299,7 @@ export const listFinance = createServerFn({ method: "POST" })
           .reduce((a, p) => a + p.netValue, 0),
         countReceived: received.length,
         countPending: pending.length,
-        toReceive: calendar.reduce((a, p) => a + p.value, 0),
+        toReceive,
         payments: coursePays.filter((p) => p.status !== "REJECTED"),
         subscriptions,
         calendar,
