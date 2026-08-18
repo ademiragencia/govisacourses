@@ -235,3 +235,37 @@ export const verifyMpPayment = createServerFn({ method: "GET" })
       paymentId: String(json.id || data.paymentId),
     };
   });
+
+export const listMpInstallments = createServerFn({ method: "GET" })
+  .validator((data: unknown) => {
+    const d = data as { amount?: number };
+    return { amount: Number(d?.amount) || 3000 };
+  })
+  .handler(async ({ data }) => {
+    const access = token();
+    if (!access) return { ok: false as const, rows: [] as { count: number; value: number; total: number }[] };
+    try {
+      const res = await fetch(
+        `https://api.mercadopago.com/v1/payment_methods/installments?amount=${data.amount}&payment_method_id=master`,
+        { headers: { Authorization: `Bearer ${access}` } },
+      );
+      const json = (await res.json().catch(() => [])) as {
+        payer_costs?: {
+          installments?: number;
+          installment_amount?: number;
+          total_amount?: number;
+        }[];
+      }[];
+      const costs = json[0]?.payer_costs || [];
+      const rows = costs
+        .filter((c) => Number(c.installments) >= 1 && Number(c.installments) <= 10)
+        .map((c) => ({
+          count: Number(c.installments),
+          value: Number(c.installment_amount),
+          total: Number(c.total_amount),
+        }));
+      return { ok: true as const, rows };
+    } catch {
+      return { ok: false as const, rows: [] as { count: number; value: number; total: number }[] };
+    }
+  });

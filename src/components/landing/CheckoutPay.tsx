@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Check, Copy, CreditCard, Loader2, QrCode, Tag } from "lucide-react";
 import { COURSE_LIVE } from "@/lib/config";
 import { createSitePayment, verifyAsaasPayment } from "@/lib/asaas-server";
-import { createMpCardPayment } from "@/lib/mp-server";
+import { createMpCardPayment, listMpInstallments } from "@/lib/mp-server";
 import { tokenizeCard } from "@/lib/mp-sdk";
 import { formatCardNumber, formatExpiry } from "@/lib/card";
 import { previewCoupon, type CouponPreview } from "@/lib/coupons";
@@ -35,6 +35,7 @@ export function CheckoutPay({
   const [expiry, setExpiry] = useState("");
   const [cvv, setCvv] = useState("");
   const [parcels, setParcels] = useState(Math.max(1, lead.installments || 1));
+  const [mpRows, setMpRows] = useState<{ count: number; value: number; total: number }[]>([]);
   const [pix, setPix] = useState<{
     paymentId: string;
     qrImage: string;
@@ -47,11 +48,17 @@ export function CheckoutPay({
   const [coupon, setCoupon] = useState<CouponPreview | null>(null);
   const [couponErr, setCouponErr] = useState<string | null>(null);
 
-  const options = useMemo(() => cardInstallmentOptions(), []);
-  const chosen = cardInstallment(parcels);
+  const options = useMemo(() => cardInstallmentOptions(mpRows), [mpRows]);
+  const chosen = options.find((o) => o.count === parcels) || cardInstallment(parcels);
   const isEntry = lead.plan === "entry";
   const basePix = isEntry ? COURSE_LIVE.entryFee : COURSE_LIVE.price;
   const pixAmount = coupon && tab === "pix" ? coupon.total : basePix;
+
+  useEffect(() => {
+    void listMpInstallments({ data: { amount: COURSE_LIVE.price } }).then((res) => {
+      if (res.ok && res.rows.length) setMpRows(res.rows);
+    });
+  }, []);
 
   useEffect(() => {
     if (!pix?.paymentId) return;
@@ -116,7 +123,7 @@ export function CheckoutPay({
       });
       const res = await createMpCardPayment({
         data: {
-          amount: chosen.total,
+          amount: COURSE_LIVE.price,
           installments: chosen.count,
           coupon: coupon?.code || "",
           title: lead.courseTitle,
