@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import {
+  Copy,
   Download,
   Lock,
   LogOut,
@@ -14,6 +15,7 @@ import {
   clearEnrollments,
   deleteEnrollment,
   listEnrollments,
+  setEnrollmentOps,
   type EnrollmentRow,
 } from "@/lib/enrollments";
 import {
@@ -23,13 +25,43 @@ import {
   setCouponActive,
   type CouponRow,
 } from "@/lib/coupons";
+import { listFinance, type FinanceSummary } from "@/lib/asaas-finance";
+import { createTeamUser, deleteTeamUser, listTeam, type TeamRow } from "@/lib/team";
+import { type PanelUser } from "@/lib/panel-auth";
 import { clearVisits, listVisits, type VisitRow } from "@/lib/visits";
 import { getWhatsAppUrl } from "@/lib/config";
 import { SITE_URL } from "@/lib/seo";
+import {
+  adRanking,
+  dailyReport,
+  isAbandoned,
+  needsRecovery,
+  PIPELINE,
+  pipelineLabel,
+  recoveryMessage,
+  waLead,
+} from "@/lib/panel-helpers";
 
-const SESSION_KEY = "gv_painel_pass";
+const SESSION_KEY = "gv_painel_session";
 
-type Tab = "geral" | "matriculas" | "acessos" | "cupons";
+function sessionPass() {
+  const raw = sessionStorage.getItem(SESSION_KEY) || "";
+  try {
+    return String((JSON.parse(raw) as { password?: string }).password || "");
+  } catch {
+    return raw;
+  }
+}
+
+type Tab =
+  | "geral"
+  | "financeiro"
+  | "matriculas"
+  | "abandono"
+  | "anuncios"
+  | "acessos"
+  | "cupons"
+  | "equipe";
 
 export const Route = createFileRoute("/painel")({
   head: () => ({
@@ -245,30 +277,32 @@ function LeadDetail({
   row,
   onClose,
   onDelete,
+  onPipeline,
 }: {
   row: EnrollmentRow;
   onClose: () => void;
   onDelete: () => void;
+  onPipeline?: (pipeline: string) => void;
 }) {
+  const leadWa = waLead(row.phone, recoveryMessage(row));
   const fields: [string, string][] = [
     ["Status", statusLabel(row.status)],
+    ["Comercial", pipelineLabel(row.pipeline || (row.status === "paid" ? "pago" : ""))],
+    ["Atendido por", row.owner || "—"],
     ["Quando", when(row.created_at)],
     ["Pago em", when(row.paid_at)],
     ["Nome", row.name],
     ["CPF", row.cpf],
-    ["RG", row.rg],
     ["Nascimento", row.birth_date],
     ["E-mail", row.email],
     ["WhatsApp", row.phone],
-    ["CEP", row.cep],
-    ["Endereço", [row.street, row.number, row.complement].filter(Boolean).join(", ")],
-    ["Bairro", row.neighborhood],
-    ["Cidade", row.city],
-    ["UF", row.state],
-    ["Curso", row.course_title],
+    [
+      "Endereço",
+      [row.street, row.number, row.city, row.state].filter(Boolean).join(", "),
+    ],
     ["Plano", row.plan_label],
     ["Valor", brl(Number(row.amount))],
-    ["Parcelas", String(row.installments || "—")],
+    ["Cupom", row.coupon_code || "—"],
     ["Método", methodLabel(row)],
     ["ID pagamento", row.payment_id || "—"],
     ["Origem", row.source || "—"],
@@ -295,6 +329,24 @@ function LeadDetail({
             <X className="size-4" />
           </button>
         </div>
+        {row.status === "paid" && onPipeline && (
+          <div className="mt-4 flex flex-wrap gap-2">
+            {PIPELINE.map((p) => (
+              <button
+                key={p.id}
+                type="button"
+                onClick={() => onPipeline(p.id)}
+                className={
+                  (row.pipeline || "pago") === p.id
+                    ? "h-8 rounded-full bg-wa px-3 text-[11px] font-bold text-white"
+                    : "h-8 rounded-full border border-border px-3 text-[11px] font-semibold text-fg-muted"
+                }
+              >
+                {p.label}
+              </button>
+            ))}
+          </div>
+        )}
         <dl className="mt-5 grid gap-3 sm:grid-cols-2">
           {fields.map(([k, v]) => (
             <div key={k} className="rounded-[var(--radius-md)] border border-border px-3 py-2.5">
@@ -312,15 +364,18 @@ function LeadDetail({
             className="inline-flex h-11 flex-1 items-center justify-center gap-2 rounded-[var(--radius-md)] bg-wa text-sm font-bold text-white"
           >
             <MessageCircle className="size-4" />
-            Enviar no WhatsApp
+            Ficha pro time
           </button>
-          <button
-            type="button"
-            onClick={onClose}
-            className="inline-flex h-11 flex-1 items-center justify-center rounded-[var(--radius-md)] border border-border text-sm font-semibold"
-          >
-            Fechar
-          </button>
+          {leadWa && (
+            <a
+              href={leadWa}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex h-11 flex-1 items-center justify-center gap-2 rounded-[var(--radius-md)] border border-wa/40 text-sm font-bold text-wa"
+            >
+              Chamar aluno
+            </a>
+          )}
           <button
             type="button"
             onClick={onDelete}
@@ -337,6 +392,7 @@ function LeadDetail({
 
 function PainelPage() {
   const [authed, setAuthed] = useState(false);
+  const [me, setMe] = useState<PanelUser | null>(null);
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -358,22 +414,37 @@ function PainelPage() {
     max_uses: "",
   });
   const [couponBusy, setCouponBusy] = useState(false);
+  const [finance, setFinance] = useState<FinanceSummary | null>(null);
+  const [team, setTeam] = useState<TeamRow[]>([]);
+  const [teamForm, setTeamForm] = useState({ name: "", userPassword: "", role: "sdr" });
+  const [reportCopied, setReportCopied] = useState(false);
 
   useEffect(() => {
-    const saved = sessionStorage.getItem(SESSION_KEY);
-    if (saved) {
+    const raw = sessionStorage.getItem(SESSION_KEY);
+    if (!raw) return;
+    try {
+      const saved = JSON.parse(raw) as { password?: string };
+      if (saved.password) {
+        setAuthed(true);
+        void load(saved.password);
+        return;
+      }
+    } catch {
+      /* senha antiga em texto puro */
       setAuthed(true);
-      void load(saved);
+      void load(raw);
     }
   }, []);
 
   async function load(pass: string) {
     setLoading(true);
     setError(null);
-    const [enroll, traffic, cupons] = await Promise.all([
+    const [enroll, traffic, cupons, money, peopleTeam] = await Promise.all([
       listEnrollments({ data: { password: pass } }),
       listVisits({ data: { password: pass } }),
       listCoupons({ data: { password: pass } }),
+      listFinance({ data: { password: pass } }),
+      listTeam({ data: { password: pass } }),
     ]);
     setLoading(false);
     if (!enroll.ok) {
@@ -383,14 +454,17 @@ function PainelPage() {
       return;
     }
     setRows(enroll.rows);
+    setMe(enroll.user);
     setVisits(traffic.ok ? traffic.rows : []);
     setCoupons(cupons.ok ? cupons.rows : []);
+    setFinance(money.ok ? money.summary : null);
+    setTeam(peopleTeam.ok ? peopleTeam.rows : []);
     setAuthed(true);
-    sessionStorage.setItem(SESSION_KEY, pass);
+    sessionStorage.setItem(SESSION_KEY, JSON.stringify({ password: pass }));
   }
 
   async function onClear() {
-    const pass = sessionStorage.getItem(SESSION_KEY) || "";
+    const pass = sessionPass();
     setClearing(true);
     setError(null);
     if (tab === "acessos") {
@@ -416,7 +490,7 @@ function PainelPage() {
   }
 
   async function onDeleteOne(id: string) {
-    const pass = sessionStorage.getItem(SESSION_KEY) || "";
+    const pass = sessionPass();
     setError(null);
     const res = await deleteEnrollment({ data: { password: pass, id } });
     if (!res.ok) {
@@ -429,7 +503,7 @@ function PainelPage() {
 
   async function onCreateCoupon(e: FormEvent) {
     e.preventDefault();
-    const pass = sessionStorage.getItem(SESSION_KEY) || "";
+    const pass = sessionPass();
     setCouponBusy(true);
     setError(null);
     const res = await createCoupon({
@@ -461,7 +535,7 @@ function PainelPage() {
   }
 
   async function onToggleCoupon(row: CouponRow) {
-    const pass = sessionStorage.getItem(SESSION_KEY) || "";
+    const pass = sessionPass();
     const res = await setCouponActive({
       data: { password: pass, id: row.id, active: !row.active },
     });
@@ -473,13 +547,73 @@ function PainelPage() {
   }
 
   async function onDeleteCoupon(id: string) {
-    const pass = sessionStorage.getItem(SESSION_KEY) || "";
+    const pass = sessionPass();
     const res = await deleteCoupon({ data: { password: pass, id } });
     if (!res.ok) {
       setError(res.error);
       return;
     }
     setCoupons((prev) => prev.filter((c) => c.id !== id));
+  }
+
+  async function onPipeline(id: string, pipeline: string) {
+    const pass = sessionPass();
+    const res = await setEnrollmentOps({
+      data: { password: pass, id, pipeline, owner: me?.name || "" },
+    });
+    if (!res.ok) {
+      setError(res.error);
+      return;
+    }
+    setRows((prev) => prev.map((r) => (r.id === res.row.id ? res.row : r)));
+    setOpen(res.row);
+  }
+
+  async function onCreateTeam(e: FormEvent) {
+    e.preventDefault();
+    const pass = sessionPass();
+    const res = await createTeamUser({
+      data: {
+        password: pass,
+        name: teamForm.name,
+        userPassword: teamForm.userPassword,
+        role: teamForm.role,
+      },
+    });
+    if (!res.ok) {
+      setError(res.error);
+      return;
+    }
+    setTeam((prev) => [res.row, ...prev]);
+    setTeamForm({ name: "", userPassword: "", role: "sdr" });
+  }
+
+  async function onDeleteTeam(id: string) {
+    const pass = sessionPass();
+    const res = await deleteTeamUser({ data: { password: pass, id } });
+    if (!res.ok) {
+      setError(res.error);
+      return;
+    }
+    setTeam((prev) => prev.filter((t) => t.id !== id));
+  }
+
+  async function copyReport() {
+    const paidNow = rows.filter((r) => r.status === "paid");
+    const text = dailyReport({
+      visits,
+      paid: paidNow,
+      abandoned: rows.filter(isAbandoned),
+      revenue: paidNow.reduce((a, r) => a + Number(r.amount || 0), 0),
+      pixPending: finance?.pixPending || 0,
+    });
+    try {
+      await navigator.clipboard.writeText(text);
+      setReportCopied(true);
+      window.setTimeout(() => setReportCopied(false), 2000);
+    } catch {
+      setError("Não deu para copiar o relatório.");
+    }
   }
 
   async function onLogin(e: FormEvent) {
@@ -592,18 +726,28 @@ function PainelPage() {
             <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-gold-line">
               Painel
             </p>
-            <p className="text-sm font-semibold text-fg">Dashboard completo</p>
+            <p className="text-sm font-semibold text-fg">
+              {me ? me.name : "Dashboard"}
+            </p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center justify-end gap-2">
             <button
               type="button"
-              onClick={() => void load(sessionStorage.getItem(SESSION_KEY) || "")}
+              onClick={() => void copyReport()}
+              className="inline-flex h-9 items-center gap-1.5 rounded-[var(--radius-md)] border border-border px-3 text-xs font-semibold text-fg-muted hover:text-fg"
+            >
+              <Copy className="size-3.5" />
+              {reportCopied ? "Copiado" : "Relatório do dia"}
+            </button>
+            <button
+              type="button"
+              onClick={() => void load(sessionPass())}
               className="inline-flex h-9 items-center gap-1.5 rounded-[var(--radius-md)] border border-border px-3 text-xs font-semibold text-fg-muted hover:text-fg"
             >
               <RefreshCw className={`size-3.5 ${loading ? "animate-spin" : ""}`} />
               Atualizar
             </button>
-            {tab !== "geral" && tab !== "cupons" && (
+            {me?.role === "admin" && tab !== "geral" && tab !== "cupons" && tab !== "financeiro" && tab !== "equipe" && tab !== "anuncios" && (
               <button
                 type="button"
                 onClick={() => setConfirmClear(true)}
@@ -640,9 +784,13 @@ function PainelPage() {
           {(
             [
               ["geral", "Visão geral"],
+              ["financeiro", "Financeiro"],
               ["matriculas", "Matrículas"],
+              ["abandono", "Abandono"],
+              ["anuncios", "Anúncios"],
               ["acessos", "Acessos"],
               ["cupons", "Cupons"],
+              ["equipe", "Equipe"],
             ] as const
           ).map(([id, label]) => (
             <button
@@ -765,6 +913,61 @@ function PainelPage() {
           </>
         )}
 
+        {tab === "financeiro" && (
+          <>
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              <Stat k="Recebido (líquido)" v={brl(finance?.received || 0)} />
+              <Stat k="Pendente" v={brl(finance?.pending || 0)} />
+              <Stat k="Pix pendente" v={brl(finance?.pixPending || 0)} />
+              <Stat k="Cartão confirmado" v={brl(finance?.cardConfirmed || 0)} />
+            </div>
+            <div className="mt-5 overflow-x-auto rounded-[var(--radius-xl)] border border-border">
+              <table className="min-w-[860px] w-full text-left text-sm">
+                <thead className="bg-bg-elevated text-[11px] uppercase tracking-[0.1em] text-fg-subtle">
+                  <tr>
+                    {["Quando", "Tipo", "Status", "Valor", "Líquido", "Descrição"].map((h) => (
+                      <th key={h} className="px-4 py-3 font-bold">
+                        {h}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {(finance?.payments || []).length === 0 && (
+                    <tr>
+                      <td colSpan={6} className="px-4 py-8 text-center text-fg-muted">
+                        Nenhuma cobrança no Asaas ainda.
+                      </td>
+                    </tr>
+                  )}
+                  {(finance?.payments || []).map((p) => (
+                    <tr key={p.id} className="border-t border-border">
+                      <td className="px-4 py-3 text-xs text-fg-muted">{p.dateCreated}</td>
+                      <td className="px-4 py-3">{p.billingType === "PIX" ? "Pix" : "Cartão"}</td>
+                      <td className="px-4 py-3">
+                        <span
+                          className={statusClass(
+                            p.status === "CONFIRMED" || p.status === "RECEIVED"
+                              ? "paid"
+                              : p.status === "OVERDUE"
+                                ? "refused"
+                                : "pending",
+                          )}
+                        >
+                          {p.status}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 font-semibold">{brl(p.value)}</td>
+                      <td className="px-4 py-3">{brl(p.netValue)}</td>
+                      <td className="px-4 py-3 text-xs text-fg-muted">{p.description}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </>
+        )}
+
         {tab === "matriculas" && (
           <>
             <div className="grid gap-3 sm:grid-cols-2">
@@ -859,6 +1062,110 @@ function PainelPage() {
               </table>
             </div>
             <p className="mt-3 text-xs text-fg-subtle">Clique na linha para ver a ficha completa.</p>
+          </>
+        )}
+
+        {tab === "abandono" && (
+          <>
+            <div className="grid gap-3 sm:grid-cols-3">
+              <Stat k="Abandonos" v={String(rows.filter(isAbandoned).length)} />
+              <Stat k="Recuperar agora" v={String(rows.filter(needsRecovery).length)} />
+              <Stat k="Com WhatsApp" v={String(rows.filter((r) => isAbandoned(r) && r.phone).length)} />
+            </div>
+            <div className="mt-5 overflow-x-auto rounded-[var(--radius-xl)] border border-border">
+              <table className="min-w-[820px] w-full text-left text-sm">
+                <thead className="bg-bg-elevated text-[11px] uppercase tracking-[0.1em] text-fg-subtle">
+                  <tr>
+                    {["Quando", "Aluno", "WhatsApp", "Plano", "Status", ""].map((h) => (
+                      <th key={h} className="px-4 py-3 font-bold">
+                        {h}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {rows.filter(isAbandoned).length === 0 && (
+                    <tr>
+                      <td colSpan={6} className="px-4 py-8 text-center text-fg-muted">
+                        Ninguém abandonou a matrícula.
+                      </td>
+                    </tr>
+                  )}
+                  {rows.filter(isAbandoned).map((r) => {
+                    const href = waLead(r.phone, recoveryMessage(r));
+                    return (
+                      <tr key={r.id} className="border-t border-border">
+                        <td className="px-4 py-3 text-xs text-fg-muted">{when(r.created_at)}</td>
+                        <td className="px-4 py-3 font-semibold">{r.name || "Sem nome"}</td>
+                        <td className="px-4 py-3">{r.phone || "—"}</td>
+                        <td className="px-4 py-3 text-xs text-fg-muted">{r.plan_label}</td>
+                        <td className="px-4 py-3">
+                          <span className={statusClass(r.status)}>{statusLabel(r.status)}</span>
+                          {needsRecovery(r) && (
+                            <span className="ml-2 text-[11px] font-bold uppercase text-brand-red">
+                              +30 min
+                            </span>
+                          )}
+                        </td>
+                        <td className="px-4 py-3 text-right">
+                          {href ? (
+                            <a
+                              href={href}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex h-9 items-center gap-1.5 rounded-full bg-wa px-3 text-xs font-bold text-white"
+                            >
+                              <MessageCircle className="size-3.5" />
+                              Chamar agora
+                            </a>
+                          ) : (
+                            <span className="text-xs text-fg-subtle">Sem número</span>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </>
+        )}
+
+        {tab === "anuncios" && (
+          <>
+            <p className="mb-4 text-sm text-fg-muted">
+              Quem gerou pagamento de verdade, não só clique.
+            </p>
+            <div className="overflow-x-auto rounded-[var(--radius-xl)] border border-border">
+              <table className="min-w-[640px] w-full text-left text-sm">
+                <thead className="bg-bg-elevated text-[11px] uppercase tracking-[0.1em] text-fg-subtle">
+                  <tr>
+                    {["Origem / campanha", "Acessos", "Pagos", "Faturado"].map((h) => (
+                      <th key={h} className="px-4 py-3 font-bold">
+                        {h}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {adRanking(visits, paid).length === 0 && (
+                    <tr>
+                      <td colSpan={4} className="px-4 py-8 text-center text-fg-muted">
+                        Sem tráfego ainda.
+                      </td>
+                    </tr>
+                  )}
+                  {adRanking(visits, paid).map((a) => (
+                    <tr key={a.source} className="border-t border-border">
+                      <td className="px-4 py-3 font-semibold">{a.source}</td>
+                      <td className="px-4 py-3">{a.visits}</td>
+                      <td className="px-4 py-3">{a.paid}</td>
+                      <td className="px-4 py-3 font-semibold">{brl(a.revenue)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </>
         )}
 
@@ -1087,12 +1394,107 @@ function PainelPage() {
             </div>
           </>
         )}
+
+        {tab === "equipe" && (
+          <>
+            {me?.role !== "admin" ? (
+              <p className="text-sm text-fg-muted">Só o admin gerencia acessos.</p>
+            ) : (
+              <>
+                <form
+                  onSubmit={(e) => void onCreateTeam(e)}
+                  className="rounded-[var(--radius-xl)] border border-border bg-bg-elevated p-5"
+                >
+                  <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-gold-line">
+                    Novo acesso
+                  </p>
+                  <div className="mt-4 grid gap-3 sm:grid-cols-3">
+                    <input
+                      required
+                      value={teamForm.name}
+                      onChange={(e) => setTeamForm((f) => ({ ...f, name: e.target.value }))}
+                      placeholder="Nome"
+                      className="h-11 rounded-[var(--radius-md)] border border-border bg-bg px-3 text-sm text-fg"
+                    />
+                    <input
+                      required
+                      value={teamForm.userPassword}
+                      onChange={(e) =>
+                        setTeamForm((f) => ({ ...f, userPassword: e.target.value }))
+                      }
+                      placeholder="Senha de entrada"
+                      className="h-11 rounded-[var(--radius-md)] border border-border bg-bg px-3 text-sm text-fg"
+                    />
+                    <select
+                      value={teamForm.role}
+                      onChange={(e) => setTeamForm((f) => ({ ...f, role: e.target.value }))}
+                      className="h-11 rounded-[var(--radius-md)] border border-border bg-bg px-3 text-sm text-fg"
+                    >
+                      <option value="sdr">SDR / comercial</option>
+                      <option value="admin">Admin</option>
+                    </select>
+                  </div>
+                  <button
+                    type="submit"
+                    className="mt-4 inline-flex h-11 items-center rounded-[var(--radius-md)] bg-brand-red px-5 text-sm font-bold uppercase tracking-[0.04em] text-white"
+                  >
+                    Criar acesso
+                  </button>
+                  <p className="mt-3 text-xs text-fg-subtle">
+                    A senha mestra 386510 continua valendo para você.
+                  </p>
+                </form>
+                <div className="mt-5 overflow-x-auto rounded-[var(--radius-xl)] border border-border">
+                  <table className="min-w-[560px] w-full text-left text-sm">
+                    <thead className="bg-bg-elevated text-[11px] uppercase tracking-[0.1em] text-fg-subtle">
+                      <tr>
+                        {["Nome", "Senha", "Função", ""].map((h) => (
+                          <th key={h || "x"} className="px-4 py-3 font-bold">
+                            {h}
+                          </th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {team.length === 0 && (
+                        <tr>
+                          <td colSpan={4} className="px-4 py-8 text-center text-fg-muted">
+                            Ninguém da equipe ainda. Só a senha mestra.
+                          </td>
+                        </tr>
+                      )}
+                      {team.map((t) => (
+                        <tr key={t.id} className="border-t border-border">
+                          <td className="px-4 py-3 font-semibold">{t.name}</td>
+                          <td className="px-4 py-3 font-mono text-xs">{t.password}</td>
+                          <td className="px-4 py-3">{t.role === "admin" ? "Admin" : "SDR"}</td>
+                          <td className="px-4 py-3 text-right">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                if (window.confirm(`Remover ${t.name}?`)) void onDeleteTeam(t.id);
+                              }}
+                              className="text-xs font-semibold text-brand-red"
+                            >
+                              Remover
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </>
+            )}
+          </>
+        )}
       </div>
 
       {open && (
         <LeadDetail
           row={open}
           onClose={() => setOpen(null)}
+          onPipeline={(pipeline) => void onPipeline(open.id, pipeline)}
           onDelete={() => {
             if (window.confirm(`Apagar ${open.name || "este registro"}?`)) {
               void onDeleteOne(open.id);

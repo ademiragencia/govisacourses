@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { PANEL_PASSWORD } from "./enrollments";
+import { resolvePanelUser } from "./panel-auth";
 import { supabaseRpc } from "./supabase";
 
 export type VisitRow = {
@@ -119,12 +120,13 @@ export const listVisits = createServerFn({ method: "POST" })
     return { password: String(d?.password || "") };
   })
   .handler(async ({ data }) => {
-    if (data.password !== PANEL_PASSWORD) {
+    const user = await resolvePanelUser(data.password);
+    if (!user) {
       return { ok: false as const, error: "Senha incorreta" };
     }
     try {
       const rows = await supabaseRpc<VisitRow[]>("admin_list_visits", {
-        p_password: data.password,
+        p_password: PANEL_PASSWORD,
       });
       return { ok: true as const, rows: rows || [] };
     } catch (err) {
@@ -141,12 +143,13 @@ export const clearVisits = createServerFn({ method: "POST" })
     return { password: String(d?.password || "") };
   })
   .handler(async ({ data }) => {
-    if (data.password !== PANEL_PASSWORD) {
-      return { ok: false as const, error: "Senha incorreta" };
+    const user = await resolvePanelUser(data.password);
+    if (!user || user.role !== "admin") {
+      return { ok: false as const, error: "Só o admin limpa acessos" };
     }
     try {
       const res = await supabaseRpc<{ deleted?: number }>("admin_clear_visits", {
-        p_password: data.password,
+        p_password: PANEL_PASSWORD,
       });
       return { ok: true as const, deleted: Number(res?.deleted ?? 0) };
     } catch (err) {

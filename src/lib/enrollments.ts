@@ -1,8 +1,9 @@
 import { createServerFn } from "@tanstack/react-start";
+import { PANEL_PASSWORD, resolvePanelUser } from "./panel-auth";
 import { supabaseRpc } from "./supabase";
 import type { StoredLead } from "./mp";
 
-export const PANEL_PASSWORD = "386510";
+export { PANEL_PASSWORD };
 
 export type EnrollmentRow = {
   id: string;
@@ -34,6 +35,9 @@ export type EnrollmentRow = {
   created_at: string;
   updated_at: string;
   paid_at: string | null;
+  pipeline: string;
+  owner: string;
+  coupon_code: string;
 };
 
 export function leadToPayload(
@@ -43,6 +47,7 @@ export function leadToPayload(
     paymentId?: string;
     method?: string;
     note?: string;
+    coupon?: string;
   },
 ) {
   return {
@@ -71,6 +76,7 @@ export function leadToPayload(
     source: lead.meta?.source || "",
     method: extra?.method || "",
     note: extra?.note || "",
+    coupon_code: extra?.coupon || "",
   };
 }
 
@@ -91,19 +97,17 @@ export const saveEnrollment = createServerFn({ method: "POST" })
   });
 
 export const listEnrollments = createServerFn({ method: "POST" })
-  .validator((data: unknown) => {
-    const d = data as { password?: string };
-    return { password: String(d?.password || "") };
-  })
+  .validator((data: unknown) => ({
+    password: String((data as { password?: string })?.password || ""),
+  }))
   .handler(async ({ data }) => {
-    if (data.password !== PANEL_PASSWORD) {
-      return { ok: false as const, error: "Senha incorreta" };
-    }
+    const user = await resolvePanelUser(data.password);
+    if (!user) return { ok: false as const, error: "Senha incorreta" };
     try {
       const rows = await supabaseRpc<EnrollmentRow[]>("admin_list_enrollments", {
-        p_password: data.password,
+        p_password: PANEL_PASSWORD,
       });
-      return { ok: true as const, rows: rows || [] };
+      return { ok: true as const, rows: rows || [], user };
     } catch (err) {
       return {
         ok: false as const,
@@ -113,18 +117,18 @@ export const listEnrollments = createServerFn({ method: "POST" })
   });
 
 export const clearEnrollments = createServerFn({ method: "POST" })
-  .validator((data: unknown) => {
-    const d = data as { password?: string };
-    return { password: String(d?.password || "") };
-  })
+  .validator((data: unknown) => ({
+    password: String((data as { password?: string })?.password || ""),
+  }))
   .handler(async ({ data }) => {
-    if (data.password !== PANEL_PASSWORD) {
-      return { ok: false as const, error: "Senha incorreta" };
+    const user = await resolvePanelUser(data.password);
+    if (!user || user.role !== "admin") {
+      return { ok: false as const, error: "Só o admin pode limpar" };
     }
     try {
       const res = await supabaseRpc<{ deleted?: number }>(
         "admin_clear_enrollments",
-        { p_password: data.password },
+        { p_password: PANEL_PASSWORD },
       );
       return { ok: true as const, deleted: Number(res?.deleted ?? 0) };
     } catch (err) {
@@ -141,22 +145,53 @@ export const deleteEnrollment = createServerFn({ method: "POST" })
     return { password: String(d?.password || ""), id: String(d?.id || "") };
   })
   .handler(async ({ data }) => {
-    if (data.password !== PANEL_PASSWORD) {
-      return { ok: false as const, error: "Senha incorreta" };
-    }
-    if (!data.id) {
-      return { ok: false as const, error: "Registro inválido" };
-    }
+    const user = await resolvePanelUser(data.password);
+    if (!user) return { ok: false as const, error: "Senha incorreta" };
+    if (!data.id) return { ok: false as const, error: "Registro inválido" };
     try {
       const res = await supabaseRpc<{ deleted?: number }>(
         "admin_delete_enrollment",
-        { p_password: data.password, p_id: data.id },
+        { p_password: PANEL_PASSWORD, p_id: data.id },
       );
       return { ok: true as const, deleted: Number(res?.deleted ?? 0) };
     } catch (err) {
       return {
         ok: false as const,
         error: err instanceof Error ? err.message : "Falha ao apagar",
+      };
+    }
+  });
+
+export const setEnrollmentOps = createServerFn({ method: "POST" })
+  .validator((data: unknown) => {
+    const d = data as {
+      password?: string;
+      id?: string;
+      pipeline?: string;
+      owner?: string;
+    };
+    return {
+      password: String(d.password || ""),
+      id: String(d.id || ""),
+      pipeline: String(d.pipeline || ""),
+      owner: String(d.owner ?? ""),
+    };
+  })
+  .handler(async ({ data }) => {
+    const user = await resolvePanelUser(data.password);
+    if (!user) return { ok: false as const, error: "Senha incorreta" };
+    try {
+      const row = await supabaseRpc<EnrollmentRow>("set_enrollment_ops", {
+        p_password: data.password,
+        p_id: data.id,
+        p_pipeline: data.pipeline,
+        p_owner: data.owner,
+      });
+      return { ok: true as const, row };
+    } catch (err) {
+      return {
+        ok: false as const,
+        error: err instanceof Error ? err.message : "Falha ao atualizar",
       };
     }
   });

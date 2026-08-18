@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { PANEL_PASSWORD } from "./enrollments";
+import { resolvePanelUser } from "./panel-auth";
 import { supabaseRpc } from "./supabase";
 
 export type CouponRow = {
@@ -61,12 +62,13 @@ export const listCoupons = createServerFn({ method: "POST" })
     password: String((data as { password?: string })?.password || ""),
   }))
   .handler(async ({ data }) => {
-    if (data.password !== PANEL_PASSWORD) {
+    const user = await resolvePanelUser(data.password);
+    if (!user) {
       return { ok: false as const, error: "Senha incorreta" };
     }
     try {
       const rows = await supabaseRpc<CouponRow[]>("list_coupons", {
-        p_password: data.password,
+        p_password: PANEL_PASSWORD,
       });
       return { ok: true as const, rows: rows || [] };
     } catch (err) {
@@ -81,12 +83,13 @@ export const createCoupon = createServerFn({ method: "POST" })
   .validator((data: unknown) => data as Record<string, unknown>)
   .handler(async ({ data }) => {
     const password = String(data.password || "");
-    if (password !== PANEL_PASSWORD) {
-      return { ok: false as const, error: "Senha incorreta" };
+    const user = await resolvePanelUser(password);
+    if (!user || user.role !== "admin") {
+      return { ok: false as const, error: "Só o admin cria cupom" };
     }
     try {
       const row = await supabaseRpc<CouponRow>("create_coupon", {
-        p_password: password,
+        p_password: PANEL_PASSWORD,
         payload: {
           code: data.code,
           kind: data.kind,
@@ -115,12 +118,13 @@ export const setCouponActive = createServerFn({ method: "POST" })
     };
   })
   .handler(async ({ data }) => {
-    if (data.password !== PANEL_PASSWORD) {
-      return { ok: false as const, error: "Senha incorreta" };
+    const user = await resolvePanelUser(data.password);
+    if (!user || user.role !== "admin") {
+      return { ok: false as const, error: "Só o admin altera cupom" };
     }
     try {
       const row = await supabaseRpc<CouponRow>("set_coupon_active", {
-        p_password: data.password,
+        p_password: PANEL_PASSWORD,
         p_id: data.id,
         p_active: data.active,
       });
@@ -139,12 +143,13 @@ export const deleteCoupon = createServerFn({ method: "POST" })
     return { password: String(d.password || ""), id: String(d.id || "") };
   })
   .handler(async ({ data }) => {
-    if (data.password !== PANEL_PASSWORD) {
-      return { ok: false as const, error: "Senha incorreta" };
+    const user = await resolvePanelUser(data.password);
+    if (!user || user.role !== "admin") {
+      return { ok: false as const, error: "Só o admin apaga cupom" };
     }
     try {
       await supabaseRpc("delete_coupon", {
-        p_password: data.password,
+        p_password: PANEL_PASSWORD,
         p_id: data.id,
       });
       return { ok: true as const };
