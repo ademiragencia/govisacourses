@@ -38,6 +38,8 @@ export type EnrollmentRow = {
   pipeline: string;
   owner: string;
   coupon_code: string;
+  contacted_at: string | null;
+  follow_up: string;
 };
 
 export function leadToPayload(
@@ -169,12 +171,16 @@ export const setEnrollmentOps = createServerFn({ method: "POST" })
       id?: string;
       pipeline?: string;
       owner?: string;
+      follow_up?: string;
+      contacted?: boolean;
     };
     return {
       password: String(d.password || ""),
       id: String(d.id || ""),
       pipeline: String(d.pipeline || ""),
       owner: String(d.owner ?? ""),
+      follow_up: d.follow_up === undefined ? undefined : String(d.follow_up),
+      contacted: Boolean(d.contacted),
     };
   })
   .handler(async ({ data }) => {
@@ -184,8 +190,10 @@ export const setEnrollmentOps = createServerFn({ method: "POST" })
       const row = await supabaseRpc<EnrollmentRow>("set_enrollment_ops", {
         p_password: data.password,
         p_id: data.id,
-        p_pipeline: data.pipeline,
-        p_owner: data.owner,
+        p_pipeline: data.pipeline || null,
+        p_owner: data.owner || null,
+        p_follow_up: data.follow_up ?? null,
+        p_contacted: data.contacted || null,
       });
       return { ok: true as const, row };
     } catch (err) {

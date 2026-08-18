@@ -86,6 +86,13 @@ function when(iso: string | null) {
   return new Date(iso).toLocaleString("pt-BR");
 }
 
+function dateBr(iso: string) {
+  if (!iso) return "—";
+  const [y, m, d] = iso.slice(0, 10).split("-");
+  if (!y || !m || !d) return iso;
+  return `${d}/${m}/${y}`;
+}
+
 function isToday(iso: string) {
   return new Date(iso).toDateString() === new Date().toDateString();
 }
@@ -278,12 +285,15 @@ function LeadDetail({
   onClose,
   onDelete,
   onPipeline,
+  onContact,
 }: {
   row: EnrollmentRow;
   onClose: () => void;
   onDelete: () => void;
   onPipeline?: (pipeline: string) => void;
+  onContact?: (note: string) => void;
 }) {
+  const [note, setNote] = useState(row.follow_up || "");
   const leadWa = waLead(row.phone, recoveryMessage(row));
   const fields: [string, string][] = [
     ["Status", statusLabel(row.status)],
@@ -306,6 +316,7 @@ function LeadDetail({
     ["Método", methodLabel(row)],
     ["ID pagamento", row.payment_id || "—"],
     ["Origem", row.source || "—"],
+    ["Último contato", when(row.contacted_at)],
     ["Obs", row.note || "—"],
   ];
   return (
@@ -357,6 +368,18 @@ function LeadDetail({
             </div>
           ))}
         </dl>
+        {onContact && (
+          <label className="mt-4 block text-xs font-bold uppercase tracking-[0.12em] text-fg-subtle">
+            Anotação do time
+            <textarea
+              value={note}
+              onChange={(e) => setNote(e.target.value)}
+              rows={3}
+              className="mt-1.5 w-full rounded-[var(--radius-md)] border border-border bg-bg px-3 py-2 text-sm font-normal normal-case tracking-normal text-fg"
+              placeholder="Ex.: pediu para ligar amanhã, ficou de pagar o Pix..."
+            />
+          </label>
+        )}
         <div className="mt-5 flex flex-col gap-2 sm:flex-row">
           <button
             type="button"
@@ -375,6 +398,15 @@ function LeadDetail({
             >
               Chamar aluno
             </a>
+          )}
+          {onContact && (
+            <button
+              type="button"
+              onClick={() => onContact(note)}
+              className="inline-flex h-11 flex-1 items-center justify-center rounded-[var(--radius-md)] border border-border text-sm font-semibold"
+            >
+              Salvar contato
+            </button>
           )}
           <button
             type="button"
@@ -430,11 +462,16 @@ function PainelPage() {
         return;
       }
     } catch {
-      /* senha antiga em texto puro */
       setAuthed(true);
       void load(raw);
     }
   }, []);
+
+  useEffect(() => {
+    if (!authed) return;
+    const id = window.setInterval(() => void load(sessionPass()), 45000);
+    return () => window.clearInterval(id);
+  }, [authed]);
 
   async function load(pass: string) {
     setLoading(true);
@@ -567,6 +604,25 @@ function PainelPage() {
     }
     setRows((prev) => prev.map((r) => (r.id === res.row.id ? res.row : r)));
     setOpen(res.row);
+  }
+
+  async function onContact(id: string, followUp?: string) {
+    const pass = sessionPass();
+    const res = await setEnrollmentOps({
+      data: {
+        password: pass,
+        id,
+        owner: me?.name || "",
+        contacted: true,
+        follow_up: followUp,
+      },
+    });
+    if (!res.ok) {
+      setError(res.error);
+      return;
+    }
+    setRows((prev) => prev.map((r) => (r.id === res.row.id ? res.row : r)));
+    setOpen((cur) => (cur?.id === res.row.id ? res.row : cur));
   }
 
   async function onCreateTeam(e: FormEvent) {
@@ -821,6 +877,28 @@ function PainelPage() {
               <Stat k="Faturado" v={brl(revenue)} />
             </div>
 
+            <div className="mt-4 rounded-[var(--radius-lg)] border border-brand-red/30 bg-brand-red-soft p-4">
+              <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-brand-red">
+                Precisa de ação
+              </p>
+              <ul className="mt-3 space-y-2 text-sm">
+                <li>
+                  {rows.filter((r) => needsRecovery(r) && !r.contacted_at).length} abandono
+                  {rows.filter((r) => needsRecovery(r) && !r.contacted_at).length === 1 ? "" : "s"} sem contato
+                </li>
+                <li>
+                  {paid.filter((r) => !r.pipeline || r.pipeline === "pago").length} pago
+                  {paid.filter((r) => !r.pipeline || r.pipeline === "pago").length === 1 ? "" : "s"} sem contrato enviado
+                </li>
+                <li>
+                  A receber: {brl(finance?.toReceive || 0)}
+                  {finance?.calendar[0]
+                    ? ` · próximo ${dateBr(finance.calendar[0].date)} (${finance.calendar[0].customerName})`
+                    : ""}
+                </li>
+              </ul>
+            </div>
+
             <div className="mt-6 rounded-[var(--radius-lg)] border border-border bg-bg-elevated p-4">
               <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-fg-subtle">
                 Funil
@@ -920,7 +998,77 @@ function PainelPage() {
               <Stat k="Pendente" v={brl(finance?.pending || 0)} />
               <Stat k="Pix pendente" v={brl(finance?.pixPending || 0)} />
               <Stat k="Cartão confirmado" v={brl(finance?.cardConfirmed || 0)} />
+              <Stat k="A receber" v={brl(finance?.toReceive || 0)} />
             </div>
+
+            {(finance?.subscriptions || []).length > 0 && (
+              <div className="mt-5 space-y-4">
+                {finance?.subscriptions.map((s) => (
+                  <div
+                    key={s.id}
+                    className="rounded-[var(--radius-xl)] border border-border bg-bg-elevated p-4"
+                  >
+                    <div className="flex flex-wrap items-start justify-between gap-3">
+                      <div>
+                        <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-gold-line">
+                          Pix recorrente
+                        </p>
+                        <p className="mt-1 font-display text-xl font-extrabold text-fg">
+                          {s.customerName}
+                        </p>
+                        <p className="text-sm text-fg-muted">
+                          {s.maxPayments}× {brl(s.value)} · falta {s.remaining} · {brl(s.remainingValue)}
+                        </p>
+                      </div>
+                      <span className={statusClass(s.status === "ACTIVE" ? "paid" : "pending")}>
+                        {s.status}
+                      </span>
+                    </div>
+                    <div className="mt-4 overflow-x-auto">
+                      <table className="min-w-[520px] w-full text-left text-sm">
+                        <thead className="text-[11px] uppercase tracking-[0.1em] text-fg-subtle">
+                          <tr>
+                            <th className="py-2 pr-3">Parcela</th>
+                            <th className="py-2 pr-3">Data</th>
+                            <th className="py-2 pr-3">Valor</th>
+                            <th className="py-2">Status</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {s.parcels.map((p, i) => (
+                            <tr key={`${s.id}-${p.date}-${i}`} className="border-t border-border">
+                              <td className="py-2 pr-3">{i + 1}/{s.parcels.length}</td>
+                              <td className="py-2 pr-3">{dateBr(p.date)}</td>
+                              <td className="py-2 pr-3 font-semibold">{brl(p.value)}</td>
+                              <td className="py-2">
+                                <span
+                                  className={statusClass(
+                                    p.status === "RECEIVED" || p.status === "CONFIRMED"
+                                      ? "paid"
+                                      : p.status === "SCHEDULED"
+                                        ? "started"
+                                        : "pending",
+                                  )}
+                                >
+                                  {p.status === "SCHEDULED"
+                                    ? "A gerar"
+                                    : p.status === "PENDING"
+                                      ? "A receber"
+                                      : p.status === "RECEIVED" || p.status === "CONFIRMED"
+                                        ? "Pago"
+                                        : p.status}
+                                </span>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
             <div className="mt-5 overflow-x-auto rounded-[var(--radius-xl)] border border-border">
               <table className="min-w-[860px] w-full text-left text-sm">
                 <thead className="bg-bg-elevated text-[11px] uppercase tracking-[0.1em] text-fg-subtle">
@@ -1108,19 +1256,28 @@ function PainelPage() {
                           )}
                         </td>
                         <td className="px-4 py-3 text-right">
-                          {href ? (
-                            <a
-                              href={href}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="inline-flex h-9 items-center gap-1.5 rounded-full bg-wa px-3 text-xs font-bold text-white"
+                          <div className="flex justify-end gap-2">
+                            {href ? (
+                              <a
+                                href={href}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex h-9 items-center gap-1.5 rounded-full bg-wa px-3 text-xs font-bold text-white"
+                              >
+                                <MessageCircle className="size-3.5" />
+                                Chamar agora
+                              </a>
+                            ) : (
+                              <span className="text-xs text-fg-subtle">Sem número</span>
+                            )}
+                            <button
+                              type="button"
+                              onClick={() => void onContact(r.id)}
+                              className="inline-flex h-9 items-center rounded-full border border-border px-3 text-xs font-semibold text-fg-muted"
                             >
-                              <MessageCircle className="size-3.5" />
-                              Chamar agora
-                            </a>
-                          ) : (
-                            <span className="text-xs text-fg-subtle">Sem número</span>
-                          )}
+                              {r.contacted_at ? "Chamado" : "Já chamei"}
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     );
@@ -1495,6 +1652,7 @@ function PainelPage() {
           row={open}
           onClose={() => setOpen(null)}
           onPipeline={(pipeline) => void onPipeline(open.id, pipeline)}
+          onContact={(note) => void onContact(open.id, note)}
           onDelete={() => {
             if (window.confirm(`Apagar ${open.name || "este registro"}?`)) {
               void onDeleteOne(open.id);
