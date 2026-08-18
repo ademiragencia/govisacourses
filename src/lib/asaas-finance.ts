@@ -79,6 +79,12 @@ function addMonths(iso: string, n: number) {
   return `${yy}-${mm}-${dd}`;
 }
 
+function isCoursePay(description: string, extra = "") {
+  const t = `${description} ${extra}`.toLowerCase();
+  if (/mega\s*sdr|megasdr/.test(t)) return false;
+  return /govisa|forma[cç][aã]o|imigrat/.test(t);
+}
+
 function mapPay(p: Record<string, unknown>, name = ""): FinancePayment {
   return {
     id: String(p.id || ""),
@@ -153,7 +159,7 @@ export const listFinance = createServerFn({ method: "POST" })
               statusRaw === "approved"
                 ? "RECEIVED"
                 : statusRaw === "rejected"
-                  ? "OVERDUE"
+                  ? "REJECTED"
                   : "PENDING";
             payments.push({
               id: String(p.id || ""),
@@ -187,16 +193,22 @@ export const listFinance = createServerFn({ method: "POST" })
           /* Asaas continua mesmo se o cartão falhar */
         }
       }
-      const received = payments.filter(
+
+      const coursePays = payments.filter((p) =>
+        isCoursePay(p.description, `${p.externalReference} ${p.customerName}`),
+      );
+
+      const received = coursePays.filter(
         (p) => p.status === "CONFIRMED" || p.status === "RECEIVED",
       );
-      const pending = payments.filter(
+      const pending = coursePays.filter(
         (p) => p.status === "PENDING" || p.status === "AWAITING_RISK_ANALYSIS",
       );
-      const overdue = payments.filter((p) => p.status === "OVERDUE");
+      const overdue = coursePays.filter((p) => p.status === "OVERDUE");
 
       const subscriptions: SubscriptionRow[] = [];
       for (const s of subJson.data || []) {
+        if (!isCoursePay(String(s.description || ""))) continue;
         const id = String(s.id || "");
         const customer = String(s.customer || "");
         const customerName = names.get(customer) || customer;
@@ -281,7 +293,7 @@ export const listFinance = createServerFn({ method: "POST" })
         countReceived: received.length,
         countPending: pending.length,
         toReceive: calendar.reduce((a, p) => a + p.value, 0),
-        payments,
+        payments: coursePays.filter((p) => p.status !== "REJECTED"),
         subscriptions,
         calendar,
       };

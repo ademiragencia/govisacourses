@@ -24,8 +24,37 @@ export function isAbandoned(row: EnrollmentRow) {
   return row.status === "started" || row.status === "pending" || row.status === "pix_seller";
 }
 
+export function buyerKey(row: EnrollmentRow) {
+  const phone = row.phone.replace(/\D/g, "");
+  if (phone.length >= 10) return `p:${phone.slice(-11)}`;
+  const email = row.email.trim().toLowerCase();
+  if (email) return `e:${email}`;
+  return `id:${row.id}`;
+}
+
+export function uniqueAbandoned(rows: EnrollmentRow[]) {
+  const paid = new Set(
+    rows.filter((r) => r.status === "paid").map(buyerKey),
+  );
+  const latest = new Map<string, EnrollmentRow>();
+  for (const r of rows) {
+    if (!isAbandoned(r) && r.status !== "rejected" && r.status !== "refused") {
+      continue;
+    }
+    const k = buyerKey(r);
+    if (paid.has(k)) continue;
+    const prev = latest.get(k);
+    if (!prev || prev.created_at < r.created_at) latest.set(k, r);
+  }
+  return [...latest.values()].sort((a, b) => b.created_at.localeCompare(a.created_at));
+}
+
 export function needsRecovery(row: EnrollmentRow) {
-  return isAbandoned(row) && minutesAgo(row.created_at) >= 30 && Boolean(row.phone);
+  return (
+    (isAbandoned(row) || row.status === "rejected" || row.status === "refused") &&
+    minutesAgo(row.created_at) >= 30 &&
+    Boolean(row.phone)
+  );
 }
 
 export const PIPELINE = [

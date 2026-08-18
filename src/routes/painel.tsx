@@ -35,10 +35,12 @@ import {
   adRanking,
   accessMessage,
   beep,
+  buyerKey,
   dailyReport,
   findLeadByName,
   isAbandoned,
   needsRecovery,
+  uniqueAbandoned,
   parcelChargeMessage,
   PIPELINE,
   pipelineLabel,
@@ -690,7 +692,7 @@ function PainelPage() {
     const text = dailyReport({
       visits,
       paid: paidNow,
-      abandoned: rows.filter(isAbandoned),
+      abandoned: uniqueAbandoned(rows),
       revenue: paidNow.reduce((a, r) => a + Number(r.amount || 0), 0),
       pixPending: finance?.pixPending || 0,
     });
@@ -718,12 +720,21 @@ function PainelPage() {
   ).size;
   const matriculaHits = visits.filter((v) => v.path.startsWith("/matricula")).length;
   const paid = rows.filter((r) => r.status === "paid");
+  const uniqueLeads = useMemo(
+    () => new Set(rows.map(buyerKey)).size,
+    [rows],
+  );
+  const abandoned = useMemo(() => uniqueAbandoned(rows), [rows]);
+  const recoverNow = useMemo(
+    () => abandoned.filter((r) => needsRecovery(r) && !r.contacted_at),
+    [abandoned],
+  );
   const refused = rows.filter((r) => r.status === "refused" || r.status === "failed");
   const pix = rows.filter((r) => r.status === "pix_seller");
   const started = rows.filter((r) => r.status === "started" || r.status === "pending");
   const revenue = paid.reduce((acc, r) => acc + Number(r.amount || 0), 0);
   const conv =
-    people > 0 ? `${((rows.length / people) * 100).toFixed(1)}%` : "0%";
+    people > 0 ? `${((uniqueLeads / people) * 100).toFixed(1)}%` : "0%";
 
   const filtered = useMemo(() => {
     const term = q.trim().toLowerCase();
@@ -926,7 +937,7 @@ function PainelPage() {
               <Stat k="Pessoas no site" v={String(people)} />
               <Stat k="Acessos hoje" v={`${visitsToday} · ${peopleToday} pessoas`} />
               <Stat k="Abriram matrícula" v={String(matriculaHits)} />
-              <Stat k="Fichas / conversão" v={`${rows.length} · ${conv}`} />
+              <Stat k="Fichas / conversão" v={`${uniqueLeads} · ${conv}`} />
               <Stat k="Pagas" v={String(paid.length)} />
               <Stat k="Recusadas" v={String(refused.length)} />
               <Stat k="Pix vendedor" v={String(pix.length)} />
@@ -939,8 +950,8 @@ function PainelPage() {
               </p>
               <ul className="mt-3 space-y-2 text-sm">
                 <li>
-                  {rows.filter((r) => needsRecovery(r) && !r.contacted_at).length} abandono
-                  {rows.filter((r) => needsRecovery(r) && !r.contacted_at).length === 1 ? "" : "s"} sem contato
+                  {recoverNow.length} abandono
+                  {recoverNow.length === 1 ? "" : "s"} sem contato
                 </li>
                 <li>
                   {paid.filter((r) => !r.pipeline || r.pipeline === "pago").length} pago
@@ -963,7 +974,7 @@ function PainelPage() {
                 {[
                   ["Visitou o site", people],
                   ["Abriu /matricula", matriculaHits],
-                  ["Preencheu / tentou", rows.length],
+                  ["Preencheu / tentou", uniqueLeads],
                   ["Pagou", paid.length],
                 ].map(([k, n]) => (
                   <div key={String(k)}>
@@ -1315,9 +1326,9 @@ function PainelPage() {
         {tab === "abandono" && (
           <>
             <div className="grid gap-3 sm:grid-cols-3">
-              <Stat k="Abandonos" v={String(rows.filter(isAbandoned).length)} />
-              <Stat k="Recuperar agora" v={String(rows.filter(needsRecovery).length)} />
-              <Stat k="Com WhatsApp" v={String(rows.filter((r) => isAbandoned(r) && r.phone).length)} />
+              <Stat k="Abandonos" v={String(abandoned.length)} />
+              <Stat k="Recuperar agora" v={String(recoverNow.length)} />
+              <Stat k="Com WhatsApp" v={String(abandoned.filter((r) => r.phone).length)} />
             </div>
             <div className="relative mt-5">
               <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-fg-subtle" />
@@ -1340,8 +1351,7 @@ function PainelPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {rows
-                    .filter(isAbandoned)
+                  {abandoned
                     .filter((r) => {
                       const term = aq.trim().toLowerCase();
                       if (!term) return true;
@@ -1355,8 +1365,7 @@ function PainelPage() {
                       </td>
                     </tr>
                   )}
-                  {rows
-                    .filter(isAbandoned)
+                  {abandoned
                     .filter((r) => {
                       const term = aq.trim().toLowerCase();
                       if (!term) return true;
