@@ -16,13 +16,20 @@ import {
   listEnrollments,
   type EnrollmentRow,
 } from "@/lib/enrollments";
+import {
+  createCoupon,
+  deleteCoupon,
+  listCoupons,
+  setCouponActive,
+  type CouponRow,
+} from "@/lib/coupons";
 import { clearVisits, listVisits, type VisitRow } from "@/lib/visits";
 import { getWhatsAppUrl } from "@/lib/config";
 import { SITE_URL } from "@/lib/seo";
 
 const SESSION_KEY = "gv_painel_pass";
 
-type Tab = "geral" | "matriculas" | "acessos";
+type Tab = "geral" | "matriculas" | "acessos" | "cupons";
 
 export const Route = createFileRoute("/painel")({
   head: () => ({
@@ -342,6 +349,16 @@ function PainelPage() {
   const [visits, setVisits] = useState<VisitRow[]>([]);
   const [vq, setVq] = useState("");
   const [open, setOpen] = useState<EnrollmentRow | null>(null);
+  const [coupons, setCoupons] = useState<CouponRow[]>([]);
+  const [couponForm, setCouponForm] = useState({
+    code: "",
+    kind: "fixed",
+    amount: "500",
+    applies_to: "pix_cash",
+    note: "",
+    max_uses: "",
+  });
+  const [couponBusy, setCouponBusy] = useState(false);
 
   useEffect(() => {
     const saved = sessionStorage.getItem(SESSION_KEY);
@@ -354,9 +371,10 @@ function PainelPage() {
   async function load(pass: string) {
     setLoading(true);
     setError(null);
-    const [enroll, traffic] = await Promise.all([
+    const [enroll, traffic, cupons] = await Promise.all([
       listEnrollments({ data: { password: pass } }),
       listVisits({ data: { password: pass } }),
+      listCoupons({ data: { password: pass } }),
     ]);
     setLoading(false);
     if (!enroll.ok) {
@@ -367,6 +385,7 @@ function PainelPage() {
     }
     setRows(enroll.rows);
     setVisits(traffic.ok ? traffic.rows : []);
+    setCoupons(cupons.ok ? cupons.rows : []);
     setAuthed(true);
     sessionStorage.setItem(SESSION_KEY, pass);
   }
@@ -407,6 +426,61 @@ function PainelPage() {
     }
     setRows((prev) => prev.filter((r) => r.id !== id));
     setOpen(null);
+  }
+
+  async function onCreateCoupon(e: FormEvent) {
+    e.preventDefault();
+    const pass = sessionStorage.getItem(SESSION_KEY) || "";
+    setCouponBusy(true);
+    setError(null);
+    const res = await createCoupon({
+      data: {
+        password: pass,
+        code: couponForm.code,
+        kind: couponForm.kind,
+        amount: Number(couponForm.amount),
+        applies_to: couponForm.applies_to,
+        note: couponForm.note,
+        max_uses: couponForm.max_uses,
+        active: true,
+      },
+    });
+    setCouponBusy(false);
+    if (!res.ok) {
+      setError(res.error);
+      return;
+    }
+    setCoupons((prev) => [res.row, ...prev.filter((c) => c.id !== res.row.id)]);
+    setCouponForm({
+      code: "",
+      kind: "fixed",
+      amount: "500",
+      applies_to: "pix_cash",
+      note: "",
+      max_uses: "",
+    });
+  }
+
+  async function onToggleCoupon(row: CouponRow) {
+    const pass = sessionStorage.getItem(SESSION_KEY) || "";
+    const res = await setCouponActive({
+      data: { password: pass, id: row.id, active: !row.active },
+    });
+    if (!res.ok) {
+      setError(res.error);
+      return;
+    }
+    setCoupons((prev) => prev.map((c) => (c.id === res.row.id ? res.row : c)));
+  }
+
+  async function onDeleteCoupon(id: string) {
+    const pass = sessionStorage.getItem(SESSION_KEY) || "";
+    const res = await deleteCoupon({ data: { password: pass, id } });
+    if (!res.ok) {
+      setError(res.error);
+      return;
+    }
+    setCoupons((prev) => prev.filter((c) => c.id !== id));
   }
 
   async function onLogin(e: FormEvent) {
@@ -532,7 +606,7 @@ function PainelPage() {
               <RefreshCw className={`size-3.5 ${loading ? "animate-spin" : ""}`} />
               Atualizar
             </button>
-            {tab !== "geral" && (
+            {tab !== "geral" && tab !== "cupons" && (
               <button
                 type="button"
                 onClick={() => setConfirmClear(true)}
@@ -571,6 +645,7 @@ function PainelPage() {
               ["geral", "Visão geral"],
               ["matriculas", "Matrículas"],
               ["acessos", "Acessos"],
+              ["cupons", "Cupons"],
             ] as const
           ).map(([id, label]) => (
             <button
@@ -860,6 +935,168 @@ function PainelPage() {
                       <td className="px-4 py-3 text-xs text-fg-muted">{v.landing || "—"}</td>
                       <td className="px-4 py-3 text-xs text-fg-muted">
                         {v.referrer_host || (v.referrer ? v.referrer : "direto")}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </>
+        )}
+
+        {tab === "cupons" && (
+          <>
+            <form
+              onSubmit={(e) => void onCreateCoupon(e)}
+              className="rounded-[var(--radius-xl)] border border-border bg-bg-elevated p-5"
+            >
+              <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-gold-line">
+                Novo cupom
+              </p>
+              <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                <label className="block text-xs font-bold uppercase tracking-[0.1em] text-fg-subtle">
+                  Código
+                  <input
+                    required
+                    value={couponForm.code}
+                    onChange={(e) =>
+                      setCouponForm((f) => ({ ...f, code: e.target.value.toUpperCase() }))
+                    }
+                    className="mt-1.5 h-11 w-full rounded-[var(--radius-md)] border border-border bg-bg px-3 text-sm font-semibold uppercase text-fg"
+                    placeholder="DESC500"
+                  />
+                </label>
+                <label className="block text-xs font-bold uppercase tracking-[0.1em] text-fg-subtle">
+                  Tipo
+                  <select
+                    value={couponForm.kind}
+                    onChange={(e) => setCouponForm((f) => ({ ...f, kind: e.target.value }))}
+                    className="mt-1.5 h-11 w-full rounded-[var(--radius-md)] border border-border bg-bg px-3 text-sm text-fg"
+                  >
+                    <option value="fixed">Reais (R$)</option>
+                    <option value="percent">Porcentagem (%)</option>
+                  </select>
+                </label>
+                <label className="block text-xs font-bold uppercase tracking-[0.1em] text-fg-subtle">
+                  Valor
+                  <input
+                    required
+                    type="number"
+                    min="1"
+                    step="1"
+                    value={couponForm.amount}
+                    onChange={(e) => setCouponForm((f) => ({ ...f, amount: e.target.value }))}
+                    className="mt-1.5 h-11 w-full rounded-[var(--radius-md)] border border-border bg-bg px-3 text-sm text-fg"
+                  />
+                </label>
+                <label className="block text-xs font-bold uppercase tracking-[0.1em] text-fg-subtle">
+                  Vale para
+                  <select
+                    value={couponForm.applies_to}
+                    onChange={(e) =>
+                      setCouponForm((f) => ({ ...f, applies_to: e.target.value }))
+                    }
+                    className="mt-1.5 h-11 w-full rounded-[var(--radius-md)] border border-border bg-bg px-3 text-sm text-fg"
+                  >
+                    <option value="pix_cash">Só Pix à vista</option>
+                    <option value="pix">Qualquer Pix</option>
+                    <option value="card">Cartão</option>
+                    <option value="all">Tudo</option>
+                  </select>
+                </label>
+                <label className="block text-xs font-bold uppercase tracking-[0.1em] text-fg-subtle">
+                  Limite de usos
+                  <input
+                    type="number"
+                    min="1"
+                    value={couponForm.max_uses}
+                    onChange={(e) => setCouponForm((f) => ({ ...f, max_uses: e.target.value }))}
+                    className="mt-1.5 h-11 w-full rounded-[var(--radius-md)] border border-border bg-bg px-3 text-sm text-fg"
+                    placeholder="Ilimitado"
+                  />
+                </label>
+                <label className="block text-xs font-bold uppercase tracking-[0.1em] text-fg-subtle">
+                  Observação
+                  <input
+                    value={couponForm.note}
+                    onChange={(e) => setCouponForm((f) => ({ ...f, note: e.target.value }))}
+                    className="mt-1.5 h-11 w-full rounded-[var(--radius-md)] border border-border bg-bg px-3 text-sm text-fg"
+                    placeholder="R$ 500 off no Pix"
+                  />
+                </label>
+              </div>
+              <button
+                type="submit"
+                disabled={couponBusy}
+                className="mt-4 inline-flex h-11 items-center justify-center rounded-[var(--radius-md)] bg-brand-red px-5 text-sm font-bold uppercase tracking-[0.04em] text-white disabled:opacity-70"
+              >
+                {couponBusy ? "Salvando…" : "Criar cupom"}
+              </button>
+            </form>
+
+            <div className="mt-5 overflow-x-auto rounded-[var(--radius-xl)] border border-border">
+              <table className="min-w-[760px] w-full text-left text-sm">
+                <thead className="bg-bg-elevated text-[11px] uppercase tracking-[0.1em] text-fg-subtle">
+                  <tr>
+                    <th className="px-4 py-3">Código</th>
+                    <th className="px-4 py-3">Desconto</th>
+                    <th className="px-4 py-3">Vale para</th>
+                    <th className="px-4 py-3">Usos</th>
+                    <th className="px-4 py-3">Status</th>
+                    <th className="px-4 py-3" />
+                  </tr>
+                </thead>
+                <tbody>
+                  {coupons.length === 0 && (
+                    <tr>
+                      <td colSpan={6} className="px-4 py-8 text-center text-fg-muted">
+                        Nenhum cupom ainda.
+                      </td>
+                    </tr>
+                  )}
+                  {coupons.map((c) => (
+                    <tr key={c.id} className="border-t border-border">
+                      <td className="px-4 py-3 font-bold text-fg">{c.code}</td>
+                      <td className="px-4 py-3 text-fg">
+                        {c.kind === "percent"
+                          ? `${Number(c.amount)}%`
+                          : brl(Number(c.amount))}
+                      </td>
+                      <td className="px-4 py-3 text-xs text-fg-muted">
+                        {c.applies_to === "pix_cash"
+                          ? "Pix à vista"
+                          : c.applies_to === "pix"
+                            ? "Pix"
+                            : c.applies_to === "card"
+                              ? "Cartão"
+                              : "Tudo"}
+                      </td>
+                      <td className="px-4 py-3 text-fg-muted">
+                        {c.uses}
+                        {c.max_uses ? ` / ${c.max_uses}` : ""}
+                      </td>
+                      <td className="px-4 py-3">
+                        <span className={c.active ? statusClass("paid") : statusClass("refused")}>
+                          {c.active ? "Ativo" : "Off"}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 text-right">
+                        <button
+                          type="button"
+                          onClick={() => void onToggleCoupon(c)}
+                          className="mr-2 text-xs font-semibold text-fg-muted hover:text-fg"
+                        >
+                          {c.active ? "Desligar" : "Ligar"}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (window.confirm(`Apagar ${c.code}?`)) void onDeleteCoupon(c.id);
+                          }}
+                          className="text-xs font-semibold text-brand-red"
+                        >
+                          Apagar
+                        </button>
                       </td>
                     </tr>
                   ))}

@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { getRequest } from "@tanstack/react-start/server";
 import { ASAAS_ACCESS_TOKEN, ASAAS_API } from "./asaas-credentials";
 import { COURSE_LIVE } from "./config";
+import { supabaseRpc } from "./supabase";
 
 function token() {
   return ASAAS_ACCESS_TOKEN.trim();
@@ -127,6 +128,7 @@ export const createSitePayment = createServerFn({ method: "POST" })
       zip?: string;
       leadId?: string;
       plan?: string;
+      coupon?: string;
     };
     if (d.method !== "card" && d.method !== "pix") {
       throw new Error("Forma de pagamento inválida");
@@ -166,6 +168,7 @@ export const createSitePayment = createServerFn({ method: "POST" })
       city: String(d.city || "").trim(),
       zip: String(d.zip || "").replace(/\D/g, ""),
       leadId: String(d.leadId || ""),
+      coupon: String(d.coupon || "").trim().toUpperCase(),
     };
   })
   .handler(async ({ data }) => {
@@ -173,6 +176,28 @@ export const createSitePayment = createServerFn({ method: "POST" })
       return { ok: false as const, error: "Pagamento ainda não configurado." };
     }
     try {
+      let amount = data.amount;
+      let couponCode = "";
+      if (data.method === "pix" && data.plan !== "entry") {
+        amount = COURSE_LIVE.price;
+      }
+      if (data.coupon) {
+        const preview = await supabaseRpc<{
+          code?: string;
+          total?: number;
+          discount?: number;
+        }>("redeem_coupon", {
+          p_code: data.coupon,
+          p_method: data.method,
+          p_plan: data.plan || "pix",
+          p_amount: amount,
+        });
+        if (!preview?.total || Number(preview.total) < 1) {
+          return { ok: false as const, error: "Cupom inválido para este pagamento." };
+        }
+        amount = Number(preview.total);
+        couponCode = String(preview.code || data.coupon);
+      }
       const customer = await findOrCreateCustomer({
         name: data.name,
         email: data.email,
@@ -189,9 +214,9 @@ export const createSitePayment = createServerFn({ method: "POST" })
           body: JSON.stringify({
             customer,
             billingType: "PIX",
-            value: Number(data.amount.toFixed(2)),
+            value: Number(amount.toFixed(2)),
             dueDate: todayBr(),
-            description: data.title.slice(0, 480),
+            description: `${data.title}${couponCode ? ` · cupom ${couponCode}` : ""}`.slice(0, 480),
             externalReference: data.leadId,
           }),
         });
@@ -203,6 +228,10 @@ export const createSitePayment = createServerFn({ method: "POST" })
           payload?: string;
           expirationDate?: string;
         }>(`/payments/${encodeURIComponent(pay.id)}/pixQrCode`);
+
+        if (couponCode) {
+          await supabaseRpc("bump_coupon_use", { p_code: couponCode }).catch(() => null);
+        }
 
         let subscriptionId = "";
         if (data.plan === "entry") {
@@ -234,15 +263,17 @@ export const createSitePayment = createServerFn({ method: "POST" })
           qrImage: qr.encodedImage || "",
           qrPayload: qr.payload || "",
           subscriptionId,
+          amount,
+          coupon: couponCode,
         };
       }
 
       const payload: Record<string, unknown> = {
         customer,
         billingType: "CREDIT_CARD",
-        value: Number(data.amount.toFixed(2)),
+        value: Number(amount.toFixed(2)),
         dueDate: todayBr(),
-        description: data.title.slice(0, 480),
+        description: `${data.title}${couponCode ? ` · cupom ${couponCode}` : ""}`.slice(0, 480),
         externalReference: data.leadId,
         postalService: false,
         remoteIp: clientIp(),
@@ -268,7 +299,7 @@ export const createSitePayment = createServerFn({ method: "POST" })
       if (data.installments > 1) {
         payload.installmentCount = data.installments;
         payload.installmentValue = Number(
-          (data.amount / data.installments).toFixed(2),
+          (amount / data.installments).toFixed(2),
         );
       }
 
@@ -285,6 +316,10 @@ export const createSitePayment = createServerFn({ method: "POST" })
         return { ok: false as const, error: "Não foi possível processar o pagamento." };
       }
 
+      if (couponCode) {
+        await supabaseRpc("bump_coupon_use", { p_code: couponCode }).catch(() => null);
+      }
+
       if (pay.status === "PENDING" || pay.status === "AWAITING_RISK_ANALYSIS") {
         return {
           ok: true as const,
@@ -293,6 +328,8 @@ export const createSitePayment = createServerFn({ method: "POST" })
           statusDetail: pay.status,
           qrImage: "",
           qrPayload: "",
+          amount,
+          coupon: couponCode,
         };
       }
 
@@ -311,6 +348,8 @@ export const createSitePayment = createServerFn({ method: "POST" })
         statusDetail: pay.status || "",
         qrImage: "",
         qrPayload: "",
+        amount,
+        coupon: couponCode,
       };
     } catch (err) {
       return {

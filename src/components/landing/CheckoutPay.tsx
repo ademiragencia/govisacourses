@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
-import { Check, Copy, CreditCard, Loader2, QrCode } from "lucide-react";
+import { Check, Copy, CreditCard, Loader2, QrCode, Tag } from "lucide-react";
 import { COURSE_LIVE } from "@/lib/config";
 import { createSitePayment, verifyAsaasPayment } from "@/lib/asaas-server";
 import { formatCardNumber, formatExpiry } from "@/lib/card";
+import { previewCoupon, type CouponPreview } from "@/lib/coupons";
 import type { StoredLead } from "@/lib/mp";
 import { brl, cardInstallment, cardInstallmentOptions } from "@/lib/pricing";
 
@@ -36,13 +37,19 @@ export function CheckoutPay({
     paymentId: string;
     qrImage: string;
     qrPayload: string;
+    amount: number;
   } | null>(null);
   const [copied, setCopied] = useState(false);
+  const [couponInput, setCouponInput] = useState("");
+  const [couponBusy, setCouponBusy] = useState(false);
+  const [coupon, setCoupon] = useState<CouponPreview | null>(null);
+  const [couponErr, setCouponErr] = useState<string | null>(null);
 
   const options = useMemo(() => cardInstallmentOptions(), []);
   const chosen = cardInstallment(parcels);
   const isEntry = lead.plan === "entry";
-  const pixAmount = isEntry ? COURSE_LIVE.entryFee : COURSE_LIVE.price;
+  const basePix = isEntry ? COURSE_LIVE.entryFee : COURSE_LIVE.price;
+  const pixAmount = coupon && tab === "pix" ? coupon.total : basePix;
 
   useEffect(() => {
     if (!pix?.paymentId) return;
@@ -51,7 +58,7 @@ export function CheckoutPay({
       const res = await verifyAsaasPayment({ data: { paymentId: pix.paymentId } });
       if (stop) return;
       if (res.ok && res.status === "approved") {
-        onPaid(res.paymentId, pixAmount, "pix");
+        onPaid(res.paymentId, pix.amount, "pix");
       }
     };
     const id = window.setInterval(() => void tick(), 3000);
@@ -60,7 +67,32 @@ export function CheckoutPay({
       stop = true;
       window.clearInterval(id);
     };
-  }, [pix?.paymentId, pixAmount, onPaid]);
+  }, [pix?.paymentId, pix?.amount, onPaid]);
+
+  async function applyCoupon() {
+    const code = couponInput.trim();
+    if (!code) {
+      setCouponErr("Informe o cupom");
+      return;
+    }
+    setCouponBusy(true);
+    setCouponErr(null);
+    const res = await previewCoupon({
+      data: {
+        code,
+        method: tab,
+        plan: tab === "pix" && !isEntry ? "pix" : lead.plan || "pix",
+        amount: tab === "pix" ? basePix : chosen.total,
+      },
+    });
+    setCouponBusy(false);
+    if (!res.ok) {
+      setCoupon(null);
+      setCouponErr(cleanCouponError(res.error));
+      return;
+    }
+    setCoupon(res.preview);
+  }
 
   async function payCard() {
     const digits = number.replace(/\D/g, "");
@@ -78,6 +110,7 @@ export function CheckoutPay({
           plan: "card",
           amount: chosen.total,
           installments: chosen.count,
+          coupon: coupon?.code || "",
           title: lead.courseTitle,
           email: lead.email,
           name: lead.name,
@@ -98,12 +131,13 @@ export function CheckoutPay({
       });
       if (!res.ok) {
         const note = res.error || "Pagamento recusado";
-        setError(note);
+        setError(cleanCouponError(note));
         onAttempt?.({ status: "refused", method: "card", note });
         return;
       }
+      const charged = "amount" in res && res.amount ? Number(res.amount) : chosen.total;
       if (res.status === "approved") {
-        onPaid(res.paymentId, chosen.total, "card");
+        onPaid(res.paymentId, charged, "card");
         return;
       }
       onAttempt?.({
@@ -116,7 +150,7 @@ export function CheckoutPay({
     } catch (e) {
       const note =
         e instanceof Error ? e.message : "Não foi possível pagar com o cartão";
-      setError(note);
+      setError(cleanCouponError(note));
       onAttempt?.({ status: "refused", method: "card", note });
     } finally {
       setBusy(false);
@@ -131,8 +165,9 @@ export function CheckoutPay({
         data: {
           method: "pix",
           plan: isEntry ? "entry" : "pix",
-          amount: pixAmount,
+          amount: basePix,
           installments: 1,
+          coupon: coupon?.code || "",
           title: lead.courseTitle,
           email: lead.email,
           name: lead.name,
@@ -148,24 +183,30 @@ export function CheckoutPay({
       });
       if (!res.ok || !res.qrPayload) {
         const note = !res.ok ? res.error : "Não foi possível gerar o Pix.";
-        setError(note);
+        setError(cleanCouponError(note));
         onAttempt?.({ status: "refused", method: "pix", note });
         return;
       }
+      const charged = "amount" in res && res.amount ? Number(res.amount) : pixAmount;
       setPix({
         paymentId: res.paymentId,
         qrImage: res.qrImage || "",
         qrPayload: res.qrPayload,
+        amount: charged,
       });
       onAttempt?.({
         status: "pending",
         method: "pix",
         paymentId: res.paymentId,
-        note: isEntry ? "Pix da entrada + 5 parcelas" : "Pix à vista gerado",
+        note: coupon
+          ? `Pix com cupom ${coupon.code}`
+          : isEntry
+            ? "Pix da entrada + 5 parcelas"
+            : "Pix à vista gerado",
       });
     } catch (e) {
       const note = e instanceof Error ? e.message : "Não foi possível gerar o Pix";
-      setError(note);
+      setError(cleanCouponError(note));
       onAttempt?.({ status: "refused", method: "pix", note });
     } finally {
       setBusy(false);
@@ -201,6 +242,8 @@ export function CheckoutPay({
             onClick={() => {
               setTab(id);
               setError(null);
+              setCoupon(null);
+              setCouponErr(null);
             }}
             className={
               tab === id
@@ -286,8 +329,44 @@ export function CheckoutPay({
           <p className="text-sm text-fg-muted">
             {isEntry
               ? "Pague R$ 1.000 agora. As 5× R$ 400 entram no Pix todo mês."
-              : `Pix à vista: ${brl(pixAmount)}.`}
+              : coupon
+                ? `De ${brl(basePix)} por ${brl(pixAmount)} com ${coupon.code}.`
+                : `Pix à vista: ${brl(basePix)}.`}
           </p>
+          {!isEntry && (
+            <div className="rounded-[var(--radius-md)] border border-border bg-bg px-3 py-3">
+              <p className="mb-2 flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-[0.12em] text-fg-subtle">
+                <Tag className="size-3.5" />
+                Cupom no Pix à vista
+              </p>
+              <div className="flex gap-2">
+                <input
+                  className={inputClass}
+                  value={couponInput}
+                  onChange={(e) => setCouponInput(e.target.value.toUpperCase())}
+                  placeholder="DESC500"
+                  autoCapitalize="characters"
+                />
+                <button
+                  type="button"
+                  disabled={couponBusy}
+                  onClick={() => void applyCoupon()}
+                  className="h-12 shrink-0 rounded-[var(--radius-md)] border border-border px-4 text-xs font-bold uppercase tracking-[0.06em] text-fg"
+                >
+                  {couponBusy ? "…" : "Aplicar"}
+                </button>
+              </div>
+              {coupon && (
+                <p className="mt-2 text-sm font-semibold text-wa">
+                  {coupon.code} aplicado. Você paga {brl(coupon.total)}
+                  {coupon.discount ? ` (−${brl(coupon.discount)})` : ""}.
+                </p>
+              )}
+              {couponErr && (
+                <p className="mt-2 text-xs text-brand-red">{couponErr}</p>
+              )}
+            </div>
+          )}
           <button
             type="button"
             disabled={busy}
@@ -314,8 +393,8 @@ export function CheckoutPay({
           )}
           <p className="mt-3 text-sm text-fg-muted">
             {isEntry
-              ? `${brl(pixAmount)} de entrada. Depois 5× R$ 400 no Pix.`
-              : `${brl(pixAmount)} à vista. Depois de pagar, a confirmação entra sozinha.`}
+              ? `${brl(pix.amount)} de entrada. Depois 5× R$ 400 no Pix.`
+              : `${brl(pix.amount)} à vista${coupon ? ` com ${coupon.code}` : ""}. Depois de pagar, a confirmação entra sozinha.`}
           </p>
           <button
             type="button"
@@ -335,4 +414,13 @@ export function CheckoutPay({
       )}
     </div>
   );
+}
+
+function cleanCouponError(raw: string) {
+  const t = raw.replace(/^ERROR:\s*/i, "").split("\n")[0] || raw;
+  if (/pix à vista|pix a vista/i.test(t)) return "Este cupom vale só no Pix à vista.";
+  if (/inválido|invalido/i.test(t)) return "Cupom inválido.";
+  if (/inativo/i.test(t)) return "Esse cupom está desligado.";
+  if (/esgotado/i.test(t)) return "Esse cupom já esgotou.";
+  return t;
 }
