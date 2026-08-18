@@ -300,7 +300,15 @@ export const listFinance = createServerFn({ method: "POST" })
         countReceived: received.length,
         countPending: pending.length,
         toReceive,
-        payments: coursePays.filter((p) => p.status !== "REJECTED"),
+        payments: coursePays.filter((p) => {
+          if (p.status === "CONFIRMED" || p.status === "RECEIVED") return true;
+          if (p.status === "PENDING" || p.status === "AWAITING_RISK_ANALYSIS") {
+            const type = p.billingType.toUpperCase();
+            if (type === "BOLETO" || type === "TICKET") return false;
+            return Boolean(p.subscription) || type === "PIX";
+          }
+          return false;
+        }),
         subscriptions,
         calendar,
       };
