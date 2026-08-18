@@ -238,15 +238,24 @@ export const verifyMpPayment = createServerFn({ method: "GET" })
 
 export const listMpInstallments = createServerFn({ method: "GET" })
   .validator((data: unknown) => {
-    const d = data as { amount?: number };
-    return { amount: Number(d?.amount) || 3000 };
+    const d = data as { amount?: number; bin?: string; paymentMethodId?: string };
+    return {
+      amount: Number(d?.amount) || 3000,
+      bin: String(d?.bin || "").replace(/\D/g, "").slice(0, 6),
+      paymentMethodId: String(d?.paymentMethodId || "master"),
+    };
   })
   .handler(async ({ data }) => {
     const access = token();
-    if (!access) return { ok: false as const, rows: [] as { count: number; value: number; total: number }[] };
+    if (!access) {
+      return { ok: false as const, rows: [] as { count: number; value: number; total: number }[] };
+    }
     try {
+      const qs = new URLSearchParams({ amount: String(data.amount) });
+      if (data.bin.length >= 6) qs.set("bin", data.bin);
+      else qs.set("payment_method_id", data.paymentMethodId || "master");
       const res = await fetch(
-        `https://api.mercadopago.com/v1/payment_methods/installments?amount=${data.amount}&payment_method_id=master`,
+        `https://api.mercadopago.com/v1/payment_methods/installments?${qs}`,
         { headers: { Authorization: `Bearer ${access}` } },
       );
       const json = (await res.json().catch(() => [])) as {

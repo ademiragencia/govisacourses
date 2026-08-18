@@ -54,11 +54,18 @@ export function CheckoutPay({
   const basePix = isEntry ? COURSE_LIVE.entryFee : COURSE_LIVE.price;
   const pixAmount = coupon && tab === "pix" ? coupon.total : basePix;
 
+  const cardBin = number.replace(/\D/g, "").slice(0, 6);
+
   useEffect(() => {
-    void listMpInstallments({ data: { amount: COURSE_LIVE.price } }).then((res) => {
+    void listMpInstallments({
+      data: {
+        amount: COURSE_LIVE.price,
+        bin: cardBin.length >= 6 ? cardBin : "",
+      },
+    }).then((res) => {
       if (res.ok && res.rows.length) setMpRows(res.rows);
     });
-  }, []);
+  }, [cardBin]);
 
   useEffect(() => {
     if (!pix?.paymentId) return;
@@ -288,8 +295,8 @@ export function CheckoutPay({
           </label>
           <p className="text-xs text-fg-muted">
             {chosen.count > 1
-              ? `${chosen.count}× de ${brl(chosen.value)} · total ${brl(chosen.total)}`
-              : `1× de ${brl(chosen.total)}`}
+              ? `Na fatura: ${chosen.count}× de ${brl(chosen.value)} · total ${brl(chosen.total)}`
+              : `Na fatura: 1× de ${brl(chosen.total)}`}
           </p>
           <input
             className={inputClass}
