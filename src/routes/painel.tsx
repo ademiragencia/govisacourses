@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useMemo, useState, type FormEvent } from "react";
+import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import {
   Copy,
   Download,
@@ -33,9 +33,13 @@ import { getWhatsAppUrl } from "@/lib/config";
 import { SITE_URL } from "@/lib/seo";
 import {
   adRanking,
+  accessMessage,
+  beep,
   dailyReport,
+  findLeadByName,
   isAbandoned,
   needsRecovery,
+  parcelChargeMessage,
   PIPELINE,
   pipelineLabel,
   recoveryMessage,
@@ -295,6 +299,7 @@ function LeadDetail({
 }) {
   const [note, setNote] = useState(row.follow_up || "");
   const leadWa = waLead(row.phone, recoveryMessage(row));
+  const accessWa = waLead(row.phone, accessMessage(row));
   const fields: [string, string][] = [
     ["Status", statusLabel(row.status)],
     ["Comercial", pipelineLabel(row.pipeline || (row.status === "paid" ? "pago" : ""))],
@@ -399,6 +404,16 @@ function LeadDetail({
               Chamar aluno
             </a>
           )}
+          {accessWa && row.status === "paid" && (
+            <a
+              href={accessWa}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex h-11 flex-1 items-center justify-center rounded-[var(--radius-md)] border border-border text-sm font-semibold"
+            >
+              Avisar acesso
+            </a>
+          )}
           {onContact && (
             <button
               type="button"
@@ -450,6 +465,11 @@ function PainelPage() {
   const [team, setTeam] = useState<TeamRow[]>([]);
   const [teamForm, setTeamForm] = useState({ name: "", userPassword: "", role: "sdr" });
   const [reportCopied, setReportCopied] = useState(false);
+  const [period, setPeriod] = useState<"all" | "today" | "7d">("all");
+  const [pipe, setPipe] = useState("all");
+  const [aq, setAq] = useState("");
+  const [saleAlert, setSaleAlert] = useState<string | null>(null);
+  const paidIds = useRef<Set<string> | null>(null);
 
   useEffect(() => {
     const raw = sessionStorage.getItem(SESSION_KEY);
@@ -469,13 +489,15 @@ function PainelPage() {
 
   useEffect(() => {
     if (!authed) return;
-    const id = window.setInterval(() => void load(sessionPass()), 45000);
+    const id = window.setInterval(() => void load(sessionPass(), true), 45000);
     return () => window.clearInterval(id);
   }, [authed]);
 
-  async function load(pass: string) {
-    setLoading(true);
-    setError(null);
+  async function load(pass: string, silent = false) {
+    if (!silent) {
+      setLoading(true);
+      setError(null);
+    }
     const [enroll, traffic, cupons, money, peopleTeam] = await Promise.all([
       listEnrollments({ data: { password: pass } }),
       listVisits({ data: { password: pass } }),
@@ -483,13 +505,22 @@ function PainelPage() {
       listFinance({ data: { password: pass } }),
       listTeam({ data: { password: pass } }),
     ]);
-    setLoading(false);
+    if (!silent) setLoading(false);
     if (!enroll.ok) {
       setError(enroll.error);
       setAuthed(false);
       sessionStorage.removeItem(SESSION_KEY);
       return;
     }
+    const paidNow = enroll.rows.filter((r) => r.status === "paid");
+    if (paidIds.current) {
+      const news = paidNow.filter((r) => !paidIds.current?.has(r.id));
+      if (news.length) {
+        setSaleAlert(news.map((r) => r.name || "Nova matrícula").join(", "));
+        beep();
+      }
+    }
+    paidIds.current = new Set(paidNow.map((r) => r.id));
     setRows(enroll.rows);
     setMe(enroll.user);
     setVisits(traffic.ok ? traffic.rows : []);
@@ -696,8 +727,16 @@ function PainelPage() {
 
   const filtered = useMemo(() => {
     const term = q.trim().toLowerCase();
+    const now = Date.now();
     return rows.filter((r) => {
       if (r.status !== "paid") return false;
+      if (pipe !== "all" && (r.pipeline || "pago") !== pipe) return false;
+      const whenIso = r.paid_at || r.created_at;
+      const t = new Date(whenIso).getTime();
+      if (period === "today" && new Date(whenIso).toDateString() !== new Date().toDateString()) {
+        return false;
+      }
+      if (period === "7d" && now - t > 7 * 24 * 60 * 60 * 1000) return false;
       if (!term) return true;
       return [
         r.name,
@@ -711,12 +750,14 @@ function PainelPage() {
         r.method,
         r.note,
         r.source,
+        r.coupon_code,
+        r.owner,
       ]
         .join(" ")
         .toLowerCase()
         .includes(term);
     });
-  }, [rows, q]);
+  }, [rows, q, period, pipe]);
 
   const visitRows = useMemo(() => {
     const term = vq.trim().toLowerCase();
@@ -836,7 +877,22 @@ function PainelPage() {
           </p>
         )}
 
-        <div className="mb-6 flex flex-wrap gap-2">
+        {saleAlert && (
+          <div className="mb-4 flex items-center justify-between gap-3 rounded-[var(--radius-md)] border border-wa/40 bg-wa/15 px-4 py-2 text-sm text-fg">
+            <span>
+              Nova matrícula paga: <strong>{saleAlert}</strong>
+            </span>
+            <button
+              type="button"
+              onClick={() => setSaleAlert(null)}
+              className="text-xs font-semibold text-fg-muted"
+            >
+              Ok
+            </button>
+          </div>
+        )}
+
+        <div className="mb-6 flex flex-wrap gap-2 overflow-x-auto pb-1">
           {(
             [
               ["geral", "Visão geral"],
@@ -1031,16 +1087,30 @@ function PainelPage() {
                             <th className="py-2 pr-3">Parcela</th>
                             <th className="py-2 pr-3">Data</th>
                             <th className="py-2 pr-3">Valor</th>
-                            <th className="py-2">Status</th>
+                            <th className="py-2 pr-3">Status</th>
+                            <th className="py-2"> </th>
                           </tr>
                         </thead>
                         <tbody>
-                          {s.parcels.map((p, i) => (
+                          {s.parcels.map((p, i) => {
+                            const lead = findLeadByName(rows, s.customerName);
+                            const href =
+                              lead && (p.status === "PENDING" || p.status === "SCHEDULED")
+                                ? waLead(
+                                    lead.phone,
+                                    parcelChargeMessage(
+                                      s.customerName,
+                                      p.value,
+                                      dateBr(p.date),
+                                    ),
+                                  )
+                                : null;
+                            return (
                             <tr key={`${s.id}-${p.date}-${i}`} className="border-t border-border">
                               <td className="py-2 pr-3">{i + 1}/{s.parcels.length}</td>
                               <td className="py-2 pr-3">{dateBr(p.date)}</td>
                               <td className="py-2 pr-3 font-semibold">{brl(p.value)}</td>
-                              <td className="py-2">
+                              <td className="py-2 pr-3">
                                 <span
                                   className={statusClass(
                                     p.status === "RECEIVED" || p.status === "CONFIRMED"
@@ -1059,8 +1129,21 @@ function PainelPage() {
                                         : p.status}
                                 </span>
                               </td>
+                              <td className="py-2">
+                                {href ? (
+                                  <a
+                                    href={href}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-xs font-bold text-wa"
+                                  >
+                                    Cobrar
+                                  </a>
+                                ) : null}
+                              </td>
                             </tr>
-                          ))}
+                            );
+                          })}
                         </tbody>
                       </table>
                     </div>
@@ -1133,6 +1216,27 @@ function PainelPage() {
                   className="h-11 w-full rounded-[var(--radius-md)] border border-border bg-bg-elevated pl-10 pr-4 text-sm text-fg outline-none"
                 />
               </div>
+              <select
+                value={period}
+                onChange={(e) => setPeriod(e.target.value as "all" | "today" | "7d")}
+                className="h-11 rounded-[var(--radius-md)] border border-border bg-bg-elevated px-3 text-sm text-fg"
+              >
+                <option value="all">Todo período</option>
+                <option value="today">Hoje</option>
+                <option value="7d">7 dias</option>
+              </select>
+              <select
+                value={pipe}
+                onChange={(e) => setPipe(e.target.value)}
+                className="h-11 rounded-[var(--radius-md)] border border-border bg-bg-elevated px-3 text-sm text-fg"
+              >
+                <option value="all">Todo comercial</option>
+                {PIPELINE.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.label}
+                  </option>
+                ))}
+              </select>
               <button
                 type="button"
                 onClick={() => exportCsv(filtered)}
@@ -1147,7 +1251,7 @@ function PainelPage() {
               <table className="min-w-[1100px] w-full text-left text-sm">
                 <thead className="bg-bg-elevated text-[11px] uppercase tracking-[0.1em] text-fg-subtle">
                   <tr>
-                    {["Quando", "Status", "Aluno", "Contato", "Endereço", "Plano", "Valor", "Pagamento", ""].map(
+                    {["Quando", "Aluno", "Comercial", "Cupom", "Valor", "Pagamento", ""].map(
                       (h, i) => (
                         <th key={`${h}-${i}`} className="px-4 py-3 font-bold">
                           {h}
@@ -1159,7 +1263,7 @@ function PainelPage() {
                 <tbody>
                   {filtered.length === 0 && (
                     <tr>
-                      <td colSpan={9} className="px-4 py-10 text-center text-fg-muted">
+                      <td colSpan={7} className="px-4 py-10 text-center text-fg-muted">
                         {loading ? "Carregando…" : "Nenhuma matrícula paga ainda."}
                       </td>
                     </tr>
@@ -1170,26 +1274,21 @@ function PainelPage() {
                       className="cursor-pointer border-t border-border align-top hover:bg-bg-elevated/60"
                       onClick={() => setOpen(r)}
                     >
-                      <td className="px-4 py-3 text-xs text-fg-muted">{when(r.created_at)}</td>
-                      <td className="px-4 py-3">
-                        <span className={statusClass(r.status)}>{statusLabel(r.status)}</span>
-                      </td>
+                      <td className="px-4 py-3 text-xs text-fg-muted">{when(r.paid_at || r.created_at)}</td>
                       <td className="px-4 py-3">
                         <p className="font-semibold text-fg">{r.name}</p>
-                        <p className="text-xs text-fg-muted">CPF {r.cpf || "—"}</p>
+                        <p className="text-xs text-fg-muted">{r.phone || r.email}</p>
                       </td>
-                      <td className="px-4 py-3 text-xs text-fg-muted">
-                        <p>{r.email}</p>
-                        <p>{r.phone}</p>
+                      <td className="px-4 py-3">
+                        <span className={statusClass("paid")}>
+                          {pipelineLabel(r.pipeline || "pago")}
+                        </span>
                       </td>
-                      <td className="px-4 py-3 text-xs text-fg-muted">
-                        {[r.city, r.state].filter(Boolean).join("/") || "—"}
-                      </td>
-                      <td className="px-4 py-3 text-xs text-fg-muted">{r.plan_label || "—"}</td>
+                      <td className="px-4 py-3 text-xs text-fg-muted">{r.coupon_code || "—"}</td>
                       <td className="px-4 py-3 font-semibold text-fg">{brl(Number(r.amount))}</td>
                       <td className="px-4 py-3 text-xs text-fg-muted">
                         <p>{methodLabel(r)}</p>
-                        <p>{r.payment_id || r.note || "—"}</p>
+                        <p>{r.owner || r.plan_label || "—"}</p>
                       </td>
                       <td className="px-4 py-3">
                         <button
@@ -1220,7 +1319,16 @@ function PainelPage() {
               <Stat k="Recuperar agora" v={String(rows.filter(needsRecovery).length)} />
               <Stat k="Com WhatsApp" v={String(rows.filter((r) => isAbandoned(r) && r.phone).length)} />
             </div>
-            <div className="mt-5 overflow-x-auto rounded-[var(--radius-xl)] border border-border">
+            <div className="relative mt-5">
+              <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-fg-subtle" />
+              <input
+                value={aq}
+                onChange={(e) => setAq(e.target.value)}
+                placeholder="Buscar abandono…"
+                className="h-11 w-full rounded-[var(--radius-md)] border border-border bg-bg-elevated pl-10 pr-4 text-sm text-fg outline-none"
+              />
+            </div>
+            <div className="mt-4 overflow-x-auto rounded-[var(--radius-xl)] border border-border">
               <table className="min-w-[820px] w-full text-left text-sm">
                 <thead className="bg-bg-elevated text-[11px] uppercase tracking-[0.1em] text-fg-subtle">
                   <tr>
@@ -1232,14 +1340,31 @@ function PainelPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {rows.filter(isAbandoned).length === 0 && (
+                  {rows
+                    .filter(isAbandoned)
+                    .filter((r) => {
+                      const term = aq.trim().toLowerCase();
+                      if (!term) return true;
+                      return `${r.name} ${r.phone} ${r.email} ${r.plan_label}`
+                        .toLowerCase()
+                        .includes(term);
+                    }).length === 0 && (
                     <tr>
                       <td colSpan={6} className="px-4 py-8 text-center text-fg-muted">
                         Ninguém abandonou a matrícula.
                       </td>
                     </tr>
                   )}
-                  {rows.filter(isAbandoned).map((r) => {
+                  {rows
+                    .filter(isAbandoned)
+                    .filter((r) => {
+                      const term = aq.trim().toLowerCase();
+                      if (!term) return true;
+                      return `${r.name} ${r.phone} ${r.email} ${r.plan_label}`
+                        .toLowerCase()
+                        .includes(term);
+                    })
+                    .map((r) => {
                     const href = waLead(r.phone, recoveryMessage(r));
                     return (
                       <tr key={r.id} className="border-t border-border">

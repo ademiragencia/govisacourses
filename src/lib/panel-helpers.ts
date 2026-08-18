@@ -91,3 +91,50 @@ export function adRanking(visits: VisitRow[], paid: EnrollmentRow[]) {
   }
   return [...map.values()].sort((a, b) => b.paid - a.paid || b.visits - a.visits);
 }
+
+export function parcelChargeMessage(name: string, value: number, date: string) {
+  const first = (name || "tudo bem").split(" ")[0];
+  const money = value.toLocaleString("pt-BR", {
+    style: "currency",
+    currency: "BRL",
+  });
+  return `Oi ${first}, passando pra lembrar da parcela da formação Go Visa: ${money} no Pix, vencimento ${date}. Se preferir, te mando o código agora.`;
+}
+
+export function accessMessage(row: EnrollmentRow) {
+  const first = (row.name || "tudo bem").split(" ")[0];
+  return `Oi ${first}, sua matrícula na Formação em Processos Imigratórios está confirmada e o acesso vai ser liberado. Qualquer dúvida é só responder aqui.`;
+}
+
+export function beep() {
+  try {
+    const Ctx =
+      window.AudioContext ||
+      (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+    const ctx = new Ctx();
+    const o = ctx.createOscillator();
+    const g = ctx.createGain();
+    o.type = "sine";
+    o.frequency.value = 880;
+    g.gain.value = 0.06;
+    o.connect(g);
+    g.connect(ctx.destination);
+    o.start();
+    o.stop(ctx.currentTime + 0.2);
+  } catch {
+    /* sem áudio */
+  }
+}
+
+export function findLeadByName(rows: EnrollmentRow[], name: string) {
+  const n = name.toLowerCase().trim();
+  if (!n) return undefined;
+  return (
+    rows.find((r) => r.name.toLowerCase() === n) ||
+    rows.find(
+      (r) =>
+        n.includes(r.name.toLowerCase()) ||
+        r.name.toLowerCase().includes(n.split(" ")[0]),
+    )
+  );
+}
