@@ -34,8 +34,8 @@ export function Authority() {
             <p className="mx-auto mt-5 max-w-xl text-[1.05rem] leading-relaxed text-fg-muted">
               A maioria dos cursos ensina teoria por quem nunca atuou. Aqui é o
               contrário: o método vem da rotina real de um escritório de
-              imigração americano — os mesmos casos, documentos e processos do
-              dia a dia. E quem forma a turma é quem também contrata os
+              imigração americano, com os mesmos casos, documentos e processos
+              do dia a dia. E quem forma a turma é quem também contrata os
               destaques.
             </p>
           </Reveal>

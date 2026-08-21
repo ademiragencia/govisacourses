@@ -117,7 +117,7 @@ export function SocialProof() {
           </h2>
           <p className="mt-4 text-base leading-relaxed text-fg-muted">
             Depoimentos reais de alunos que apostaram na formação. Toque para
-            assistir — são poucos minutos e valem cada segundo.
+            assistir. São poucos minutos e valem cada segundo.
           </p>
         </div>
 

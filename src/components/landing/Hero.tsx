@@ -20,12 +20,12 @@ export function Hero() {
 
           <h1 className="display mx-auto mt-5 max-w-3xl text-[clamp(2.1rem,5.2vw,3.6rem)] text-fg">
             Trabalhe com imigração americana e comece a receber{" "}
-            <span className="text-gold-grad">em dólar</span> — sem sair do Brasil.
+            <span className="text-gold-grad">em dólar</span>, sem sair do Brasil.
           </h1>
 
           <p className="mx-auto mt-5 max-w-xl text-[1.05rem] leading-relaxed text-fg-muted">
             Uma formação que nasceu dentro de um escritório de advocacia
-            americano — não de uma escola. Você aprende na prática, ao vivo, e
+            americano, não de uma escola. Você aprende na prática, ao vivo, e
             os alunos que mais se destacam são contratados pela Go Visa Law
             Firm, já faturando em moeda forte.
           </p>

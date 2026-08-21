@@ -23,8 +23,8 @@ export function Offer() {
             <p className="mx-auto mt-4 max-w-lg text-base text-fg-muted">
               Uma única contratação em dólar paga essa formação muitas vezes.
               Hoje ela sai por{" "}
-              <span className="font-bold text-fg">{COURSE_LIVE.priceLabel}</span>{" "}
-              — depois volta para {COURSE_LIVE.listPriceLabel}.
+              <span className="font-bold text-fg">{COURSE_LIVE.priceLabel}</span>.
+              Depois volta para {COURSE_LIVE.listPriceLabel}.
             </p>
           </div>
         </Reveal>
@@ -107,7 +107,7 @@ export function Offer() {
 
           <p className="mt-5 text-center text-xs leading-relaxed text-fg-subtle">
             Formação com a {BRAND.firm}. A contratação dos destaques acontece
-            por desempenho, após a formação — não é garantida para todos.
+            por desempenho, após a formação. Não é garantida para todos.
           </p>
         </div>
       </div>

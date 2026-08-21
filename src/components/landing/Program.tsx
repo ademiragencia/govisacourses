@@ -13,7 +13,7 @@ export function Program() {
           </h2>
           <p className="mt-4 text-base leading-relaxed text-fg-muted">
             Seis blocos que te levam do fundamento jurídico à prática aplicada
-            com casos reais — mesmo que você nunca tenha trabalhado na área.
+            com casos reais, mesmo que você nunca tenha trabalhado na área.
           </p>
         </div>
         </Reveal>

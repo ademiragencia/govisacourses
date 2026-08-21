@@ -5,12 +5,12 @@ const points = [
   {
     icon: TrendingUp,
     title: "Um mercado que só cresce",
-    body: "A imigração para os EUA não para — e faltam profissionais preparados para montar e organizar os processos. Sobra trabalho, falta gente qualificada.",
+    body: "A imigração para os EUA não para, e faltam profissionais preparados para montar e organizar os processos. Sobra trabalho, falta gente qualificada.",
   },
   {
     icon: Languages,
     title: "O brasileiro tem vantagem",
-    body: "Escritórios americanos precisam de profissionais que atendam a comunidade brasileira e latina. Você não compete com o mercado local — você preenche uma falta dele.",
+    body: "Escritórios americanos precisam de profissionais que atendam a comunidade brasileira e latina. Você não compete com o mercado local. Você preenche uma falta dele.",
   },
   {
     icon: Home,

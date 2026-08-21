@@ -10,11 +10,11 @@ const PAIN = [
 ];
 
 const GAIN = [
-  "Uma profissão nova e valorizada, aprendida do zero — passo a passo",
+  "Uma profissão nova e valorizada, aprendida do zero, passo a passo",
   "Renda em dólar trabalhando de casa, para um escritório americano",
   "Entrada em um mercado que só cresce e falta gente qualificada",
   "Inglês não é requisito: você aprende os termos junto com a prática",
-  "Formação ao vivo com quem realmente atua na área — e contrata",
+  "Formação ao vivo com quem realmente atua na área e contrata",
 ];
 
 export function ForWho() {
@@ -30,7 +30,7 @@ export function ForWho() {
             </h2>
             <p className="mt-4 text-base leading-relaxed text-fg-muted">
               Não é sorte nem "dom". É entrar num mercado certo, com o preparo
-              certo — e do lado de quem já está lá dentro.
+              certo, do lado de quem já está lá dentro.
             </p>
           </div>
         </Reveal>

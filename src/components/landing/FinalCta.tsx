@@ -29,7 +29,7 @@ export function FinalCta() {
             </h2>
             <p className="mx-auto mt-4 max-w-md text-base leading-relaxed text-fg-muted">
               A vaga de hoje sai por {COURSE_LIVE.priceLabel}. Amanhã pode ser
-              tarde — as turmas ao vivo têm vagas limitadas e a condição acaba à
+              tarde. As turmas ao vivo têm vagas limitadas e a condição acaba à
               meia-noite.
             </p>
             <div className="mx-auto mt-8 flex max-w-sm flex-col items-center gap-3">
