@@ -7,13 +7,13 @@ export function Program() {
       <div className="container-lp">
         <Reveal>
         <div className="mx-auto max-w-2xl text-center">
-          <p className="eyebrow">Conteúdo programático</p>
+          <p className="eyebrow eyebrow-center justify-center">Conteúdo</p>
           <h2 className="display mt-3 text-[clamp(1.85rem,3.5vw,2.75rem)] text-fg">
-            O que você vai dominar
+            Do zero ao profissional pronto pra atuar
           </h2>
           <p className="mt-4 text-base leading-relaxed text-fg-muted">
-            Seis blocos da formação, do fundamento jurídico à prática aplicada
-            com casos reais.
+            Seis blocos que te levam do fundamento jurídico à prática aplicada
+            com casos reais — mesmo que você nunca tenha trabalhado na área.
           </p>
         </div>
         </Reveal>

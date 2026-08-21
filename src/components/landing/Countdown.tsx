@@ -16,7 +16,7 @@ export function Countdown({ compact = false }: { compact?: boolean }) {
   return (
     <div>
       <p className="mb-2 text-center text-[11px] font-bold uppercase tracking-[0.14em] text-brand-red">
-        A oferta acaba hoje
+        A condição de hoje acaba em
       </p>
       <div className="grid grid-cols-3 gap-2">
         {[

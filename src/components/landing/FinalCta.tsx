@@ -1,4 +1,4 @@
-import { BRAND } from "@/lib/config";
+import { COURSE_LIVE } from "@/lib/config";
 import { MatriculaCta } from "./MatriculaCta";
 import { WhatsAppCta } from "./WhatsAppCta";
 import { Reveal } from "./Reveal";
@@ -18,20 +18,19 @@ export function FinalCta() {
           />
           <div className="relative mx-auto max-w-2xl">
             <Reveal>
-            <p className="eyebrow">
-              {BRAND.firm} | O maior escritório dos EUA
+            <p className="eyebrow eyebrow-center justify-center">
+              Última chamada · turma de 30 de agosto
             </p>
             <h2 className="display mt-4 text-[clamp(1.9rem,4vw,3rem)] text-fg">
-              Forme-se com o{" "}
-              <span className="text-gold-line">maior escritório</span>.
+              Sua próxima carreira pode
               <br />
-              <span className="text-brand-red">
-                Destaque-se. Seja contratado. Em dólar.
-              </span>
+              <span className="text-gold-grad">começar hoje</span>.{" "}
+              <span className="text-brand-red">Em dólar.</span>
             </h2>
             <p className="mx-auto mt-4 max-w-md text-base leading-relaxed text-fg-muted">
-              A {BRAND.firm} forma a turma e contrata quem mais se destaca. Já
-              faturando em dólar.
+              A vaga de hoje sai por {COURSE_LIVE.priceLabel}. Amanhã pode ser
+              tarde — as turmas ao vivo têm vagas limitadas e a condição acaba à
+              meia-noite.
             </p>
             <div className="mx-auto mt-8 flex max-w-sm flex-col items-center gap-3">
               <MatriculaCta fullWidth label="Matricular agora" />

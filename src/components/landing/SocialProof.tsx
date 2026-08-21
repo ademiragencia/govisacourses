@@ -110,13 +110,14 @@ export function SocialProof() {
     <section id="provas" className="border-t border-border py-20 md:py-28">
       <div className="container-lp">
         <div className="mx-auto max-w-2xl text-center">
-          <p className="eyebrow">Prova social</p>
+          <p className="eyebrow eyebrow-center justify-center">Quem já entrou</p>
           <h2 className="display mt-3 text-[clamp(1.85rem,3.5vw,2.75rem)] text-fg">
-            Quem já vive a formação
+            Não acredite em mim.
+            <br className="hidden sm:block" /> Ouça quem já está dentro.
           </h2>
           <p className="mt-4 text-base leading-relaxed text-fg-muted">
-            Ouça de quem está no caminho. Mais depoimentos entram aqui conforme
-            a turma compartilha resultados.
+            Depoimentos reais de alunos que apostaram na formação. Toque para
+            assistir — são poucos minutos e valem cada segundo.
           </p>
         </div>
 

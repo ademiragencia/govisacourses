@@ -15,17 +15,20 @@ export function Header() {
         </a>
 
         <nav className="hidden items-center gap-6 text-sm font-medium text-fg-muted md:flex">
+          <a href="#oportunidade" className="transition-colors hover:text-fg">
+            Oportunidade
+          </a>
           <a href="#autoridade" className="transition-colors hover:text-fg">
             A formação
           </a>
           <a href="#provas" className="transition-colors hover:text-fg">
-            Provas
+            Depoimentos
           </a>
           <a href="#programa" className="transition-colors hover:text-fg">
             Conteúdo
           </a>
           <a href="#investimento" className="transition-colors hover:text-fg">
-            Oferta
+            Investimento
           </a>
           <a href="#faq" className="transition-colors hover:text-fg">
             Dúvidas

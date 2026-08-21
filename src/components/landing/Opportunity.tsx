@@ -1,60 +1,56 @@
-import { CalendarDays, GraduationCap, MonitorPlay, Trophy } from "lucide-react";
+import { Building2, Home, Languages, TrendingUp } from "lucide-react";
 import { Reveal } from "./Reveal";
-import { BRAND, COURSE_LIVE } from "@/lib/config";
 
 const points = [
   {
-    icon: MonitorPlay,
-    title: "Turma ao vivo, não gravada solta",
-    body: `${COURSE_LIVE.format}. Você acompanha o professor e usa o portal com o material da formação.`,
+    icon: TrendingUp,
+    title: "Um mercado que só cresce",
+    body: "A imigração para os EUA não para — e faltam profissionais preparados para montar e organizar os processos. Sobra trabalho, falta gente qualificada.",
   },
   {
-    icon: CalendarDays,
-    title: COURSE_LIVE.startLabel,
-    body: `${COURSE_LIVE.hoursDetail}. ${COURSE_LIVE.startDetail}`,
+    icon: Languages,
+    title: "O brasileiro tem vantagem",
+    body: "Escritórios americanos precisam de profissionais que atendam a comunidade brasileira e latina. Você não compete com o mercado local — você preenche uma falta dele.",
   },
   {
-    icon: Trophy,
-    title: "Destaques avaliados pelo escritório",
-    body: `Quem mais se destaca pode ser chamado para o time da ${BRAND.firm}. Isso acontece depois da formação, não no anúncio.`,
+    icon: Home,
+    title: "Trabalho remoto, renda em dólar",
+    body: "É um trabalho que se faz de qualquer lugar do Brasil, pelo computador. A remuneração dos destaques é em dólar, com o poder de compra que isso traz.",
   },
   {
-    icon: GraduationCap,
-    title: "Matrícula hoje, neste valor",
-    body: `De ${COURSE_LIVE.listPriceLabel} por ${COURSE_LIVE.priceLabel}. Pix à vista, entrada de R$ 1.000 + 5× R$ 400, ou em até 10× no cartão.`,
+    icon: Building2,
+    title: "Formação e emprego no mesmo lugar",
+    body: "Você não sai da formação com um certificado e a mão na frente. Quem se destaca é avaliado para atuar com a própria Go Visa Law Firm.",
   },
 ];
 
 export function Opportunity() {
   return (
-    <section id="autoridade" className="border-t border-border py-20 md:py-28">
+    <section id="oportunidade" className="border-t border-border py-20 md:py-28">
       <div className="container-lp">
         <Reveal>
-        <div className="mx-auto max-w-2xl text-center">
-          <p className="eyebrow">Depois do vídeo</p>
-          <h2 className="display mt-3 text-[clamp(1.85rem,3.5vw,2.85rem)] text-fg">
-            A condição, a turma e o próximo passo.
-          </h2>
-          <p className="mt-4 text-base leading-relaxed text-fg-muted">
-            O vídeo apresenta a formação. Aqui está o que você precisa para
-            entrar: data, formato e o valor de hoje.
-          </p>
-        </div>
+          <div className="mx-auto max-w-2xl text-center">
+            <p className="eyebrow eyebrow-center justify-center">A oportunidade</p>
+            <h2 className="display mt-3 text-[clamp(1.85rem,3.6vw,2.85rem)] text-fg">
+              Por que agora é a hora
+            </h2>
+            <p className="mt-4 text-base leading-relaxed text-fg-muted">
+              Não é promessa vazia. É a soma de um mercado aquecido, uma
+              vantagem que é sua, e uma porta de entrada real.
+            </p>
+          </div>
         </Reveal>
 
         <div className="mt-12 grid gap-3 sm:grid-cols-2">
           {points.map(({ icon: Icon, title, body }, i) => (
             <Reveal key={title} delay={i * 80}>
-            <article
-              key={title}
-              className="surface-card rounded-[var(--radius-xl)] p-6 md:p-7"
-            >
-              <div className="mb-4 flex size-11 items-center justify-center rounded-[var(--radius-md)] bg-brand-red-soft text-brand-red">
-                <Icon className="size-5" strokeWidth={1.75} />
-              </div>
-              <h3 className="text-lg font-bold tracking-tight text-fg">{title}</h3>
-              <p className="mt-2 text-sm leading-relaxed text-fg-muted">{body}</p>
-            </article>
+              <article className="surface-card h-full rounded-[var(--radius-xl)] p-6 md:p-7">
+                <div className="mb-4 flex size-11 items-center justify-center rounded-[var(--radius-md)] bg-brand-red-soft text-brand-red">
+                  <Icon className="size-5" strokeWidth={1.75} />
+                </div>
+                <h3 className="text-lg font-bold tracking-tight text-fg">{title}</h3>
+                <p className="mt-2 text-sm leading-relaxed text-fg-muted">{body}</p>
+              </article>
             </Reveal>
           ))}
         </div>

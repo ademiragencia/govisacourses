@@ -36,10 +36,13 @@ export function Faq() {
     <section id="faq" className="border-t border-border bg-bg-elevated py-20 md:py-28">
       <div className="container-lp">
         <div className="mx-auto max-w-2xl text-center">
-          <p className="eyebrow">Dúvidas</p>
+          <p className="eyebrow eyebrow-center justify-center">Dúvidas</p>
           <h2 className="display mt-3 text-[clamp(1.85rem,3.5vw,2.75rem)] text-fg">
-            Direto ao ponto
+            Ainda com uma dúvida?
           </h2>
+          <p className="mt-4 text-base leading-relaxed text-fg-muted">
+            As respostas mais comuns antes de você garantir a vaga.
+          </p>
         </div>
 
         <div className="mx-auto mt-12 max-w-2xl space-y-2">

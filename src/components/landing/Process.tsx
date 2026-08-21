@@ -28,13 +28,13 @@ export function Process() {
     <section className="border-t border-border py-20 md:py-28">
       <div className="container-lp">
         <div className="mx-auto max-w-2xl text-center">
-          <p className="eyebrow">O caminho</p>
+          <p className="eyebrow eyebrow-center justify-center">O caminho</p>
           <h2 className="display mt-3 text-[clamp(1.85rem,3.5vw,2.75rem)] text-fg">
-            Da ficha à vaga em dólar
+            Da matrícula à vaga em dólar
           </h2>
           <p className="mt-3 text-sm text-fg-muted">
-            Formação + desempenho. Quem se destaca pode ser contratado pelo
-            maior escritório dos EUA.
+            Quatro passos simples. Você faz a sua parte, e o desempenho abre a
+            porta da contratação.
           </p>
         </div>
 

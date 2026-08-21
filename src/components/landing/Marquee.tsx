@@ -1,10 +1,12 @@
 const ITEMS = [
-  "Maior escritório dos EUA",
-  "Turma ao vivo",
-  "Somente hoje",
+  "Renda em dólar",
+  "100% online, ao vivo",
+  "Trabalho remoto",
   "Sem inglês obrigatório",
-  "Destaques avaliados",
+  "Certificação profissional",
+  "Escritório de imigração americano",
   "Início 30 de agosto",
+  "Vagas limitadas",
 ];
 
 export function Marquee() {
