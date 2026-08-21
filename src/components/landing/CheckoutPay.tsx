@@ -2,8 +2,6 @@ import { useEffect, useMemo, useState } from "react";
 import { Check, Copy, CreditCard, Loader2, QrCode, Tag } from "lucide-react";
 import { COURSE_LIVE } from "@/lib/config";
 import { createSitePayment, verifyAsaasPayment } from "@/lib/asaas-server";
-import { createMpCardPayment, listMpInstallments } from "@/lib/mp-server";
-import { tokenizeCard } from "@/lib/mp-sdk";
 import { formatCardNumber, formatExpiry } from "@/lib/card";
 import { previewCoupon, type CouponPreview } from "@/lib/coupons";
 import type { StoredLead } from "@/lib/mp";
@@ -35,7 +33,6 @@ export function CheckoutPay({
   const [expiry, setExpiry] = useState("");
   const [cvv, setCvv] = useState("");
   const [parcels, setParcels] = useState(Math.max(1, lead.installments || 1));
-  const [mpRows, setMpRows] = useState<{ count: number; value: number; total: number }[]>([]);
   const [pix, setPix] = useState<{
     paymentId: string;
     qrImage: string;
@@ -48,24 +45,11 @@ export function CheckoutPay({
   const [coupon, setCoupon] = useState<CouponPreview | null>(null);
   const [couponErr, setCouponErr] = useState<string | null>(null);
 
-  const options = useMemo(() => cardInstallmentOptions(mpRows), [mpRows]);
+  const options = useMemo(() => cardInstallmentOptions(), []);
   const chosen = options.find((o) => o.count === parcels) || cardInstallment(parcels);
   const isEntry = lead.plan === "entry";
   const basePix = isEntry ? COURSE_LIVE.entryFee : COURSE_LIVE.price;
   const pixAmount = coupon && tab === "pix" ? coupon.total : basePix;
-
-  const cardBin = number.replace(/\D/g, "").slice(0, 6);
-
-  useEffect(() => {
-    void listMpInstallments({
-      data: {
-        amount: COURSE_LIVE.price,
-        bin: cardBin.length >= 6 ? cardBin : "",
-      },
-    }).then((res) => {
-      if (res.ok && res.rows.length) setMpRows(res.rows);
-    });
-  }, [cardBin]);
 
   useEffect(() => {
     if (!pix?.paymentId) return;
@@ -120,17 +104,11 @@ export function CheckoutPay({
     setBusy(true);
     setError(null);
     try {
-      const tok = await tokenizeCard({
-        cardNumber: digits,
-        cardholderName: holder,
-        cardExpirationMonth: mm,
-        cardExpirationYear: yy,
-        securityCode: cvv,
-        identificationNumber: lead.cpf,
-      });
-      const res = await createMpCardPayment({
+      const res = await createSitePayment({
         data: {
-          amount: COURSE_LIVE.price,
+          method: "card",
+          plan: "card",
+          amount: chosen.total,
           installments: chosen.count,
           coupon: coupon?.code || "",
           title: lead.courseTitle,
@@ -138,11 +116,14 @@ export function CheckoutPay({
           name: lead.name,
           cpf: lead.cpf,
           phone: lead.phone,
-          cardToken: tok.token,
-          paymentMethodId: tok.paymentMethodId,
-          issuerId: tok.issuerId,
+          cardNumber: digits,
+          cardHolder: holder,
+          cardMonth: mm,
+          cardYear: yy,
+          cardCvv: cvv,
           street: lead.street,
           number: lead.number,
+          complement: lead.complement,
           city: lead.city,
           zip: lead.cep,
           leadId: lead.id,

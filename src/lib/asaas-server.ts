@@ -271,7 +271,6 @@ export const createSitePayment = createServerFn({ method: "POST" })
       const payload: Record<string, unknown> = {
         customer,
         billingType: "CREDIT_CARD",
-        value: Number(amount.toFixed(2)),
         dueDate: todayBr(),
         description: `${data.title}${couponCode ? ` · cupom ${couponCode}` : ""}`.slice(0, 480),
         externalReference: data.leadId,
@@ -298,9 +297,9 @@ export const createSitePayment = createServerFn({ method: "POST" })
 
       if (data.installments > 1) {
         payload.installmentCount = data.installments;
-        payload.installmentValue = Number(
-          (amount / data.installments).toFixed(2),
-        );
+        payload.totalValue = Number(amount.toFixed(2));
+      } else {
+        payload.value = Number(amount.toFixed(2));
       }
 
       const pay = await asaas<{
