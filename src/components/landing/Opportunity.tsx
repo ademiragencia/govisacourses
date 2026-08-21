@@ -10,7 +10,7 @@ const points = [
   {
     icon: Languages,
     title: "O brasileiro tem vantagem",
-    body: "Escritórios americanos precisam de profissionais que atendam a comunidade brasileira e latina. Você não compete com o mercado local. Você preenche uma falta dele.",
+    body: "Escritórios americanos precisam de quem atenda a comunidade brasileira e latina. Você não compete com o mercado local. Você preenche uma falta dele.",
   },
   {
     icon: Home,
@@ -41,15 +41,22 @@ export function Opportunity() {
           </div>
         </Reveal>
 
-        <div className="mt-12 grid gap-3 sm:grid-cols-2">
+        <div className="mx-auto mt-14 max-w-4xl divide-y divide-border">
           {points.map(({ icon: Icon, title, body }, i) => (
-            <Reveal key={title} delay={i * 80}>
-              <article className="surface-card h-full rounded-[var(--radius-xl)] p-6 md:p-7">
-                <div className="mb-4 flex size-11 items-center justify-center rounded-[var(--radius-md)] bg-brand-red-soft text-brand-red">
-                  <Icon className="size-5" strokeWidth={1.75} />
+            <Reveal key={title} delay={i * 70}>
+              <article className="group grid grid-cols-[auto_1fr] items-start gap-5 py-7 md:grid-cols-[6rem_auto_1fr] md:gap-8">
+                <span className="num-outline hidden text-[3.5rem] md:block">
+                  {String(i + 1).padStart(2, "0")}
+                </span>
+                <div className="flex size-12 items-center justify-center rounded-[var(--radius-lg)] bg-brand-red-soft text-brand-red transition-colors group-hover:bg-brand-red group-hover:text-white">
+                  <Icon className="size-6" strokeWidth={1.75} />
                 </div>
-                <h3 className="text-lg font-bold tracking-tight text-fg">{title}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-fg-muted">{body}</p>
+                <div className="min-w-0">
+                  <h3 className="text-xl font-bold tracking-tight text-fg">{title}</h3>
+                  <p className="mt-2 max-w-xl text-[0.95rem] leading-relaxed text-fg-muted">
+                    {body}
+                  </p>
+                </div>
               </article>
             </Reveal>
           ))}

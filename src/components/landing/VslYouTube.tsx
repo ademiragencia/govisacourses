@@ -1,5 +1,5 @@
 import { useEffect, useId, useRef } from "react";
-import { MatriculaCta } from "./MatriculaCta";
+import { cn } from "@/lib/utils";
 
 const VSL_ID = "3hq7TpBYhsU";
 
@@ -85,7 +85,7 @@ function loadYtApi(): Promise<void> {
   });
 }
 
-export function Vsl() {
+export function VslYouTube({ className }: { className?: string }) {
   const frameId = useId().replace(/:/g, "");
   const playerRef = useRef<YtPlayer | null>(null);
 
@@ -120,37 +120,16 @@ export function Vsl() {
   }, [frameId]);
 
   return (
-    <section id="vsl" className="bg-bg pt-8 pb-8 md:pt-12 md:pb-10">
-      <div className="container-lp">
-        <div className="mx-auto mb-6 max-w-2xl text-center md:mb-8">
-          <p className="eyebrow eyebrow-center justify-center">Apresentação oficial</p>
-          <h2 className="display mt-3 text-[clamp(1.7rem,4vw,2.7rem)] text-fg">
-            Veja como a formação funciona
-            <br className="hidden sm:block" />{" "}
-            <span className="text-gold-grad">em 6 minutos</span>.
-          </h2>
-          <p className="mx-auto mt-4 max-w-xl text-base leading-relaxed text-fg-muted">
-            Assista até o fim: você vai entender o método, quem forma a turma e
-            como funciona a contratação em dólar. Depois é só garantir sua vaga.
-          </p>
-        </div>
-        <div className="vsl-glow mx-auto max-w-4xl overflow-hidden rounded-[var(--radius-2xl)] border border-border bg-black">
-          <div className="relative aspect-video w-full overflow-hidden">
-            <iframe
-              id={frameId}
-              src={embedSrc()}
-              title="Apresentação da formação"
-              className="absolute inset-0 h-full w-full max-w-full border-0"
-              allow="autoplay; encrypted-media"
-              referrerPolicy="strict-origin-when-cross-origin"
-              tabIndex={-1}
-            />
-          </div>
-        </div>
-        <div className="mx-auto mt-5 max-w-sm">
-          <MatriculaCta fullWidth label="Quero me matricular" />
-        </div>
-      </div>
-    </section>
+    <div className={cn("relative aspect-video w-full overflow-hidden", className)}>
+      <iframe
+        id={frameId}
+        src={embedSrc()}
+        title="Apresentação da formação"
+        className="absolute inset-0 h-full w-full max-w-full border-0"
+        allow="autoplay; encrypted-media"
+        referrerPolicy="strict-origin-when-cross-origin"
+        tabIndex={-1}
+      />
+    </div>
   );
 }

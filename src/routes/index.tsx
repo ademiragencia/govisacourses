@@ -1,11 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Header } from "@/components/landing/Header";
-import { Vsl } from "@/components/landing/Vsl";
 import { Marquee } from "@/components/landing/Marquee";
 import { Hero } from "@/components/landing/Hero";
 import { ForWho } from "@/components/landing/ForWho";
 import { Opportunity } from "@/components/landing/Opportunity";
 import { Authority } from "@/components/landing/Authority";
+import { Comparison } from "@/components/landing/Comparison";
 import { SocialProof } from "@/components/landing/SocialProof";
 import { Program } from "@/components/landing/Program";
 import { Process } from "@/components/landing/Process";
@@ -36,12 +36,12 @@ function LandingPage() {
       <Header />
       <main id="conteudo">
         <Hero />
-        <Vsl />
         <Marquee />
         <ForWho />
         <Opportunity />
         <Authority />
         <SocialProof />
+        <Comparison />
         <Program />
         <Offer />
         <Process />
