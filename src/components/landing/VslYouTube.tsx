@@ -96,14 +96,13 @@ export function VslYouTube({ className }: { className?: string }) {
       if (!document.getElementById(frameId)) return;
       playerRef.current = new window.YT.Player(frameId, {
         events: {
+          // Force sound only once, on load — never on state change,
+          // otherwise pausing would immediately resume the video.
           onReady: (e) => {
             killCaptions(e.target);
             forceSound(e.target);
           },
-          onStateChange: (e) => {
-            killCaptions(e.target);
-            forceSound(e.target);
-          },
+          onStateChange: (e) => killCaptions(e.target),
           onApiChange: (e) => killCaptions(e.target),
         },
       });

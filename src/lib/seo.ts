@@ -9,7 +9,7 @@ export const SEO = {
   language: "pt-BR",
   url: SITE_URL,
   logo: `${SITE_URL}/assets/logo.png`,
-  image: `${SITE_URL}/assets/logo-dark.png`,
+  image: `${SITE_URL}/assets/logo.png`,
   twitterHandle: "",
   themeColor: "#07111f",
   keywords: [

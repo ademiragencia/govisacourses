@@ -58,9 +58,9 @@ function QualificacaoPage() {
         <div className="container-lp flex h-14 items-center justify-between gap-3">
           <Link to="/" aria-label="Go Visa Courses">
             <img
-              src="/assets/logo-dark.png"
+              src="/assets/logo-nav.png"
               alt="Go Visa Courses"
-              className="h-7 w-auto"
+              className="h-8 w-auto md:h-9"
             />
           </Link>
           <Link
