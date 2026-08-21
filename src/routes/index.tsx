@@ -3,7 +3,9 @@ import { Header } from "@/components/landing/Header";
 import { Vsl } from "@/components/landing/Vsl";
 import { Marquee } from "@/components/landing/Marquee";
 import { Hero } from "@/components/landing/Hero";
+import { ForWho } from "@/components/landing/ForWho";
 import { Opportunity } from "@/components/landing/Opportunity";
+import { Authority } from "@/components/landing/Authority";
 import { SocialProof } from "@/components/landing/SocialProof";
 import { Program } from "@/components/landing/Program";
 import { Process } from "@/components/landing/Process";
@@ -33,14 +35,16 @@ function LandingPage() {
     <div className="relative min-h-dvh">
       <Header />
       <main id="conteudo">
+        <Hero />
         <Vsl />
         <Marquee />
-        <Hero />
+        <ForWho />
         <Opportunity />
+        <Authority />
         <SocialProof />
         <Program />
-        <Process />
         <Offer />
+        <Process />
         <Faq />
         <FinalCta />
       </main>

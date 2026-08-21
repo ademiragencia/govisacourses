@@ -122,16 +122,16 @@ export function Vsl() {
   return (
     <section id="vsl" className="bg-bg pt-8 pb-8 md:pt-12 md:pb-10">
       <div className="container-lp">
-        <div className="mx-auto mb-6 max-w-2xl text-center hook-in md:mb-8">
-          <p className="eyebrow">Go Visa Law Firm · o maior escritório dos EUA</p>
-          <h1 className="display mt-3 text-[clamp(1.9rem,4.4vw,3.1rem)] text-fg">
-            Essa formação nasceu dentro do escritório.
-            <br />
-            <span className="text-gold-line">Não de uma escola.</span>
-          </h1>
+        <div className="mx-auto mb-6 max-w-2xl text-center md:mb-8">
+          <p className="eyebrow eyebrow-center justify-center">Apresentação oficial</p>
+          <h2 className="display mt-3 text-[clamp(1.7rem,4vw,2.7rem)] text-fg">
+            Veja como a formação funciona
+            <br className="hidden sm:block" />{" "}
+            <span className="text-gold-grad">em 6 minutos</span>.
+          </h2>
           <p className="mx-auto mt-4 max-w-xl text-base leading-relaxed text-fg-muted">
-            O vídeo é a apresentação oficial. Assista até o fim. Em seguida
-            você vê a condição de hoje e se matricula.
+            Assista até o fim: você vai entender o método, quem forma a turma e
+            como funciona a contratação em dólar. Depois é só garantir sua vaga.
           </p>
         </div>
         <div className="vsl-glow mx-auto max-w-4xl overflow-hidden rounded-[var(--radius-2xl)] border border-border bg-black">
