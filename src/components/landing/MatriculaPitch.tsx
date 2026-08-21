@@ -8,7 +8,6 @@ import {
 } from "lucide-react";
 import { BRAND, COURSE_LIVE } from "@/lib/config";
 import { Countdown } from "@/components/landing/Countdown";
-import { CompactProof } from "@/components/landing/SocialProof";
 
 const OBJECTIONS = [
   {
@@ -83,18 +82,6 @@ export function MatriculaPitch() {
             </div>
           </div>
         ))}
-      </div>
-
-      <div className="mt-8">
-        <h3 className="font-display text-lg font-extrabold text-fg">
-          Quem já está dentro
-        </h3>
-        <p className="mt-1 text-sm text-fg-muted">
-          Assista antes de preencher. Isso não é teoria de YouTube.
-        </p>
-        <div className="mt-4">
-          <CompactProof />
-        </div>
       </div>
 
       <div className="mt-8">
