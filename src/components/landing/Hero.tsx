@@ -34,7 +34,7 @@ export function Hero() {
             <MatriculaCta label="Quero minha vaga" className="w-full sm:w-auto" />
             <a
               href="#vsl"
-              className="inline-flex h-[54px] w-full items-center justify-center gap-2 rounded-[var(--radius-md)] border border-border-strong px-6 text-[0.95rem] font-bold text-fg transition-colors hover:bg-white/5 sm:w-auto"
+              className="inline-flex h-[54px] w-full items-center justify-center gap-2 rounded-[var(--radius-md)] border border-border-strong bg-white px-6 text-[0.95rem] font-bold text-navy transition-colors hover:bg-bg-elevated sm:w-auto"
             >
               <PlayCircle className="size-5 text-brand-red" strokeWidth={2} />
               Assistir apresentação

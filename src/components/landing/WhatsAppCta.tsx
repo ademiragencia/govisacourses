@@ -31,7 +31,7 @@ export function WhatsAppCta({
     primary:
       "bg-wa text-white shadow-[0_12px_32px_rgba(34,163,90,0.35)] hover:bg-wa-hover hover:-translate-y-px",
     secondary:
-      "bg-transparent text-fg border border-border-strong hover:bg-white/5",
+      "bg-white text-navy border border-border-strong hover:bg-bg-elevated",
   };
 
   return (

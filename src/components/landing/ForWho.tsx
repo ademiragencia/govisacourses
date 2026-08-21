@@ -44,7 +44,7 @@ export function ForWho() {
               <ul className="mt-5 space-y-4">
                 {PAIN.map((item) => (
                   <li key={item} className="flex gap-3 text-sm leading-relaxed text-fg-muted">
-                    <span className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-white/5 text-fg-subtle">
+                    <span className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-fg/5 text-fg-subtle">
                       <X className="size-3.5" strokeWidth={2.5} />
                     </span>
                     {item}

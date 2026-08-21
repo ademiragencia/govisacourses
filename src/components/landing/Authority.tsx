@@ -18,7 +18,7 @@ export function Authority() {
         className="pointer-events-none absolute inset-0"
         style={{
           background:
-            "radial-gradient(680px 340px at 15% 0%, rgba(201,168,110,0.10), transparent 60%)",
+            "radial-gradient(680px 340px at 15% 0%, rgba(15,85,127,0.08), transparent 60%)",
         }}
         aria-hidden
       />

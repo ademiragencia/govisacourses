@@ -6,9 +6,9 @@ export function Footer() {
       <div className="container-lp flex flex-col items-center justify-between gap-6 sm:flex-row">
         <div className="flex flex-col items-center gap-3 sm:items-start">
           <img
-            src="/assets/logo-dark.png"
+            src="/assets/logo-nav.png"
             alt="Go Visa Courses"
-            className="h-6 w-auto opacity-90"
+            className="h-10 w-auto"
           />
           <p className="max-w-sm text-center text-xs text-fg-subtle sm:text-left">
             Formação Profissional em Processos Imigratórios. 100% online. Os

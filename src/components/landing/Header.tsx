@@ -8,9 +8,9 @@ export function Header() {
       <div className="container-lp flex h-16 min-w-0 items-center justify-between gap-3">
         <a href="#topo" aria-label="Go Visa Courses" className="min-w-0 shrink">
           <img
-            src="/assets/logo-dark.png"
+            src="/assets/logo-nav.png"
             alt="Go Visa Courses"
-            className="h-7 w-auto max-w-[148px] object-contain md:h-8 md:max-w-none"
+            className="h-8 w-auto max-w-[150px] object-contain md:h-9 md:max-w-none"
           />
         </a>
 
